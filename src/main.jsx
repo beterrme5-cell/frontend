@@ -1,7 +1,10 @@
 import { createTheme, MantineProvider } from "@mantine/core";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import App from "./App.jsx";
+
+// Importing the router
+import { router } from "./Router.jsx";
+import { RouterProvider } from "react-router-dom";
 
 // Mantine Dev Styles
 import "@mantine/core/styles.css";
@@ -12,6 +15,6 @@ const theme = createTheme({
 
 createRoot(document.getElementById("root")).render(
   <MantineProvider theme={theme}>
-    <App />
+    <RouterProvider router={router} />
   </MantineProvider>
 );
