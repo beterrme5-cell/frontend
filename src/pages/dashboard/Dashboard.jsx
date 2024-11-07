@@ -16,51 +16,26 @@ const VideosData = [
     id: 1,
     title: "You can be anywhere!",
     description: "This is a video description",
-    videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
+    videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
   },
   {
     id: 2,
     title: "You can be anywhere!",
     description: "This is a video description",
-    videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
+    videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
   },
   {
     id: 3,
     title: "You can be anywhere!",
     description: "This is a video description",
-    videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
+    videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
   },
 
   {
     id: 4,
     title: "You can be anywhere!",
     description: "This is a video description",
-    videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-  },
-  {
-    id: 5,
-    title: "You can be anywhere!",
-    description: "This is a video description",
-    videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-  },
-  {
-    id: 6,
-    title: "You can be anywhere!",
-    description: "This is a video description",
-    videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-  },
-  {
-    id: 7,
-    title: "You can be anywhere!",
-    description: "This is a video description",
-    videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-  },
-
-  {
-    id: 8,
-    title: "You can be anywhere!",
-    description: "This is a video description",
-    videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
+    videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
   },
 ];
 
@@ -69,51 +44,25 @@ const SharedVideosData = [
     id: 1,
     title: "You can be anywhere!",
     description: "This is a video description",
-    videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
+    videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
   },
   {
     id: 2,
     title: "You can be anywhere!",
     description: "This is a video description",
-    videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
+    videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
   },
   {
     id: 3,
     title: "You can be anywhere!",
     description: "This is a video description",
-    videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
+    videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
   },
-
   {
     id: 4,
     title: "You can be anywhere!",
     description: "This is a video description",
-    videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-  },
-  {
-    id: 5,
-    title: "You can be anywhere!",
-    description: "This is a video description",
-    videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-  },
-  {
-    id: 6,
-    title: "You can be anywhere!",
-    description: "This is a video description",
-    videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-  },
-  {
-    id: 7,
-    title: "You can be anywhere!",
-    description: "This is a video description",
-    videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-  },
-
-  {
-    id: 8,
-    title: "You can be anywhere!",
-    description: "This is a video description",
-    videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
+    videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
   },
 ];
 
@@ -159,25 +108,14 @@ const Dashboard = () => {
             <VideoTabSection heading="My Videos">
               <VideoTabItemsList>
                 {VideosData.map((video) => (
-                  <VideoTabItem
-                    key={video.id}
-                    title={video.title}
-                    description={video.description}
-                    videoLink={video.videoLink}
-                  />
+                  <VideoTabItem key={video.id} videoData={video} />
                 ))}
               </VideoTabItemsList>
             </VideoTabSection>{" "}
             <VideoTabSection heading="My Shared With me">
               <VideoTabItemsList>
                 {SharedVideosData.map((video) => (
-                  <VideoTabItem
-                    key={video.id}
-                    title={video.title}
-                    description={video.description}
-                    videoLink={video.videoLink}
-                    videoLength={video.videoLength}
-                  />
+                  <VideoTabItem key={video.id} videoData={video} />
                 ))}
               </VideoTabItemsList>
             </VideoTabSection>

@@ -1,5 +1,5 @@
 import { createTheme, MantineProvider } from "@mantine/core";
-import { createRoot } from "react-dom/client";
+import ReactDOM from "react-dom/client";
 import "./index.css";
 
 // Importing the router
@@ -8,13 +8,15 @@ import { RouterProvider } from "react-router-dom";
 
 // Mantine Dev Styles
 import "@mantine/core/styles.css";
+import { DeleteVideoConfirmationModal } from "./components/ui/GlobalModals.jsx";
 
 const theme = createTheme({
   cursorType: "pointer",
 });
 
-createRoot(document.getElementById("root")).render(
+ReactDOM.createRoot(document.getElementById("root")).render(
   <MantineProvider theme={theme}>
+    <DeleteVideoConfirmationModal />
     <RouterProvider router={router} />
   </MantineProvider>
 );

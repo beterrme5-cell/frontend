@@ -10,6 +10,7 @@ import EditIcon from "../../assets/icons/edit-icon.svg";
 import DeleteIcon from "../../assets/icons/delete-icon.svg";
 import { Table } from "@mantine/core";
 import { Menu } from "@mantine/core";
+import { useGlobalModals } from "../../store/globalModals";
 
 export const LibraryRoot = ({ children }) => {
   return (
@@ -68,20 +69,29 @@ export const VideoTabItemsList = ({ children }) => {
   );
 };
 
-export const VideoTabItem = ({ title, description, videoLink }) => {
-  console.log("Descrption", description);
+export const VideoTabItem = ({ videoData }) => {
+  const setIsDeleteVideoModalOpen = useGlobalModals(
+    (state) => state.setIsDeleteVideoModalOpen
+  );
+  const setVideoToBeDeleted = useGlobalModals(
+    (state) => state.setVideoToBeDeleted
+  );
 
   return (
     <div className="flex flex-col border border-[#CFCED4] rounded-[16px] relative min-w-[250px] h-[210px] overflow-hidden hover:cursor-pointer">
       <div className={`h-[160px] relative`}>
-        <iframe
+        {/* <iframe
           width="100%"
           height="100%"
-          src={videoLink}
-          title="YouTube video player"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          src={videoData.videoLink}
+          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
-        ></iframe>
+        ></iframe> */}
+        <img
+          src="https://s3-alpha-sig.figma.com/img/8238/d197/077f40948736f63966988f296dc35cdc?Expires=1731888000&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=SIW80GJs~r3Ieu~r0i1Ki5DSyrHjLMUafaUBQVmPJM5i8Idxtq~OVbCpiUtiRjY92LK5xCQg~PJq7r7GZW3QOO0BgQJKUGvs7SE0yPX8l5mVuXdTa0iyNSJ1C~hkHpF4OSFvFdy11oObQ9Y~l5SvMw4Z2FE5IZ7QqARtVWCC~x9zit5NbGdg0muVDYuBsXv~Xgmd1BWXxzIkYFXrCCFS~lqePGiAMIiuJwFXD7NjB8bsnt4MMhfeIVY4zg2jjWUJABr-48PIoMjvOfOv~hVS-j4ud4LpgmPfkMEGDMacGA7QIGXceF7saDJTuls8ZBag4y31VDFNj7Nf9pwBWE8Bsw__"
+          alt="Video Thumbnail"
+          className="w-full h-full object-cover"
+        />
         <img
           src={ShareVideoIcon}
           alt="Share Video Icon"
@@ -90,13 +100,14 @@ export const VideoTabItem = ({ title, description, videoLink }) => {
         />
       </div>
       <div className="flex-grow px-[16px] py-[12px] flex items-center justify-between gap-[10px] border-t border-t-[#CFCED4]">
-        <p className="text-[14px] font-medium">{title}</p>
+        <p className="text-[14px] font-medium">{videoData.title}</p>
         <Menu
           shadow="md"
           width={150}
           position="bottom-end"
           arrowPosition="center"
           radius={12}
+          offset={-5}
           styles={{
             menu: {
               padding: "8px 12px !important",
@@ -108,7 +119,9 @@ export const VideoTabItem = ({ title, description, videoLink }) => {
           }}
         >
           <Menu.Target>
-            <img src={VideoOptionsIcon} alt="Video Options Icon" />
+            <div className="w-[24px] h-[24px] flex justify-center items-center">
+              <img src={VideoOptionsIcon} alt="Video Options Icon" />
+            </div>
           </Menu.Target>
           <Menu.Dropdown>
             <Menu.Item
@@ -137,6 +150,10 @@ export const VideoTabItem = ({ title, description, videoLink }) => {
               leftSection={
                 <img src={DeleteIcon} alt="Copy Icon" className="w-[20px]" />
               }
+              onClick={() => {
+                setVideoToBeDeleted(videoData);
+                setIsDeleteVideoModalOpen(true);
+              }}
             >
               Delete
             </Menu.Item>
