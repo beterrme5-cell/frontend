@@ -1,7 +1,9 @@
-import { Modal } from "@mantine/core";
+import { Modal, TextInput } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
 import { LoadingOverlay } from "@mantine/core";
 import closeIcon from "../../assets/icons/cancel-icon.svg";
+import { useForm } from "@mantine/form";
+import CustomVideoInput from "./CustomVideoInput";
 
 const ModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
   return (
@@ -25,6 +27,95 @@ const ModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
       </button>
       {children}
     </Modal>
+  );
+};
+
+// Modal for Uploading the Video
+export const UploadVideoModal = () => {
+  const modalLoadingOverlay = useGlobalModals(
+    (state) => state.modalLoadingOverlay
+  );
+  const isUploadVideoModalOpen = useGlobalModals(
+    (state) => state.isUploadVideoModalOpen
+  );
+  const setIsUploadVideoModalOpen = useGlobalModals(
+    (state) => state.setIsUploadVideoModalOpen
+  );
+
+  // Modal Form
+  const form = useForm({
+    initialValues: {
+      videoName: "",
+      videoDescription: "",
+      uploadedVideo: null,
+    },
+
+    validate: {
+      videoName: (value) => {
+        if (value.length < 3) {
+          return "Video Name must be at least 3 characters long";
+        }
+      },
+      videoDescription: (value) => {
+        if (value.length < 3) {
+          return "Video Description must be at least 3 characters long";
+        }
+      },
+      uploadedVideo: (value) => {
+        if (!value) {
+          return "Please upload a video";
+        }
+      },
+    },
+  });
+
+  // Function to handle the upload of the video
+  const handleUploadVideo = (values) => {
+    console.log(values);
+  };
+
+  return (
+    <ModalRoot
+      loadingOverlay={modalLoadingOverlay}
+      showModal={isUploadVideoModalOpen}
+      onClose={() => {
+        setIsUploadVideoModalOpen(false);
+      }}
+    >
+      <div className="flex flex-col gap-[24px] w-[738px]">
+        <h3 className="text-[24px] font-medium">Upload Video</h3>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.onSubmit(handleUploadVideo);
+          }}
+          className="flex flex-col gap-[16px]"
+        >
+          <TextInput
+            label="Video Name"
+            placeholder="Enter Video Name"
+            {...form.getInputProps("videoName")}
+            id="videoName"
+            className="w-[350px]"
+          />
+          <TextInput
+            label="Video Description"
+            placeholder="Enter Video Description"
+            {...form.getInputProps("videoDescription")}
+            id="videoDescription"
+            className="w-[350px]"
+          />
+          <CustomVideoInput form={form} />
+        </form>
+        <button
+          type="button"
+          className="bg-primary rounded-[8px] p-[10px_28px] text-white font-medium w-fit"
+          onClick={() => {}}
+        >
+          Publish Video
+        </button>
+      </div>
+    </ModalRoot>
   );
 };
 
