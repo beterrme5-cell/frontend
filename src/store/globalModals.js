@@ -30,4 +30,12 @@ export const useGlobalModals = create((set) => ({
   setVideoToBeEdited: (video) => set({ videoToBeEdited: video }),
   isEditVideoModalOpen: false,
   setIsEditVideoModalOpen: (isOpen) => set({ isEditVideoModalOpen: isOpen }),
+
+  // --------------------------------------------------
+  // Share Video Modal
+  // --------------------------------------------------
+  videoToBeShared: {},
+  setVideoToBeShared: (video) => set({ videoToBeShared: video }),
+  isShareVideoModalOpen: false,
+  setIsShareVideoModalOpen: (isOpen) => set({ isShareVideoModalOpen: isOpen }),
 }));

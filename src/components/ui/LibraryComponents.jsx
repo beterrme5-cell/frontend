@@ -1,6 +1,4 @@
 import CustomButton from "./CustomButton";
-import { Tabs } from "@mantine/core";
-
 import ShareVideoIcon from "../../assets/icons/shareVideoIcon.svg";
 import VideoOptionsIcon from "../../assets/icons/VideoOptionsIcon.svg";
 import ArrowDownIcon from "../../assets/icons/arrow-down.svg";
@@ -8,8 +6,7 @@ import CopyIcon from "../../assets/icons/copy-icon.svg";
 import ShareIcon from "../../assets/icons/share-icon.svg";
 import EditIcon from "../../assets/icons/edit-icon.svg";
 import DeleteIcon from "../../assets/icons/delete-icon.svg";
-import { Table } from "@mantine/core";
-import { Menu } from "@mantine/core";
+import { Menu, Tabs, Table } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
 
 export const LibraryRoot = ({ children }) => {
@@ -76,11 +73,17 @@ export const VideoTabItem = ({ videoData }) => {
   const setIsEditVideoModalOpen = useGlobalModals(
     (state) => state.setIsEditVideoModalOpen
   );
+  const setIsShareVideoModalOpen = useGlobalModals(
+    (state) => state.setIsShareVideoModalOpen
+  );
   const setVideoToBeDeleted = useGlobalModals(
     (state) => state.setVideoToBeDeleted
   );
   const setVideoToBeEdited = useGlobalModals(
     (state) => state.setVideoToBeEdited
+  );
+  const setVideoToBeShared = useGlobalModals(
+    (state) => state.setVideoToBeShared
   );
 
   return (
@@ -141,6 +144,10 @@ export const VideoTabItem = ({ videoData }) => {
               leftSection={
                 <img src={ShareIcon} alt="Copy Icon" className="w-[20px]" />
               }
+              onClick={() => {
+                setVideoToBeShared(videoData);
+                setIsShareVideoModalOpen(true);
+              }}
             >
               Share
             </Menu.Item>
@@ -233,3 +240,5 @@ export const HistoryTableList = ({ historyData }) => {
     </Table>
   );
 };
+
+// Share Video Modal Component

@@ -1,11 +1,17 @@
-import { Modal, TextInput } from "@mantine/core";
+import { Modal, TextInput, Tabs, CopyButton, ActionIcon } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
-import { LoadingOverlay } from "@mantine/core";
+import { LoadingOverlay, MultiSelect } from "@mantine/core";
 import closeIcon from "../../assets/icons/cancel-icon.svg";
 import { useForm } from "@mantine/form";
 import CustomVideoInput from "./CustomVideoInput";
 import CustomButton from "./CustomButton";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  COPY_TEXT_ICON,
+  EMAIL_ICON,
+  EMBED_ICON,
+  SMS_ICON,
+} from "../../assets/icons/DynamicIcons";
 
 const ModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
   return (
@@ -208,6 +214,322 @@ export const EditVideoModal = () => {
               setIsEditVideoModalOpen(false);
             }}
           />
+        </div>
+      </div>
+    </ModalRoot>
+  );
+};
+
+// Modal to share the video
+export const ShareVideoModal = () => {
+  const modalLoadingOverlay = useGlobalModals(
+    (state) => state.modalLoadingOverlay
+  );
+  const isShareVideoModalOpen = useGlobalModals(
+    (state) => state.isShareVideoModalOpen
+  );
+  const setIsShareVideoModalOpen = useGlobalModals(
+    (state) => state.setIsShareVideoModalOpen
+  );
+  const videoToBeShared = useGlobalModals((state) => state.videoToBeShared);
+
+  const [activeTab, setActiveTab] = useState("email");
+  const [activeSubTab, setActiveSubTab] = useState("contacts");
+
+  // State to store the content of Input Field of SMS
+  const [smsContent, setSmsContent] = useState("");
+
+  return (
+    <ModalRoot
+      loadingOverlay={modalLoadingOverlay}
+      showModal={isShareVideoModalOpen}
+      onClose={() => {
+        setIsShareVideoModalOpen(false);
+      }}
+    >
+      <div className="flex flex-col gap-[24px] w-[70vw]">
+        <h3 className="text-[24px] font-medium">Share Video</h3>
+        <div className="flex flex-col gap-[24px]">
+          <Tabs color="#2A85FF" value={activeTab} onChange={setActiveTab}>
+            <Tabs.List>
+              <Tabs.Tab
+                value="email"
+                leftSection={
+                  <EMAIL_ICON
+                    className={`${
+                      activeTab === "email"
+                        ? "!text-darkBlue"
+                        : "!text-gray-dark"
+                    }`}
+                  />
+                }
+                className={`${
+                  activeTab === "email" ? "!text-darkBlue" : "!text-gray-dark"
+                } font-medium`}
+              >
+                Email
+              </Tabs.Tab>
+              <Tabs.Tab
+                value="sms"
+                leftSection={
+                  <SMS_ICON
+                    className={`${
+                      activeTab === "sms" ? "!text-darkBlue" : "!text-gray-dark"
+                    }`}
+                  />
+                }
+                className={`${
+                  activeTab === "sms" ? "!text-darkBlue" : "!text-gray-dark"
+                } font-medium`}
+              >
+                SMS
+              </Tabs.Tab>
+              <Tabs.Tab
+                value="embed"
+                leftSection={
+                  <EMBED_ICON
+                    className={`${
+                      activeTab === "embed"
+                        ? "!text-darkBlue"
+                        : "!text-gray-dark"
+                    }`}
+                  />
+                }
+                className={`${
+                  activeTab === "embed" ? "!text-darkBlue" : "!text-gray-dark"
+                } font-medium`}
+              >
+                Embed
+              </Tabs.Tab>
+            </Tabs.List>
+            <Tabs.Panel value="email" className="pt-[24px]">
+              <Tabs
+                color="#6C668526"
+                variant="pills"
+                radius="xl"
+                value={activeSubTab}
+                onChange={setActiveSubTab}
+              >
+                <Tabs.List>
+                  <Tabs.Tab
+                    value="contacts"
+                    className={`${
+                      activeSubTab === "contacts"
+                        ? "!text-darkBlue font-bold"
+                        : "!text-[#6C6685] font-medium"
+                    } `}
+                  >
+                    Contacts
+                  </Tabs.Tab>
+                  <Tabs.Tab
+                    value="tags"
+                    className={`${
+                      activeSubTab === "tags"
+                        ? "!text-darkBlue font-bold"
+                        : "!text-[#6C6685] font-medium"
+                    } `}
+                  >
+                    Tags
+                  </Tabs.Tab>
+                </Tabs.List>
+                <Tabs.Panel value="contacts" className="mt-[12px]">
+                  <MultiSelect
+                    className="md:w-1/2 w-full"
+                    placeholder="Select one or Multiple Contacts"
+                    data={["Brad", "Colin", "Babar", "Mohsin"]}
+                    clearable
+                    searchable
+                    nothingFoundMessage="Nothing found..."
+                    hidePickedOptions
+                  />
+                </Tabs.Panel>
+
+                <Tabs.Panel value="tags" className="mt-[12px]">
+                  <MultiSelect
+                    className="md:w-1/2 w-full"
+                    placeholder="Select one or Multiple Tags"
+                    data={["#tag1", "#tag2", "#tag3", "#tag4"]}
+                    clearable
+                    searchable
+                    nothingFoundMessage="Nothing found..."
+                    hidePickedOptions
+                  />
+                </Tabs.Panel>
+              </Tabs>
+            </Tabs.Panel>
+
+            <Tabs.Panel
+              value="sms"
+              className="pt-[24px] flex flex-col gap-[24px]"
+            >
+              <Tabs
+                color="#6C668526"
+                variant="pills"
+                radius="xl"
+                value={activeSubTab}
+                onChange={setActiveSubTab}
+              >
+                <Tabs.List>
+                  <Tabs.Tab
+                    value="contacts"
+                    className={`${
+                      activeSubTab === "contacts"
+                        ? "!text-darkBlue font-bold"
+                        : "!text-[#6C6685] font-medium"
+                    } `}
+                  >
+                    Contacts
+                  </Tabs.Tab>
+                  <Tabs.Tab
+                    value="tags"
+                    className={`${
+                      activeSubTab === "tags"
+                        ? "!text-darkBlue font-bold"
+                        : "!text-[#6C6685] font-medium"
+                    } `}
+                  >
+                    Tags
+                  </Tabs.Tab>
+                </Tabs.List>
+                <Tabs.Panel value="contacts" className="mt-[12px]">
+                  <MultiSelect
+                    className="md:w-1/2 w-full"
+                    placeholder="Select one or Multiple Contacts"
+                    data={["Brad", "Colin", "Babar", "Mohsin"]}
+                    clearable
+                    searchable
+                    nothingFoundMessage="Nothing found..."
+                    hidePickedOptions
+                  />
+                </Tabs.Panel>
+
+                <Tabs.Panel value="tags" className="mt-[12px]">
+                  <MultiSelect
+                    className="md:w-1/2 w-full"
+                    placeholder="Select one or Multiple Tags"
+                    data={["#tag1", "#tag2", "#tag3", "#tag4"]}
+                    clearable
+                    searchable
+                    nothingFoundMessage="Nothing found..."
+                    hidePickedOptions
+                  />
+                </Tabs.Panel>
+              </Tabs>
+              <div className="w-full">
+                <p className="text-[14px] mb-[8px]">Embed Link</p>
+                <div className="relative rounded-[12px] w-full h-[350px] bg-[#F7F7F8] border border-[#D7D5DD] overflow-hidden">
+                  <button
+                    type="button"
+                    className="bg-white p-[8px] text-darkBlue text-[14px] font-medium shadow-sm w-full text-start"
+                    onClick={() => {
+                      setSmsContent(`${videoToBeShared.videoLink}`);
+                    }}
+                  >
+                    Paste Video Link
+                  </button>
+                  <textarea
+                    placeholder="SMs Content"
+                    value={smsContent}
+                    onChange={(e) => setSmsContent(e.target.value)}
+                    className="!bg-transparent w-full m-[8px] text-[14px] outline-none"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-[16px]">
+                <CustomButton
+                  label="Send SMS"
+                  varient="filled"
+                  className="w-fit"
+                  onClick={() => {}}
+                />
+                <CustomButton
+                  label="Cancel"
+                  varient="outlined"
+                  className="w-fit"
+                  onClick={() => {
+                    setIsShareVideoModalOpen(false);
+                  }}
+                />
+              </div>
+            </Tabs.Panel>
+
+            <Tabs.Panel
+              value="embed"
+              className="pt-[24px] flex flex-col gap-[24px] items-end"
+            >
+              <div className="w-full">
+                <p className="text-[14px] mb-[8px]">Embed Link</p>
+                <div className="relative rounded-[12px] w-full h-[350px] bg-[#F7F7F8] border border-[#D7D5DD] overflow-hidden">
+                  <CopyButton
+                    value={`<div style="position: relative; padding-bottom: 56.25%; height: 0;"><iframe 
+      src="https://www.loom.com/embed/6a7bcbcd29264a68bcee20242ce7a1f7?sid=c906d7a2-87c5-40b8-8ac3-8c6fd5bac5a9" 
+      frameborder="0" 
+      webkitallowfullscreen 
+      mozallowfullscreen 
+      allowfullscreen 
+      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+    </iframe>
+  </div>`}
+                  >
+                    {({ copied, copy }) => (
+                      <ActionIcon
+                        onClick={copy}
+                        className="!w-fit !bg-white rounded-tl-[12px] !p-[8px] !h-[35px]"
+                        timeout={3000}
+                      >
+                        {!copied ? (
+                          <div className="flex items-center gap-[8px]">
+                            <p className="text-[14px] text-darkBlue font-medium">
+                              Copy The Embed Link
+                            </p>
+                            <COPY_TEXT_ICON className="text-darkBlue" />
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-[8px]">
+                            <COPY_TEXT_ICON className="text-green-500" />
+                            <p className="text-[14px] text-green-500 font-medium">
+                              Link Copied
+                            </p>
+                          </div>
+                        )}
+                      </ActionIcon>
+                    )}
+                  </CopyButton>
+                  <p className="px-[16px] py-[24px] w-[80%]">{`<div style="position: relative; padding-bottom: 56.25%; height: 0;">
+    <iframe 
+      src="https://www.loom.com/embed/6a7bcbcd29264a68bcee20242ce7a1f7?sid=c906d7a2-87c5-40b8-8ac3-8c6fd5bac5a9" 
+      frameborder="0" 
+      webkitallowfullscreen 
+      mozallowfullscreen 
+      allowfullscreen 
+      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+    </iframe>
+  </div>`}</p>
+                </div>
+              </div>
+              <CopyButton value={videoToBeShared.videoLink}>
+                {({ copied, copy }) => (
+                  <ActionIcon onClick={copy} className="!w-fit !bg-transparent">
+                    {!copied ? (
+                      <div className="flex items-center gap-[8px]">
+                        <COPY_TEXT_ICON className="text-darkBlue" />
+                        <p className="text-[14px] text-darkBlue font-medium">
+                          Copy Video Link
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-[8px]">
+                        <COPY_TEXT_ICON className="text-green-500" />
+                        <p className="text-[14px] text-green-500 font-medium">
+                          Link Copied
+                        </p>
+                      </div>
+                    )}
+                  </ActionIcon>
+                )}
+              </CopyButton>
+            </Tabs.Panel>
+          </Tabs>
         </div>
       </div>
     </ModalRoot>
