@@ -73,8 +73,14 @@ export const VideoTabItem = ({ videoData }) => {
   const setIsDeleteVideoModalOpen = useGlobalModals(
     (state) => state.setIsDeleteVideoModalOpen
   );
+  const setIsEditVideoModalOpen = useGlobalModals(
+    (state) => state.setIsEditVideoModalOpen
+  );
   const setVideoToBeDeleted = useGlobalModals(
     (state) => state.setVideoToBeDeleted
+  );
+  const setVideoToBeEdited = useGlobalModals(
+    (state) => state.setVideoToBeEdited
   );
 
   return (
@@ -142,6 +148,11 @@ export const VideoTabItem = ({ videoData }) => {
               leftSection={
                 <img src={EditIcon} alt="Copy Icon" className="w-[20px]" />
               }
+              onClick={() => {
+                console.log("Edit Video", videoData);
+                setVideoToBeEdited(videoData);
+                setIsEditVideoModalOpen(true);
+              }}
             >
               Edit
             </Menu.Item>

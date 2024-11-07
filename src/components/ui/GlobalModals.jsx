@@ -4,6 +4,8 @@ import { LoadingOverlay } from "@mantine/core";
 import closeIcon from "../../assets/icons/cancel-icon.svg";
 import { useForm } from "@mantine/form";
 import CustomVideoInput from "./CustomVideoInput";
+import CustomButton from "./CustomButton";
+import { useEffect, useRef } from "react";
 
 const ModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
   return (
@@ -114,6 +116,99 @@ export const UploadVideoModal = () => {
         >
           Publish Video
         </button>
+      </div>
+    </ModalRoot>
+  );
+};
+
+// Modal to edit the video details
+export const EditVideoModal = () => {
+  const modalLoadingOverlay = useGlobalModals(
+    (state) => state.modalLoadingOverlay
+  );
+  const isEditVideoModalOpen = useGlobalModals(
+    (state) => state.isEditVideoModalOpen
+  );
+  const setIsEditVideoModalOpen = useGlobalModals(
+    (state) => state.setIsEditVideoModalOpen
+  );
+  const videoToBeEdited = useGlobalModals((state) => state.videoToBeEdited);
+
+  // Modal Form
+  const form = useForm({
+    initialValues: {
+      videoName: videoToBeEdited?.title,
+      videoDescription: videoToBeEdited?.description,
+    },
+
+    validate: {
+      videoName: (value) => {
+        if (value.length < 3) {
+          return "Video Name must be at least 3 characters long";
+        }
+      },
+    },
+  });
+
+  // Function to handle the update of the video
+  const handleUpdateVideo = (values) => {
+    console.log(values);
+  };
+
+  const formRef = useRef(form);
+
+  useEffect(() => {
+    formRef.current.setValues({
+      videoName: videoToBeEdited?.title,
+      videoDescription: videoToBeEdited?.description,
+    });
+  }, [videoToBeEdited]);
+
+  return (
+    <ModalRoot
+      loadingOverlay={modalLoadingOverlay}
+      showModal={isEditVideoModalOpen}
+      onClose={() => {
+        setIsEditVideoModalOpen(false);
+      }}
+    >
+      <div className="flex flex-col gap-[24px] w-[534px]">
+        <h3 className="text-[24px] font-medium">Make Changes in Video</h3>
+        <form
+          onSubmit={() => {
+            form.onSubmit(handleUpdateVideo);
+          }}
+          className="flex flex-col gap-[16px]"
+        >
+          <TextInput
+            label="Video Name"
+            placeholder="Enter Video Name"
+            {...form.getInputProps("videoName")}
+            id="videoName"
+          />
+          <TextInput
+            label="Video Description"
+            placeholder="Enter Video Description"
+            {...form.getInputProps("videoDescription")}
+            id="videoDescription"
+          />
+        </form>
+        <div className="flex items-center gap-[16px]">
+          <CustomButton
+            label="Save Changes"
+            varient="filled"
+            className="w-fit"
+            onClick={() => {}}
+          />
+          <CustomButton
+            label="Cancel"
+            varient="outlined"
+            className="w-fit"
+            onClick={() => {
+              setIsEditVideoModalOpen(false);
+            }}
+          />
+        </div>
       </div>
     </ModalRoot>
   );

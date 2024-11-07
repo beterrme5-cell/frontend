@@ -10,6 +10,7 @@ import { RouterProvider } from "react-router-dom";
 import "@mantine/core/styles.css";
 import {
   DeleteVideoConfirmationModal,
+  EditVideoModal,
   UploadVideoModal,
 } from "./components/ui/GlobalModals.jsx";
 
@@ -22,6 +23,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     {/* Modals */}
     <DeleteVideoConfirmationModal />
     <UploadVideoModal />
+    <EditVideoModal />
     {/* Modals */}
     <RouterProvider router={router} />
   </MantineProvider>

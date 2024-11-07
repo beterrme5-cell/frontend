@@ -19,7 +19,15 @@ export const useGlobalModals = create((set) => ({
   // --------------------------------------------------
   // Upload Video Modal
   // --------------------------------------------------
-  isUploadVideoModalOpen: true,
+  isUploadVideoModalOpen: false,
   setIsUploadVideoModalOpen: (isOpen) =>
     set({ isUploadVideoModalOpen: isOpen }),
+
+  // --------------------------------------------------
+  // Edit Video Modal
+  // --------------------------------------------------
+  videoToBeEdited: {},
+  setVideoToBeEdited: (video) => set({ videoToBeEdited: video }),
+  isEditVideoModalOpen: false,
+  setIsEditVideoModalOpen: (isOpen) => set({ isEditVideoModalOpen: isOpen }),
 }));
