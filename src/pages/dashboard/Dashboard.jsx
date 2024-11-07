@@ -1,6 +1,8 @@
 import { Tabs } from "@mantine/core";
 import {
   BodyTabsRoot,
+  HistoryTableList,
+  HistoryTabSection,
   LibraryBody,
   LibraryHeader,
   LibraryRoot,
@@ -15,21 +17,18 @@ const VideosData = [
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-    videoLength: "4 min",
   },
   {
     id: 2,
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-    videoLength: "4 min",
   },
   {
     id: 3,
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-    videoLength: "4 min",
   },
 
   {
@@ -37,28 +36,24 @@ const VideosData = [
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-    videoLength: "4 min",
   },
   {
     id: 5,
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-    videoLength: "4 min",
   },
   {
     id: 6,
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-    videoLength: "4 min",
   },
   {
     id: 7,
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-    videoLength: "4 min",
   },
 
   {
@@ -66,7 +61,6 @@ const VideosData = [
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-    videoLength: "4 min",
   },
 ];
 
@@ -76,21 +70,18 @@ const SharedVideosData = [
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-    videoLength: "4 min",
   },
   {
     id: 2,
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-    videoLength: "4 min",
   },
   {
     id: 3,
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-    videoLength: "4 min",
   },
 
   {
@@ -98,28 +89,24 @@ const SharedVideosData = [
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-    videoLength: "4 min",
   },
   {
     id: 5,
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-    videoLength: "4 min",
   },
   {
     id: 6,
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-    videoLength: "4 min",
   },
   {
     id: 7,
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-    videoLength: "4 min",
   },
 
   {
@@ -127,7 +114,25 @@ const SharedVideosData = [
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.youtube.com/embed/XuVuoJDK_E8",
-    videoLength: "4 min",
+  },
+];
+
+const HistoryData = [
+  {
+    id: 1,
+    recordingId: "xi120-csad-123",
+    contactId: "K3asdY2AdDaa",
+    contactName: "Alex Smith",
+    type: "email",
+    subject: "Test Video",
+  },
+  {
+    id: 2,
+    recordingId: "si120-csad-123",
+    contactId: "K3asdY2AdDaa",
+    contactName: "John Doe",
+    type: "sms",
+    subject: "Recording Video",
   },
 ];
 
@@ -159,7 +164,6 @@ const Dashboard = () => {
                     title={video.title}
                     description={video.description}
                     videoLink={video.videoLink}
-                    videoLength={video.videoLength}
                   />
                 ))}
               </VideoTabItemsList>
@@ -179,7 +183,11 @@ const Dashboard = () => {
             </VideoTabSection>
           </Tabs.Panel>
 
-          <Tabs.Panel value="history">Messages tab content</Tabs.Panel>
+          <Tabs.Panel value="history">
+            <HistoryTabSection>
+              <HistoryTableList historyData={HistoryData} />
+            </HistoryTabSection>
+          </Tabs.Panel>
         </BodyTabsRoot>
       </LibraryBody>
     </LibraryRoot>

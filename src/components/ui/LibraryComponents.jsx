@@ -3,12 +3,12 @@ import { Tabs } from "@mantine/core";
 
 import ShareVideoIcon from "../../assets/icons/shareVideoIcon.svg";
 import VideoOptionsIcon from "../../assets/icons/VideoOptionsIcon.svg";
-
+import ArrowDownIcon from "../../assets/icons/arrow-down.svg";
 import CopyIcon from "../../assets/icons/copy-icon.svg";
 import ShareIcon from "../../assets/icons/share-icon.svg";
 import EditIcon from "../../assets/icons/edit-icon.svg";
 import DeleteIcon from "../../assets/icons/delete-icon.svg";
-
+import { Table } from "@mantine/core";
 import { Menu } from "@mantine/core";
 
 export const LibraryRoot = ({ children }) => {
@@ -68,12 +68,7 @@ export const VideoTabItemsList = ({ children }) => {
   );
 };
 
-export const VideoTabItem = ({
-  title,
-  description,
-  videoLink,
-  videoLength,
-}) => {
+export const VideoTabItem = ({ title, description, videoLink }) => {
   console.log("Descrption", description);
 
   return (
@@ -149,5 +144,64 @@ export const VideoTabItem = ({
         </Menu>
       </div>
     </div>
+  );
+};
+
+export const HistoryTabSection = ({ children }) => {
+  return <div className="mt-[32px]">{children}</div>;
+};
+
+export const HistoryTableList = ({ historyData }) => {
+  const rows = historyData.map((element) => (
+    <Table.Tr key={element.id}>
+      <Table.Td className=" text-[14px] font-medium">{element.id}</Table.Td>
+      <Table.Td className=" text-[14px] font-medium">
+        {element.recordingId}
+      </Table.Td>
+      <Table.Td className=" text-[14px] font-medium">
+        {element.contactId}
+      </Table.Td>
+      <Table.Td className=" text-[14px] font-medium">
+        {element.contactName}
+      </Table.Td>
+      <Table.Td className=" text-[14px] font-medium">{element.type}</Table.Td>
+      <Table.Td className=" text-[14px] font-medium">
+        {element.subject}
+      </Table.Td>
+      <Table.Td>
+        <button
+          className="flex items-center gap-[4px]"
+          type="button"
+          onClick={() => {
+            alert("Table Row Expand");
+          }}
+        >
+          <p className="text-[14px] font-medium">Expand</p>
+          <img src={ArrowDownIcon} alt="Arrow Down Icon" />
+        </button>
+      </Table.Td>
+    </Table.Tr>
+  ));
+  return (
+    <Table
+      striped
+      highlightOnHover
+      withRowBorders={false}
+      stripedColor="#F4F9FF"
+      verticalSpacing="12px"
+    >
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th>ID</Table.Th>
+          <Table.Th>Recording ID</Table.Th>
+          <Table.Th>Contact ID</Table.Th>
+          <Table.Th>Contact Name</Table.Th>
+          <Table.Th>Type</Table.Th>
+          <Table.Th>Subject</Table.Th>
+          <Table.Th>Action</Table.Th>
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>{rows}</Table.Tbody>
+    </Table>
   );
 };
