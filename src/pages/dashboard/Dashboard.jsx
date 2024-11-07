@@ -1,5 +1,7 @@
+import { LibraryRoot } from "../../components/ui/LibraryComponents";
+
 const Dashboard = () => {
-  return <div>Dashboard</div>;
+  return <LibraryRoot></LibraryRoot>;
 };
 
 export default Dashboard;
