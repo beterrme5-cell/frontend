@@ -86,3 +86,37 @@ body {
   color: #212121 !important;
   opacity: 50% !important;
 }
+
+/* Text Editor - Video Share Modal */
+#text-editor-mainContainer .ql-toolbar {
+  border-radius: 8px 8px 0px 0px !important;
+  display: flex;
+  column-gap: 5px;
+}
+
+#text-editor-mainContainer .ql-toolbar .ql-formats {
+  margin-right: 0px !important;
+}
+#text-editor-mainContainer .ql-toolbar .ql-formats:not(:last-child) {
+  border-right: 1px solid rgba(100, 121, 143, 0.12) !important;
+}
+
+.ql-picker-options {
+  border-radius: 8px !important;
+}
+
+#text-editor-container {
+  background-color: #f7f7f8 !important;
+  border-radius: 0px 0px 8px 8px !important;
+}
+
+#custom-buttons-wrapper button {
+  width: fit-content;
+  font-size: 14px;
+  font-weight: 500;
+  color: #212121;
+}
+
+#custom-buttons-wrapper button:hover {
+  color: #2a85ff;
+}

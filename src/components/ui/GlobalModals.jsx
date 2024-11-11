@@ -19,6 +19,7 @@ import {
   EMBED_ICON,
   SMS_ICON,
 } from "../../assets/icons/DynamicIcons";
+import { TextEditor } from "./LibraryComponents";
 
 const ModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
   return (
@@ -246,6 +247,12 @@ export const ShareVideoModal = () => {
   // State to store the content of Input Field of SMS
   const [smsContent, setSmsContent] = useState("");
 
+  // State to store the Email Content
+  const [emailContent, setEmailContent] = useState("");
+
+  // Use a ref to access the quill instance directly
+  const quillRef = useRef();
+
   return (
     <ModalRoot
       loadingOverlay={modalLoadingOverlay}
@@ -309,7 +316,10 @@ export const ShareVideoModal = () => {
                 Embed
               </Tabs.Tab>
             </Tabs.List>
-            <Tabs.Panel value="email" className="pt-[24px]">
+            <Tabs.Panel
+              value="email"
+              className="pt-[24px]  flex flex-col gap-[24px]"
+            >
               <Tabs
                 color="#6C668526"
                 variant="pills"
@@ -363,6 +373,25 @@ export const ShareVideoModal = () => {
                   />
                 </Tabs.Panel>
               </Tabs>
+              <TextEditor ref={quillRef} onTextChange={setEmailContent} />
+              <div className="flex items-center gap-[16px]">
+                <CustomButton
+                  label="Send Email"
+                  varient="filled"
+                  className="w-fit"
+                  onClick={() => {
+                    console.log("Email Content:", emailContent);
+                  }}
+                />
+                <CustomButton
+                  label="Cancel"
+                  varient="outlined"
+                  className="w-fit"
+                  onClick={() => {
+                    setIsShareVideoModalOpen(false);
+                  }}
+                />
+              </div>
             </Tabs.Panel>
 
             <Tabs.Panel

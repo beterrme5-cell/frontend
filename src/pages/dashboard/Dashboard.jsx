@@ -112,14 +112,14 @@ const Dashboard = () => {
             <VideoTabSection heading="My Videos">
               <VideoTabItemsList>
                 {VideosData.map((video) => (
-                  <VideoTabItem key={video.id} videoData={video} />
+                  <VideoTabItem key={video._id} videoData={video} />
                 ))}
               </VideoTabItemsList>
             </VideoTabSection>{" "}
             <VideoTabSection heading="My Shared With me">
               <VideoTabItemsList>
                 {SharedVideosData.map((video) => (
-                  <VideoTabItem key={video.id} videoData={video} />
+                  <VideoTabItem key={video._id} videoData={video} />
                 ))}
               </VideoTabItemsList>
             </VideoTabSection>

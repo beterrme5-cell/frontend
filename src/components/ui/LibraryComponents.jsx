@@ -9,6 +9,8 @@ import DeleteIcon from "../../assets/icons/delete-icon.svg";
 import { Menu, Tabs, Table } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
 import { Link } from "react-router-dom";
+import { forwardRef, useEffect, useLayoutEffect, useRef } from "react";
+import Quill from "quill";
 
 export const LibraryRoot = ({ children }) => {
   return (
@@ -252,4 +254,106 @@ export const HistoryTableList = ({ historyData }) => {
   );
 };
 
-// Share Video Modal Component
+export const TextEditor = forwardRef(({ onTextChange }, ref) => {
+  const containerRef = useRef(null);
+  const onTextChangeRef = useRef(onTextChange);
+
+  useLayoutEffect(() => {
+    onTextChangeRef.current = onTextChange;
+  });
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const editorContainer = container.appendChild(
+      container.ownerDocument.createElement("div")
+    );
+
+    // Set the ID of the editorContainer
+    editorContainer.id = "text-editor-container";
+
+    const toolbarOptions = [
+      [{ header: [1, 2, 3, 4, 5, 6, false] }],
+      [{ align: [] }],
+      ["bold", "italic", "underline", "strike"], // toggled buttons
+      [{ list: "ordered" }, { list: "bullet" }, { list: "check" }],
+      [{ indent: "-1" }, { indent: "+1" }],
+      ["blockquote"],
+    ];
+
+    const quill = new Quill(editorContainer, {
+      theme: "snow",
+      placeholder: "Write something...",
+      modules: {
+        toolbar: toolbarOptions,
+      },
+    });
+
+    // Toolbar Custom Options
+    // Get the toolbar container
+    const toolbar = quill.getModule("toolbar");
+
+    // Create a wrapper for custom buttons
+    const customButtonsWrapper = document.createElement("div");
+    customButtonsWrapper.id = "custom-buttons-wrapper";
+
+    // Add custom buttons to the toolbar
+    const embedButton = document.createElement("button");
+    embedButton.innerHTML = "Embed Video";
+    embedButton.setAttribute("type", "button");
+    embedButton.onclick = () => {
+      // Define what happens when the "Embed Video" button is clicked
+      console.log("Embed Video clicked");
+    };
+
+    const pasteLinkButton = document.createElement("button");
+    pasteLinkButton.innerHTML = "Paste Video Link";
+    pasteLinkButton.setAttribute("type", "button");
+    pasteLinkButton.onclick = () => {
+      // Define what happens when the "Paste Video Link" button is clicked
+      console.log("Paste Video Link clicked");
+    };
+
+    const pasteThumbnailButton = document.createElement("button");
+    pasteThumbnailButton.innerHTML = "Paste Thumbnail";
+    pasteThumbnailButton.setAttribute("type", "button");
+    pasteThumbnailButton.onclick = () => {
+      // Define what happens when the "Paste Thumbnail" button is clicked
+      console.log("Paste Thumbnail clicked");
+    };
+
+    embedButton.classList.add("ql-formats");
+    pasteLinkButton.classList.add("ql-formats");
+    pasteThumbnailButton.classList.add("ql-formats");
+
+    // Append custom buttons to the wrapper
+    customButtonsWrapper.appendChild(embedButton);
+    customButtonsWrapper.appendChild(pasteLinkButton);
+    customButtonsWrapper.appendChild(pasteThumbnailButton);
+
+    // Append the wrapper to the toolbar
+    toolbar.container.appendChild(customButtonsWrapper);
+
+    ref.current = quill;
+
+    quill.on(Quill.events.TEXT_CHANGE, (...args) => {
+      onTextChangeRef.current?.(...args);
+    });
+
+    return () => {
+      ref.current = null;
+      container.innerHTML = "";
+    };
+  }, [ref]);
+  return (
+    <div className="flex flex-col gap-[8px]">
+      <p className="text-[14px] font-medium">Content</p>
+      <div
+        ref={containerRef}
+        className="h-[350px] overflow-hidden flex flex-col"
+        id="text-editor-mainContainer"
+      ></div>
+    </div>
+  );
+});
+
+TextEditor.displayName = "Editor";
