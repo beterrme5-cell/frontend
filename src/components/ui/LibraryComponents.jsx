@@ -8,6 +8,7 @@ import EditIcon from "../../assets/icons/edit-icon.svg";
 import DeleteIcon from "../../assets/icons/delete-icon.svg";
 import { Menu, Tabs, Table } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
+import { Link } from "react-router-dom";
 
 export const LibraryRoot = ({ children }) => {
   return (
@@ -107,11 +108,19 @@ export const VideoTabItem = ({ videoData }) => {
           src={ShareVideoIcon}
           alt="Share Video Icon"
           className={`absolute top-[8px] right-[8px] cursor-pointer`}
-          onClick={() => alert("Share Video")}
+          onClick={() => {
+            setVideoToBeShared(videoData);
+            setIsShareVideoModalOpen(true);
+          }}
         />
       </div>
       <div className="flex-grow px-[16px] py-[12px] flex items-center justify-between gap-[10px] border-t border-t-[#CFCED4]">
-        <p className="text-[14px] font-medium">{videoData.title}</p>
+        <Link
+          to={`video-detail/${videoData._id}`}
+          className="text-[14px] font-medium"
+        >
+          {videoData.title}
+        </Link>
         <Menu
           shadow="md"
           width={150}
@@ -190,8 +199,8 @@ export const HistoryTabSection = ({ children }) => {
 
 export const HistoryTableList = ({ historyData }) => {
   const rows = historyData.map((element) => (
-    <Table.Tr key={element.id}>
-      <Table.Td className=" text-[14px] font-medium">{element.id}</Table.Td>
+    <Table.Tr key={element._id}>
+      <Table.Td className=" text-[14px] font-medium">{element._id}</Table.Td>
       <Table.Td className=" text-[14px] font-medium">
         {element.recordingId}
       </Table.Td>

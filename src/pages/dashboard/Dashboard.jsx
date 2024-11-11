@@ -14,26 +14,26 @@ import { useGlobalModals } from "../../store/globalModals";
 
 const VideosData = [
   {
-    id: 1,
+    _id: 1,
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
   },
   {
-    id: 2,
+    _id: 2,
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
   },
   {
-    id: 3,
+    _id: 3,
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
   },
 
   {
-    id: 4,
+    _id: 4,
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
@@ -42,25 +42,25 @@ const VideosData = [
 
 const SharedVideosData = [
   {
-    id: 1,
+    _id: 1,
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
   },
   {
-    id: 2,
+    _id: 2,
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
   },
   {
-    id: 3,
+    _id: 3,
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
   },
   {
-    id: 4,
+    _id: 4,
     title: "You can be anywhere!",
     description: "This is a video description",
     videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
@@ -69,7 +69,7 @@ const SharedVideosData = [
 
 const HistoryData = [
   {
-    id: 1,
+    _id: 1,
     recordingId: "xi120-csad-123",
     contactId: "K3asdY2AdDaa",
     contactName: "Alex Smith",
@@ -77,7 +77,7 @@ const HistoryData = [
     subject: "Test Video",
   },
   {
-    id: 2,
+    _id: 2,
     recordingId: "si120-csad-123",
     contactId: "K3asdY2AdDaa",
     contactName: "John Doe",
