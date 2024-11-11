@@ -90,15 +90,13 @@ const Dashboard = () => {
   const setIsUploadVideoModalOpen = useGlobalModals(
     (state) => state.setIsUploadVideoModalOpen
   );
+
   return (
     <LibraryRoot>
       <LibraryHeader
         title="My Library"
         onUploadVideoBtnClick={() => {
           setIsUploadVideoModalOpen(true);
-        }}
-        onNewVideoBtnClick={() => {
-          alert("New Video Clicked");
         }}
       />
       <LibraryBody>

@@ -9,8 +9,17 @@ import DeleteIcon from "../../assets/icons/delete-icon.svg";
 import { Menu, Tabs, Table } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
 import { Link } from "react-router-dom";
-import { forwardRef, useEffect, useLayoutEffect, useRef } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import Quill from "quill";
+import { createInstance } from "@loomhq/record-sdk";
+import { isSupported } from "@loomhq/record-sdk/is-supported";
+import { saveRecordedVideo } from "../../api/libraryAPIs";
 
 export const LibraryRoot = ({ children }) => {
   return (
@@ -18,11 +27,7 @@ export const LibraryRoot = ({ children }) => {
   );
 };
 
-export const LibraryHeader = ({
-  title,
-  onUploadVideoBtnClick,
-  onNewVideoBtnClick,
-}) => {
+export const LibraryHeader = ({ title, onUploadVideoBtnClick }) => {
   return (
     <header className="flex items-center justify-between">
       <h1 className="text-[28px] font-bold ">{title}</h1>
@@ -32,13 +37,88 @@ export const LibraryHeader = ({
           varient="outlined"
           label="Upload Video"
         />
-        <CustomButton
-          onClick={onNewVideoBtnClick}
-          varient="filled"
-          label="New Video"
-        />
+        <RecordLoomVideoBtn />
       </div>
     </header>
+  );
+};
+
+const RecordLoomVideoBtn = () => {
+  const BUTTON_ID = "loom-record-sdk-button";
+  const PUBLIC_APP_ID = "ab5b7ae6-810f-4804-bcae-960101f4a51b";
+
+  const [videosUpdated, setVideosUpdated] = useState(0);
+
+  console.log("videosUpdated", videosUpdated);
+
+  // Loom SDK Setup
+  useEffect(() => {
+    let sdkButton;
+
+    async function setupLoom() {
+      const { supported, error } = await isSupported();
+      console.log("Setup Loom", supported, error);
+
+      if (!supported) {
+        console.warn(`Error setting up Loom: ${error}`);
+        return;
+      }
+
+      try {
+        const button = document.getElementById(BUTTON_ID);
+        if (!button) {
+          console.error(`Button with ID ${BUTTON_ID} not found`);
+          return;
+        }
+
+        const { configureButton } = await createInstance({
+          mode: "standard",
+          publicAppId: PUBLIC_APP_ID,
+        });
+        sdkButton = configureButton({
+          element: button,
+        });
+
+        sdkButton.on("insert-click", async (LoomVideo) => {
+          console.log("LoomVideo", LoomVideo);
+
+          const videoData = {
+            accountId: "your-account-id",
+            title: LoomVideo.title || "",
+            embeddedLink: LoomVideo.embedUrl || "",
+            shareableLink: LoomVideo.sharedUrl || "",
+          };
+
+          try {
+            const response = await saveRecordedVideo(videoData);
+            console.log("Video saved successfully", response.data);
+            setVideosUpdated((prev) => prev + 1);
+          } catch (error) {
+            console.error("Error saving video:", error.response);
+          }
+        });
+      } catch (err) {
+        console.error("Error during Loom setup:", err);
+      }
+    }
+
+    setupLoom();
+
+    return () => {
+      if (sdkButton) {
+        sdkButton.removeListener("insert-click");
+      }
+    };
+  }, []);
+
+  
+  return (
+    <div
+      id="loom-record-sdk-button"
+      className="bg-primary text-white border-none p-[8px_16px] text-[14px] font-medium rounded-[8px] hover:cursor-pointer"
+    >
+      Record Video
+    </div>
   );
 };
 
