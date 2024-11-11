@@ -1,4 +1,11 @@
-import { Modal, TextInput, Tabs, CopyButton, ActionIcon } from "@mantine/core";
+import {
+  Modal,
+  TextInput,
+  Tabs,
+  CopyButton,
+  ActionIcon,
+  Textarea,
+} from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
 import { LoadingOverlay, MultiSelect } from "@mantine/core";
 import closeIcon from "../../assets/icons/cancel-icon.svg";
@@ -106,12 +113,12 @@ export const UploadVideoModal = () => {
             id="videoName"
             className="w-[350px]"
           />
-          <TextInput
+          <Textarea
+            id="videoDescription"
+            className="w-[350px]"
             label="Video Description"
             placeholder="Enter Video Description"
             {...form.getInputProps("videoDescription")}
-            id="videoDescription"
-            className="w-[350px]"
           />
           <CustomVideoInput form={form} />
         </form>
