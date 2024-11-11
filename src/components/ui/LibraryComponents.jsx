@@ -62,7 +62,9 @@ export const VideoTabSection = ({ children, heading }) => {
 
 export const VideoTabItemsList = ({ children }) => {
   return (
-    <div className="grid grid-cols-6 gap-[24px] mt-[16px]">{children}</div>
+    <div className="grid xxxl:grid-cols-6 xxl:grid-cols-5 xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 gap-[24px] mt-[16px]">
+      {children}
+    </div>
   );
 };
 

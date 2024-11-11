@@ -16,6 +16,10 @@ export default {
       fontFamily: {
         jakartaSans: ['"Plus Jakarta Sans"'],
       },
+      screens: {
+        xxxl: "1748px",
+        xxl: "1474px",
+      },
     },
   },
   plugins: [],
