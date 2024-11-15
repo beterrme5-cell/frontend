@@ -1,21 +1,19 @@
+import { useEffect, useState } from "react";
 import {
   VideoDetailActionBtn,
   VideoDetailActions,
-  VideoDetailDescription,
   VideoDetailPreview,
   VideoDetailRoot,
-  VideoDetailTitle,
+  VideoDetailHeader,
 } from "../../components/ui/VideoDetailComponents";
 import { useGlobalModals } from "../../store/globalModals";
+import { useParams } from "react-router-dom";
+import { getVideoById } from "../../api/libraryAPIs";
 
 const VideoDetail = () => {
-  // Sample Video Data
-  const VideoData = {
-    _id: 1,
-    title: "You can be anywhere!",
-    description: "This is a video description",
-    videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
-  };
+  const [videoData, setVideoData] = useState({});
+
+  const { videoId } = useParams();
 
   // Global State for Delete Video Modal
   const setVideoToBeDeleted = useGlobalModals(
@@ -40,17 +38,37 @@ const VideoDetail = () => {
   const setIsShareVideoModalOpen = useGlobalModals(
     (state) => state.setIsShareVideoModalOpen
   );
+
+  useEffect(() => {
+    const fetchVideoData = async () => {
+      const response = await getVideoById(videoId);
+
+      if (response.success) {
+        console.log("Video By Id Data", response.data);
+        setVideoData(response.data.video);
+      }
+
+      if (!response.success) {
+        console.error("Error while fetching video by id: ", response.error);
+      }
+    };
+
+    fetchVideoData();
+  }, [videoId]);
+
   return (
     <VideoDetailRoot>
-      <VideoDetailTitle title="You can be anywhere!" />
-      <VideoDetailDescription description="This is a video description" />
-      <VideoDetailPreview videoUrl="https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c?sid=9c21f168-cb5a-41f1-85e6-e093b6beebc6" />
+      <VideoDetailHeader
+        title={videoData.title}
+        description={videoData.description}
+      />
+      <VideoDetailPreview videoUrl={videoData.embeddedLink} />
       <VideoDetailActions>
         <VideoDetailActionBtn
           label="Share"
           actionType="share"
           onClick={() => {
-            setVideoToBeShared(VideoData);
+            setVideoToBeShared(videoData);
             setIsShareVideoModalOpen(true);
           }}
         />
@@ -58,7 +76,7 @@ const VideoDetail = () => {
           label="Edit"
           actionType="edit"
           onClick={() => {
-            setVideoToBeEdited(VideoData);
+            setVideoToBeEdited(videoData);
             setIsEditVideoModalOpen(true);
           }}
         />
@@ -66,7 +84,7 @@ const VideoDetail = () => {
           label="Delete"
           actionType="delete"
           onClick={() => {
-            setVideoToBeDeleted(VideoData);
+            setVideoToBeDeleted(videoData);
             setIsDeleteVideoModalOpen(true);
           }}
         />

@@ -21,12 +21,13 @@ export const VideoDetailRoot = ({ children }) => {
   );
 };
 
-export const VideoDetailTitle = ({ title }) => {
-  return <h1 className="text-[24px] font-medium text-darkBlue">{title}</h1>;
-};
-
-export const VideoDetailDescription = ({ description }) => {
-  return <p className="text-[16px] text-gray-dark">{description}</p>;
+export const VideoDetailHeader = ({ title, description }) => {
+  return (
+    <div className="flex flex-col gap-[4px]">
+      <h1 className="text-[24px] font-medium text-darkBlue">{title}</h1>
+      <p className="text-[16px] text-gray-dark">{description}</p>
+    </div>
+  );
 };
 
 export const VideoDetailPreview = ({ videoUrl }) => {
@@ -35,10 +36,9 @@ export const VideoDetailPreview = ({ videoUrl }) => {
       width="100%"
       height="450px"
       src={videoUrl}
+      allow="camera; microphone"
       className="max-w-[711px] rounded-[12px]"
       allowFullScreen
-      webkitallowfullscreen
-      mozallowfullscreen
     ></iframe>
   );
 };

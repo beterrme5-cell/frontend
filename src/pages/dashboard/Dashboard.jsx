@@ -11,34 +11,8 @@ import {
   VideoTabSection,
 } from "../../components/ui/LibraryComponents";
 import { useGlobalModals } from "../../store/globalModals";
-
-const VideosData = [
-  {
-    _id: 1,
-    title: "You can be anywhere!",
-    description: "This is a video description",
-    videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
-  },
-  {
-    _id: 2,
-    title: "You can be anywhere!",
-    description: "This is a video description",
-    videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
-  },
-  {
-    _id: 3,
-    title: "You can be anywhere!",
-    description: "This is a video description",
-    videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
-  },
-
-  {
-    _id: 4,
-    title: "You can be anywhere!",
-    description: "This is a video description",
-    videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
-  },
-];
+import { useEffect, useState } from "react";
+import { getAllVideos } from "../../api/libraryAPIs";
 
 const SharedVideosData = [
   {
@@ -87,9 +61,28 @@ const HistoryData = [
 ];
 
 const Dashboard = () => {
+  const [videosData, setVideosData] = useState([]);
+
   const setIsUploadVideoModalOpen = useGlobalModals(
     (state) => state.setIsUploadVideoModalOpen
   );
+
+  // Use Effect to Fetch All Videos
+  useEffect(() => {
+    const fetchAllVideos = async () => {
+      // Fetch all videos here
+      const videosResponse = await getAllVideos();
+
+      if (videosResponse.success) {
+        console.log("Videos Data: ", videosResponse.data.videos);
+        setVideosData(videosResponse.data.videos);
+      } else {
+        console.error("Error fetching videos: ", videosResponse.error);
+      }
+    };
+
+    fetchAllVideos();
+  }, []);
 
   return (
     <LibraryRoot>
@@ -109,12 +102,12 @@ const Dashboard = () => {
           <Tabs.Panel value="videos">
             <VideoTabSection heading="My Videos">
               <VideoTabItemsList>
-                {VideosData.map((video) => (
+                {videosData.map((video) => (
                   <VideoTabItem key={video._id} videoData={video} />
                 ))}
               </VideoTabItemsList>
             </VideoTabSection>{" "}
-            <VideoTabSection heading="My Shared With me">
+            <VideoTabSection heading="Videos Shared With me">
               <VideoTabItemsList>
                 {SharedVideosData.map((video) => (
                   <VideoTabItem key={video._id} videoData={video} />

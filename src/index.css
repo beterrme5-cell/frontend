@@ -120,3 +120,7 @@ body {
 #custom-buttons-wrapper button:hover {
   color: #2a85ff;
 }
+
+div#loom-sdk-record-overlay-shadow-root-id {
+  display: block !important;
+}

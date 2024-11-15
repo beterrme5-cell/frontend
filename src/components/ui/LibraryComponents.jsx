@@ -9,17 +9,12 @@ import DeleteIcon from "../../assets/icons/delete-icon.svg";
 import { Menu, Tabs, Table } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
 import { Link } from "react-router-dom";
-import {
-  forwardRef,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { forwardRef, useEffect, useLayoutEffect, useRef } from "react";
 import Quill from "quill";
-import { createInstance } from "@loomhq/record-sdk";
+import { setup } from "@loomhq/record-sdk";
 import { isSupported } from "@loomhq/record-sdk/is-supported";
 import { saveRecordedVideo } from "../../api/libraryAPIs";
+import axios from "axios";
 
 export const LibraryRoot = ({ children }) => {
   return (
@@ -45,37 +40,42 @@ export const LibraryHeader = ({ title, onUploadVideoBtnClick }) => {
 
 const RecordLoomVideoBtn = () => {
   const BUTTON_ID = "loom-record-sdk-button";
-  const PUBLIC_APP_ID = "ab5b7ae6-810f-4804-bcae-960101f4a51b";
-
-  const [videosUpdated, setVideosUpdated] = useState(0);
-
-  console.log("videosUpdated", videosUpdated);
+  // const PUBLIC_APP_ID = "0b8a4f08-49ed-426e-a650-0d825243817c";
+  // const PUBLIC_APP_ID = "ab5b7ae6-810f-4804-bcae-960101f4a51b";
 
   // Loom SDK Setup
   useEffect(() => {
-    let sdkButton;
-
     async function setupLoom() {
-      const { supported, error } = await isSupported();
-      console.log("Setup Loom", supported, error);
-
-      if (!supported) {
-        console.warn(`Error setting up Loom: ${error}`);
-        return;
-      }
-
       try {
+        // Fetch the signed JWT from the server
+        const response = await axios.get(
+          "http://localhost:8000/get-loom-token"
+        );
+
+        if (response.status !== 200) throw new Error("Failed to fetch token");
+        const { token: serverJws } = response.data;
+
+        const { supported, error } = isSupported();
+
+        if (!supported) {
+          console.warn(`Error setting up Loom: ${error}`);
+          return;
+        }
+
+        // Initialize Loom SDK with the JWT and Public App ID
+        const { configureButton } = await setup({
+          mode: "custom",
+          jws: serverJws,
+        });
+
         const button = document.getElementById(BUTTON_ID);
+
         if (!button) {
           console.error(`Button with ID ${BUTTON_ID} not found`);
           return;
         }
 
-        const { configureButton } = await createInstance({
-          mode: "standard",
-          publicAppId: PUBLIC_APP_ID,
-        });
-        sdkButton = configureButton({
+        const sdkButton = configureButton({
           element: button,
         });
 
@@ -92,33 +92,26 @@ const RecordLoomVideoBtn = () => {
           try {
             const response = await saveRecordedVideo(videoData);
             console.log("Video saved successfully", response.data);
-            setVideosUpdated((prev) => prev + 1);
+            // setVideosUpdated((prev) => prev + 1);
           } catch (error) {
             console.error("Error saving video:", error.response);
           }
         });
-      } catch (err) {
-        console.error("Error during Loom setup:", err);
+      } catch (error) {
+        console.error("Error setting up Loom SDK:", error);
       }
     }
 
     setupLoom();
-
-    return () => {
-      if (sdkButton) {
-        sdkButton.removeListener("insert-click");
-      }
-    };
   }, []);
 
-  
   return (
-    <div
+    <button
       id="loom-record-sdk-button"
       className="bg-primary text-white border-none p-[8px_16px] text-[14px] font-medium rounded-[8px] hover:cursor-pointer"
     >
       Record Video
-    </div>
+    </button>
   );
 };
 
@@ -174,18 +167,22 @@ export const VideoTabItem = ({ videoData }) => {
   return (
     <div className="flex flex-col border border-[#CFCED4] rounded-[16px] relative min-w-[250px] h-[210px] overflow-hidden hover:cursor-pointer">
       <div className={`h-[160px] relative`}>
-        {/* <iframe
-          width="100%"
-          height="100%"
-          src={videoData.videoLink}
-          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-        ></iframe> */}
-        <img
-          src="https://s3-alpha-sig.figma.com/img/8238/d197/077f40948736f63966988f296dc35cdc?Expires=1731888000&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=SIW80GJs~r3Ieu~r0i1Ki5DSyrHjLMUafaUBQVmPJM5i8Idxtq~OVbCpiUtiRjY92LK5xCQg~PJq7r7GZW3QOO0BgQJKUGvs7SE0yPX8l5mVuXdTa0iyNSJ1C~hkHpF4OSFvFdy11oObQ9Y~l5SvMw4Z2FE5IZ7QqARtVWCC~x9zit5NbGdg0muVDYuBsXv~Xgmd1BWXxzIkYFXrCCFS~lqePGiAMIiuJwFXD7NjB8bsnt4MMhfeIVY4zg2jjWUJABr-48PIoMjvOfOv~hVS-j4ud4LpgmPfkMEGDMacGA7QIGXceF7saDJTuls8ZBag4y31VDFNj7Nf9pwBWE8Bsw__"
-          alt="Video Thumbnail"
-          className="w-full h-full object-cover"
-        />
+        {videoData?.embeddedLink && (
+          <iframe
+            width="100%"
+            height="100%"
+            src={videoData?.embeddedLink}
+            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          ></iframe>
+        )}
+        {!videoData?.embeddedLink && (
+          <img
+            src="https://s3-alpha-sig.figma.com/img/8238/d197/077f40948736f63966988f296dc35cdc?Expires=1731888000&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=SIW80GJs~r3Ieu~r0i1Ki5DSyrHjLMUafaUBQVmPJM5i8Idxtq~OVbCpiUtiRjY92LK5xCQg~PJq7r7GZW3QOO0BgQJKUGvs7SE0yPX8l5mVuXdTa0iyNSJ1C~hkHpF4OSFvFdy11oObQ9Y~l5SvMw4Z2FE5IZ7QqARtVWCC~x9zit5NbGdg0muVDYuBsXv~Xgmd1BWXxzIkYFXrCCFS~lqePGiAMIiuJwFXD7NjB8bsnt4MMhfeIVY4zg2jjWUJABr-48PIoMjvOfOv~hVS-j4ud4LpgmPfkMEGDMacGA7QIGXceF7saDJTuls8ZBag4y31VDFNj7Nf9pwBWE8Bsw__"
+            alt="Video Thumbnail"
+            className="w-full h-full object-cover"
+          />
+        )}
         <img
           src={ShareVideoIcon}
           alt="Share Video Icon"
