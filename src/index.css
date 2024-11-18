@@ -124,3 +124,21 @@ body {
 div#loom-sdk-record-overlay-shadow-root-id {
   display: block !important;
 }
+
+/* Customization of Loom SDK */
+.em-lns-1gdtefy {
+  background-color: #2a85ff !important;
+}
+
+.recorder-button-class {
+  background-color: #2a85ff !important;
+  color: white !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+}
+
+span .em-lns-1do042d {
+  display: none !important;
+}

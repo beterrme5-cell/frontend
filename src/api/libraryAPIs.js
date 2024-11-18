@@ -67,11 +67,16 @@ export const saveRecordedVideo = async (videoData) => {
 };
 
 // API to update video in the database
-export const updateVideo = async (videoId, videoData) => {
+export const updateVideo = async (params) => {
   try {
     const response = await axios.put(
-      `${BASE_URL}/video/updateVideo/${videoId}`,
-      videoData,
+      `${BASE_URL}/video/updateVideo`,
+      {
+        accountId: params.accountId,
+        videoId: params.videoId,
+        title: params.title,
+        description: params.description,
+      },
       {
         withCredentials: true,
       }
@@ -90,10 +95,10 @@ export const updateVideo = async (videoId, videoData) => {
 };
 
 // API to delete video from the database
-export const deleteVideo = async (videoId) => {
+export const deleteVideo = async (params) => {
   try {
     const response = await axios.delete(
-      `${BASE_URL}/video/deleteVideo/${videoId}`,
+      `${BASE_URL}/video/deleteVideo/${params.accountId}/${params.videoId}`,
       {
         withCredentials: true,
       }

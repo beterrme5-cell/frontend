@@ -20,6 +20,7 @@ import {
   SMS_ICON,
 } from "../../assets/icons/DynamicIcons";
 import { TextEditor } from "./LibraryComponents";
+import { deleteVideo, updateVideo } from "../../api/libraryAPIs";
 
 const ModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
   return (
@@ -137,6 +138,10 @@ export const UploadVideoModal = () => {
 
 // Modal to edit the video details
 export const EditVideoModal = () => {
+  const setModalLoadingOverlay = useGlobalModals(
+    (state) => state.setModalLoadingOverlay
+  );
+
   const modalLoadingOverlay = useGlobalModals(
     (state) => state.modalLoadingOverlay
   );
@@ -148,6 +153,10 @@ export const EditVideoModal = () => {
   );
   const videoToBeEdited = useGlobalModals((state) => state.videoToBeEdited);
 
+  const setVideoToBeEdited = useGlobalModals(
+    (state) => state.setVideoToBeEdited
+  );
+
   // Modal Form
   const form = useForm({
     initialValues: {
@@ -158,15 +167,37 @@ export const EditVideoModal = () => {
     validate: {
       videoName: (value) => {
         if (value.length < 3) {
+          console.log("Video Name must be at least 3 characters long");
           return "Video Name must be at least 3 characters long";
+        } else {
+          return null;
         }
       },
     },
   });
 
   // Function to handle the update of the video
-  const handleUpdateVideo = (values) => {
-    console.log(values);
+  const handleUpdateVideo = async (values) => {
+    setModalLoadingOverlay(true);
+
+    const response = await updateVideo({
+      accountId: videoToBeEdited.accountId,
+      videoId: videoToBeEdited._id,
+      title: values.videoName,
+      description: values.videoDescription,
+    });
+
+    console.log("Response: ", response);
+
+    if (response.success) {
+      console.log("Video Updated Successfully", response.data);
+    } else {
+      console.log("Error while updating video: ", response.error);
+    }
+
+    setModalLoadingOverlay(false);
+    setIsEditVideoModalOpen(false);
+    setVideoToBeEdited({});
   };
 
   const formRef = useRef(form);
@@ -184,15 +215,14 @@ export const EditVideoModal = () => {
       showModal={isEditVideoModalOpen}
       onClose={() => {
         setIsEditVideoModalOpen(false);
+        setVideoToBeEdited({});
       }}
     >
       <div className="flex flex-col gap-[24px] w-[534px]">
         <h3 className="text-[24px] font-medium">Make Changes in Video</h3>
         <form
-          onSubmit={() => {
-            form.onSubmit(handleUpdateVideo);
-          }}
           className="flex flex-col gap-[16px]"
+          onSubmit={form.onSubmit(handleUpdateVideo)}
         >
           <TextInput
             label="Video Name"
@@ -206,23 +236,24 @@ export const EditVideoModal = () => {
             {...form.getInputProps("videoDescription")}
             id="videoDescription"
           />
+          <div className="flex items-center gap-[16px]">
+            <CustomButton
+              label="Save Changes"
+              varient="filled"
+              className="w-fit"
+              type="submit"
+            />
+            <CustomButton
+              label="Cancel"
+              varient="outlined"
+              className="w-fit"
+              onClick={() => {
+                setIsEditVideoModalOpen(false);
+                setVideoToBeEdited({});
+              }}
+            />
+          </div>
         </form>
-        <div className="flex items-center gap-[16px]">
-          <CustomButton
-            label="Save Changes"
-            varient="filled"
-            className="w-fit"
-            onClick={() => {}}
-          />
-          <CustomButton
-            label="Cancel"
-            varient="outlined"
-            className="w-fit"
-            onClick={() => {
-              setIsEditVideoModalOpen(false);
-            }}
-          />
-        </div>
       </div>
     </ModalRoot>
   );
@@ -577,6 +608,11 @@ export const DeleteVideoConfirmationModal = () => {
   const modalLoadingOverlay = useGlobalModals(
     (state) => state.modalLoadingOverlay
   );
+
+  const setModalLoadingOverlay = useGlobalModals(
+    (state) => state.setModalLoadingOverlay
+  );
+
   const isDeleteVideoModalOpen = useGlobalModals(
     (state) => state.isDeleteVideoModalOpen
   );
@@ -584,6 +620,28 @@ export const DeleteVideoConfirmationModal = () => {
     (state) => state.setIsDeleteVideoModalOpen
   );
   const videoToBeDeleted = useGlobalModals((state) => state.videoToBeDeleted);
+  const setVideoToBeDeleted = useGlobalModals(
+    (state) => state.setVideoToBeDeleted
+  );
+
+  const handleDeleteVideo = async () => {
+    setModalLoadingOverlay(true);
+
+    const response = await deleteVideo({
+      accountId: videoToBeDeleted.accountId,
+      videoId: videoToBeDeleted._id,
+    });
+
+    if (response.success) {
+      console.log("Video Deleted Successfully", response.data);
+    } else {
+      console.log("Error while deleting video: ", response.error);
+    }
+
+    setModalLoadingOverlay(false);
+    setIsDeleteVideoModalOpen(false);
+    setVideoToBeDeleted({});
+  };
 
   return (
     <ModalRoot
@@ -591,6 +649,7 @@ export const DeleteVideoConfirmationModal = () => {
       showModal={isDeleteVideoModalOpen}
       onClose={() => {
         setIsDeleteVideoModalOpen(false);
+        setVideoToBeDeleted({});
       }}
     >
       <div className="flex flex-col gap-[24px] w-[535px]">
@@ -607,7 +666,7 @@ export const DeleteVideoConfirmationModal = () => {
           <button
             type="button"
             className="bg-[#FF1F00] rounded-[8px] p-[10px_39px] text-white font-medium"
-            onClick={() => {}}
+            onClick={handleDeleteVideo}
           >
             Confirm
           </button>

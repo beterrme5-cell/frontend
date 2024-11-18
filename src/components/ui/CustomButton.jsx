@@ -1,4 +1,4 @@
-const CustomButton = ({ id, className, onClick, label, varient }) => {
+const CustomButton = ({ id, className, onClick, label, varient, type }) => {
   return (
     <button
       id={id ? id : ""} // Add id attribute
@@ -10,7 +10,7 @@ const CustomButton = ({ id, className, onClick, label, varient }) => {
           : "bg-white border border-gray-dark text-darkBlue"
       }`}
       onClick={onClick}
-      type="button"
+      type={type ? type : "button"} // Add type attribute
     >
       {label}
     </button>

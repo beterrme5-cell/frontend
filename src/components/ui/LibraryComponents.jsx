@@ -40,8 +40,7 @@ export const LibraryHeader = ({ title, onUploadVideoBtnClick }) => {
 
 const RecordLoomVideoBtn = () => {
   const BUTTON_ID = "loom-record-sdk-button";
-  // const PUBLIC_APP_ID = "0b8a4f08-49ed-426e-a650-0d825243817c";
-  // const PUBLIC_APP_ID = "ab5b7ae6-810f-4804-bcae-960101f4a51b";
+  // const PUBLIC_APP_ID = "d5dfdcdb-3445-443a-9fca-a61b0161a9ae";
 
   // Loom SDK Setup
   useEffect(() => {
@@ -64,8 +63,11 @@ const RecordLoomVideoBtn = () => {
 
         // Initialize Loom SDK with the JWT and Public App ID
         const { configureButton } = await setup({
-          mode: "custom",
+          mode: "standard",
           jws: serverJws,
+          config: {
+            insertButtonText: "Save Video",
+          },
         });
 
         const button = document.getElementById(BUTTON_ID);
@@ -246,7 +248,6 @@ export const VideoTabItem = ({ videoData }) => {
                 <img src={EditIcon} alt="Copy Icon" className="w-[20px]" />
               }
               onClick={() => {
-                console.log("Edit Video", videoData);
                 setVideoToBeEdited(videoData);
                 setIsEditVideoModalOpen(true);
               }}
