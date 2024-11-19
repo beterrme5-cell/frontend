@@ -3,7 +3,9 @@ import { TextInput, PasswordInput, Button, Paper, Title, Container, Stack } from
 import { useForm } from '@mantine/form';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
+import { useGlobalModals } from '../store/globalModals';
 const LoginPage = () => {
+  const setUser = useGlobalModals((state) => state.setUser);
   const navigate = useNavigate();
   const form = useForm({
     initialValues: {
@@ -19,7 +21,7 @@ const LoginPage = () => {
 
   const handleSubmit = async (values) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/user/login`, {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/user/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -34,12 +36,14 @@ const LoginPage = () => {
 
       const data = await response.json();
       console.log('Login successful:', data);
+      setUser(data.user);
       navigate('/');
       // Store token in HttpOnly cookie
       Cookies.set('authToken', data.token, { secure: true, sameSite: 'Strict', expires: 1 }); // Expires in 1 day
       console.log('Token stored in cookies');
 
     } catch (error) {
+      alert(error.message);
       console.error('Error during login:', error.message);
     }
   };

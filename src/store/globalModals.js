@@ -38,4 +38,10 @@ export const useGlobalModals = create((set) => ({
   setVideoToBeShared: (video) => set({ videoToBeShared: video }),
   isShareVideoModalOpen: false,
   setIsShareVideoModalOpen: (isOpen) => set({ isShareVideoModalOpen: isOpen }),
+   // --------------------------------------------------
+  // User State
+  // --------------------------------------------------
+  user: null, // Initialize the user as null or an empty object
+  setUser: (user) => set({ user }), // Function to set the user object
+  clearUser: () => set({ user: null })
 }));
