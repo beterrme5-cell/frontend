@@ -13,6 +13,7 @@ import { useForm } from "@mantine/form";
 import CustomVideoInput from "./CustomVideoInput";
 import CustomButton from "./CustomButton";
 import { useEffect, useRef, useState } from "react";
+import Quill from "quill";
 import {
   COPY_TEXT_ICON,
   EMAIL_ICON,
@@ -22,7 +23,13 @@ import {
 import { TextEditor } from "./LibraryComponents";
 import { deleteVideo, updateVideo } from "../../api/libraryAPIs";
 
+function quillGetHTML(inputDelta) {
+  var tempCont = document.createElement("div");
+  (new Quill(tempCont)).setContents(inputDelta);
+  return tempCont.getElementsByClassName("ql-editor")[0].innerHTML;
+}
 const ModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
+ 
   return (
     <Modal
       id="global-modal"
@@ -411,8 +418,25 @@ export const ShareVideoModal = () => {
                   varient="filled"
                   className="w-fit"
                   onClick={() => {
-                    console.log("Email Content:", emailContent);
-                  }}
+                   
+                    let delta = quillRef.current.getContents();
+                    console.log("Email Content:", delta);
+                     const finalHtmlContent = `
+                      <!DOCTYPE html>
+                      <html lang="en">
+                      <head>
+                          <meta charset="UTF-8">
+                          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                          <title>Email</title>
+                      </head>
+                      <body style="font-family: Arial, sans-serif; color: #000000; line-height: 1.6; padding: 20px;">
+                          ${quillGetHTML(delta)}
+                      </body>
+                      </html>
+                    `;
+                    console.log("Formatted HTML Email:", finalHtmlContent);
+                }}
+                
                 />
                 <CustomButton
                   label="Cancel"

@@ -1,9 +1,9 @@
-
-import { TextInput, PasswordInput, Button, Paper, Title, Container, Stack } from '@mantine/core';
+import { TextInput, PasswordInput, Button, Paper, Title, Container, Stack, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 import { useGlobalModals } from '../store/globalModals';
+
 const LoginPage = () => {
   const setUser = useGlobalModals((state) => state.setUser);
   const navigate = useNavigate();
@@ -38,37 +38,47 @@ const LoginPage = () => {
       console.log('Login successful:', data);
       setUser(data.user);
       navigate('/');
-      // Store token in HttpOnly cookie
-      Cookies.set('authToken', data.token, { secure: true, sameSite: 'Strict', expires: 1 }); // Expires in 1 day
-      console.log('Token stored in cookies');
+      Cookies.set('authToken', data.token, { secure: true, sameSite: 'Strict', expires: 1 });
 
     } catch (error) {
       alert(error.message);
       console.error('Error during login:', error.message);
     }
   };
+
   return (
-    <Container size={420} my={40}>
-      <Title align="center" style={{ fontFamily: 'Greycliff CF, sans-serif', fontWeight: 900 }}>
-        Welcome back!
-      </Title>
-      <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-        <form onSubmit={form.onSubmit(handleSubmit)}>
+    <Container size={400} className='h-screen flex justify-center items-center'>
+      <Paper withBorder shadow="sm" radius="lg" p={30} style={{ backgroundColor: '#f9fafc' }}>
+        <Title align="left" style={{ fontSize: '24px', fontWeight: 'bold', color: '#333' }}>
+          Login
+        </Title>
+        <Text align="center" color="dimmed" size="sm" mt={5}>
+          Please Login using given Email and Password
+        </Text>
+        <form onSubmit={form.onSubmit(handleSubmit)} style={{ marginTop: '20px' }}>
           <Stack>
             <TextInput
-              label="Email"
-              placeholder="you@example.com"
+              placeholder="get@ziontutorial.com"
               {...form.getInputProps('email')}
+              radius="md"
+              size="md"
+              styles={{
+                input: { backgroundColor: 'white', borderColor: '#e4e7eb', fontSize: '14px' },
+              }}
               required
             />
             <PasswordInput
-              label="Password"
-              placeholder="Your password"
+              placeholder="Password"
               {...form.getInputProps('password')}
+              radius="md"
+              size="md"
+              styles={{
+                input: { backgroundColor: 'white', borderColor: '#e4e7eb', fontSize: '14px' },
+              }}
               required
             />
-            <Button type="submit" fullWidth>
-              Login
+            <Button type="submit" fullWidth radius="md" size="md" style={{ backgroundColor: '#3b82f6' }}>
+              Log in
             </Button>
           </Stack>
         </form>
