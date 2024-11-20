@@ -1,89 +1,82 @@
-import { TextInput, PasswordInput, Button, Paper, Title, Container, Stack, Text } from '@mantine/core';
-import { useForm } from '@mantine/form';
-import Cookies from 'js-cookie';
-import { useNavigate } from 'react-router-dom';
-import { useGlobalModals } from '../store/globalModals';
+import { TextInput, PasswordInput } from "@mantine/core";
+import { useForm } from "@mantine/form";
+import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
+import { useGlobalModals } from "../store/globalModals";
+import { loginUser } from "../api/auth";
+import { useLoadingBackdrop } from "../store/loadingBackdrop";
 
 const LoginPage = () => {
   const setUser = useGlobalModals((state) => state.setUser);
+
+  const setIsLoading = useLoadingBackdrop((state) => state.setLoading);
+
   const navigate = useNavigate();
   const form = useForm({
     initialValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
 
     validate: {
-      email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
-      password: (value) => (value.length >= 6 ? null : 'Password must be at least 6 characters'),
+      email: (value) => (/^\S+@\S+$/.test(value) ? null : "Invalid email"),
+      password: (value) =>
+        value.length >= 4 ? null : "Password must be at least 6 characters",
     },
   });
 
   const handleSubmit = async (values) => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/user/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(values),
-      });
+    setIsLoading(true);
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Login failed');
-      }
+    const response = await loginUser({
+      email: values.email,
+      password: values.password,
+    });
 
-      const data = await response.json();
-      console.log('Login successful:', data);
-      setUser(data.user);
-      navigate('/');
-      Cookies.set('authToken', data.token, { secure: true, sameSite: 'Strict', expires: 1 });
-
-    } catch (error) {
-      alert(error.message);
-      console.error('Error during login:', error.message);
+    if (response.success) {
+      Cookies.set("token", response.data.token);
+      setUser(response.data.user);
+      navigate("/dashboard");
+    } else {
+      console.error("Error while logging in user: ", response.error);
     }
+
+    setIsLoading(false);
   };
 
   return (
-    <Container size={400} className='h-screen flex justify-center items-center'>
-      <Paper withBorder shadow="sm" radius="lg" p={30} style={{ backgroundColor: '#f9fafc' }}>
-        <Title align="left" style={{ fontSize: '24px', fontWeight: 'bold', color: '#333' }}>
-          Login
-        </Title>
-        <Text align="center" color="dimmed" size="sm" mt={5}>
+    <section className="h-screen w-screen flex justify-center items-center p-[40px]">
+      <div className="md:w-[585px] md:h-[530px] w-full h-fit !flex flex-col justify-center bg-[#f9fafc] p-[50px_72.5px] border rounded-[20px]">
+        <h1 className="text-[#1b1b1b] text-[30px] font-bold">Login</h1>
+        <p className="text-[18px] text-[#545454]">
           Please Login using given Email and Password
-        </Text>
-        <form onSubmit={form.onSubmit(handleSubmit)} style={{ marginTop: '20px' }}>
-          <Stack>
+        </p>
+        <form
+          onSubmit={form.onSubmit(handleSubmit)}
+          style={{ marginTop: "20px" }}
+          className="mt-[30px] flex flex-col gap-[30px]"
+        >
+          <div className="flex flex-col gap-[16px]">
             <TextInput
               placeholder="get@ziontutorial.com"
-              {...form.getInputProps('email')}
-              radius="md"
-              size="md"
-              styles={{
-                input: { backgroundColor: 'white', borderColor: '#e4e7eb', fontSize: '14px' },
-              }}
+              {...form.getInputProps("email")}
               required
             />
             <PasswordInput
               placeholder="Password"
-              {...form.getInputProps('password')}
-              radius="md"
-              size="md"
-              styles={{
-                input: { backgroundColor: 'white', borderColor: '#e4e7eb', fontSize: '14px' },
-              }}
+              {...form.getInputProps("password")}
               required
             />
-            <Button type="submit" fullWidth radius="md" size="md" style={{ backgroundColor: '#3b82f6' }}>
-              Log in
-            </Button>
-          </Stack>
+          </div>
+          <button
+            type="submit"
+            className="bg-primary h-[60px] rounded-[8px] text-white font-medium text-[20px]"
+          >
+            Log in
+          </button>
         </form>
-      </Paper>
-    </Container>
+      </div>
+    </section>
   );
 };
 

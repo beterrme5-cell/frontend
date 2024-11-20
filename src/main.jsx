@@ -14,6 +14,7 @@ import {
   ShareVideoModal,
   UploadVideoModal,
 } from "./components/ui/GlobalModals.jsx";
+import LoadingBackdrop from "./components/ui/LoadingBackdrop.jsx";
 
 const theme = createTheme({
   cursorType: "pointer",
@@ -27,6 +28,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <EditVideoModal />
     <ShareVideoModal />
     {/* Modals */}
+    <LoadingBackdrop />
     <RouterProvider router={router} />
   </MantineProvider>
 );
