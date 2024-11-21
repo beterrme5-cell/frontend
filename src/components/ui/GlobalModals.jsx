@@ -22,14 +22,14 @@ import {
 } from "../../assets/icons/DynamicIcons";
 import { TextEditor } from "./LibraryComponents";
 import { deleteVideo, updateVideo } from "../../api/libraryAPIs";
+import { useUserStore } from "../../store/userStore";
 
 function quillGetHTML(inputDelta) {
   var tempCont = document.createElement("div");
-  (new Quill(tempCont)).setContents(inputDelta);
+  new Quill(tempCont).setContents(inputDelta);
   return tempCont.getElementsByClassName("ql-editor")[0].innerHTML;
 }
 const ModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
- 
   return (
     <Modal
       id="global-modal"
@@ -164,6 +164,11 @@ export const EditVideoModal = () => {
     (state) => state.setVideoToBeEdited
   );
 
+  const videosData = useUserStore((state) => state.videosData);
+  const setVideosData = useUserStore((state) => state.setVideosData);
+
+  console.log("Videos Data ", videosData);
+
   // Modal Form
   const form = useForm({
     initialValues: {
@@ -194,13 +199,22 @@ export const EditVideoModal = () => {
       description: values.videoDescription,
     });
 
-    console.log("Response: ", response);
-
     if (response.success) {
       console.log("Video Updated Successfully", response.data);
     } else {
       console.log("Error while updating video: ", response.error);
     }
+
+    // Find the Video in the Videos Data and update it
+
+    const updatedVideosData = videosData.map((video) => {
+      if (video._id === videoToBeEdited._id) {
+        return response.data.video;
+      }
+      return video;
+    });
+
+    setVideosData(updatedVideosData);
 
     setModalLoadingOverlay(false);
     setIsEditVideoModalOpen(false);
@@ -290,6 +304,8 @@ export const ShareVideoModal = () => {
 
   // Use a ref to access the quill instance directly
   const quillRef = useRef();
+
+  console.log("Email Content: ", emailContent);
 
   return (
     <ModalRoot
@@ -418,10 +434,9 @@ export const ShareVideoModal = () => {
                   varient="filled"
                   className="w-fit"
                   onClick={() => {
-                   
                     let delta = quillRef.current.getContents();
                     console.log("Email Content:", delta);
-                     const finalHtmlContent = `
+                    const finalHtmlContent = `
                       <!DOCTYPE html>
                       <html lang="en">
                       <head>
@@ -435,8 +450,7 @@ export const ShareVideoModal = () => {
                       </html>
                     `;
                     console.log("Formatted HTML Email:", finalHtmlContent);
-                }}
-                
+                  }}
                 />
                 <CustomButton
                   label="Cancel"

@@ -6,9 +6,12 @@ export const useUserStore = create((set) => ({
   // --------------------------------------------------
   user: {
     name: "Babar",
-        email: "babaratwork786@gmail.com",
-        
+    email: "babaratwork786@gmail.com",
   }, // Initialize the user as null or an empty object
   setUser: (user) => set({ user }), // Function to set the user object
   clearUser: () => set({ user: null }),
+
+  // --------------------------------------------------
+  videosData: [],
+  setVideosData: (videosData) => set({ videosData }),
 }));

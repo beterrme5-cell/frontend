@@ -127,3 +127,31 @@ export const deleteVideo = async (params) => {
     };
   }
 };
+
+// API to get the Contacts of the user
+export const getContacts = async (params) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/user/getUserContacts`,
+      {
+        page: params.page,
+        pageLimit: params.pageLimit,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    console.error("Error while fetching all contacts: ", error);
+    return {
+      success: false,
+      error: error.response?.data?.message || "An unexpected error occurred",
+    };
+  }
+};

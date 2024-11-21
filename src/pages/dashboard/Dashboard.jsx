@@ -14,9 +14,11 @@ import { useGlobalModals } from "../../store/globalModals";
 import { useEffect, useState } from "react";
 import { getAllVideos } from "../../api/libraryAPIs";
 import { useLoadingBackdrop } from "../../store/loadingBackdrop";
+import { useUserStore } from "../../store/userStore";
 
 const Dashboard = () => {
-  const [videosData, setVideosData] = useState([]);
+  const videosData = useUserStore((state) => state.videosData);
+  const setVideosData = useUserStore((state) => state.setVideosData);
   const [historyData, setHistoryData] = useState([]);
 
   const setIsUploadVideoModalOpen = useGlobalModals(
@@ -61,7 +63,7 @@ const Dashboard = () => {
     };
 
     fetchData();
-  }, [setLoading]);
+  }, [setLoading, setVideosData]);
 
   return (
     <LibraryRoot>

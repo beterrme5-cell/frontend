@@ -85,7 +85,6 @@ const RecordLoomVideoBtn = () => {
           console.log("LoomVideo", LoomVideo);
 
           const videoData = {
-            accountId: "your-account-id",
             title: LoomVideo.title || "",
             embeddedLink: LoomVideo.embedUrl || "",
             shareableLink: LoomVideo.sharedUrl || "",
