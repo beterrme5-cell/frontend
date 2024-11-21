@@ -1,0 +1,14 @@
+import { create } from "zustand";
+
+export const useUserStore = create((set) => ({
+  // --------------------------------------------------
+  // User State
+  // --------------------------------------------------
+  user: {
+    name: "Babar",
+        email: "babaratwork786@gmail.com",
+        
+  }, // Initialize the user as null or an empty object
+  setUser: (user) => set({ user }), // Function to set the user object
+  clearUser: () => set({ user: null }),
+}));

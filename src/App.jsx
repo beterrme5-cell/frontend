@@ -1,20 +1,29 @@
 import { Outlet } from "react-router-dom";
-import Navbar from "./components/navbar/Navbar";
-import { Navigate } from "react-router-dom";
-import Cookies from "js-cookie";
-function App() {
-  
-  const authToken = Cookies.get("authToken");
+import { useEffect } from "react";
 
-  if (!authToken) {
-    return <Navigate to="/login" replace />;
-  }
+function App() {
+  useEffect(() => {
+    const postKeyToAPIAndCheckUserId = async () => {
+      const key = await new Promise((resolve) => {
+        window.parent.postMessage({ message: "REQUEST_USER_DATA" }, "*");
+        window.addEventListener("message", ({ data }) => {
+          if (data.message === "REQUEST_USER_DATA_RESPONSE") {
+            resolve(data.payload);
+          }
+        });
+      });
+
+      // Send Data to the Backend API to Decrypt the code
+
+      console.log(key);
+    };
+
+    postKeyToAPIAndCheckUserId();
+  }, []);
+
   return (
-    <main className="App overflow-x-hidden">
-      <Navbar />
-      <section className="md:p-[32px] p-[20px] md:mt-[79px] mt-[69px]">
-        <Outlet />
-      </section>
+    <main className="App overflow-x-hidden md:p-[32px] p-[20px]">
+      <Outlet />
     </main>
   );
 }

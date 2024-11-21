@@ -1,18 +1,19 @@
-import { useState } from 'react';
+import { useState } from "react";
 import { Avatar, Popover, Button, Group, Text, Divider } from "@mantine/core";
 import logo from "../../assets/logo.svg";
-import { useGlobalModals } from "../../store/globalModals";
-import Cookies from 'js-cookie';
-import { useNavigate } from 'react-router-dom';
+import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
+import { useUserStore } from "../../store/userStore";
+
 const Navbar = () => {
   const navigator = useNavigate();
-  const user = useGlobalModals((state) => state.user);
+  const user = useUserStore((state) => state.user);
   const [opened, setOpened] = useState(false);
 
   const handleLogout = () => {
     console.log("User logged out");
     Cookies.remove("authToken");
-    navigator('/login')
+    navigator("/login");
   };
 
   return (
@@ -25,7 +26,6 @@ const Navbar = () => {
         withArrow
         shadow="md"
       >
-       
         <Popover.Target>
           <div
             className="flex flex-col justify-center items-center text-gray-500 cursor-pointer"
@@ -38,16 +38,17 @@ const Navbar = () => {
           </div>
         </Popover.Target>
 
-        
         <Popover.Dropdown style={{ width: "200px" }}>
           <Group position="apart" mb="sm">
-            <Text size="sm" weight={500}>{user.name}</Text>
             <Avatar
               size="sm"
               src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-1.png"
             />
+            <p className="text-[16px] font-bold">{user.name}</p>
           </Group>
-          <Text size="xs" color="dimmed">{user.email}</Text>
+          <Text size="xs" color="dimmed">
+            {user.email}
+          </Text>
           <Divider my="sm" />
           <Button
             fullWidth

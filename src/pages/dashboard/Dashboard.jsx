@@ -69,19 +69,17 @@ const Dashboard = () => {
 
   // Use Effect to Fetch All Videos
   useEffect(() => {
-    const fetchAllVideos = async () => {
-      // Fetch all videos here
-      const videosResponse = await getAllVideos();
-
-      if (videosResponse.success) {
-        console.log("Videos Data: ", videosResponse.data.videos);
-        setVideosData(videosResponse.data.videos);
-      } else {
-        console.error("Error fetching videos: ", videosResponse.error);
-      }
-    };
-
-    fetchAllVideos();
+    // const fetchAllVideos = async () => {
+    //   // Fetch all videos here
+    //   const videosResponse = await getAllVideos();
+    //   if (videosResponse.success) {
+    //     console.log("Videos Data: ", videosResponse.data.videos);
+    //     setVideosData(videosResponse.data.videos);
+    //   } else {
+    //     console.error("Error fetching videos: ", videosResponse.error);
+    //   }
+    // };
+    // fetchAllVideos();
   }, []);
 
   return (
