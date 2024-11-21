@@ -1,7 +1,6 @@
 import CustomButton from "./CustomButton";
 import ShareVideoIcon from "../../assets/icons/shareVideoIcon.svg";
 import VideoOptionsIcon from "../../assets/icons/VideoOptionsIcon.svg";
-import ArrowDownIcon from "../../assets/icons/arrow-down.svg";
 import CopyIcon from "../../assets/icons/copy-icon.svg";
 import ShareIcon from "../../assets/icons/share-icon.svg";
 import EditIcon from "../../assets/icons/edit-icon.svg";
@@ -15,6 +14,7 @@ import { setup } from "@loomhq/record-sdk";
 import { isSupported } from "@loomhq/record-sdk/is-supported";
 import { saveRecordedVideo } from "../../api/libraryAPIs";
 import axios from "axios";
+import imagePlaceholder from "../../assets/imagePlaceholder.jpeg";
 
 export const LibraryRoot = ({ children }) => {
   return (
@@ -180,7 +180,7 @@ export const VideoTabItem = ({ videoData }) => {
         )}
         {!videoData?.embeddedLink && (
           <img
-            src="https://s3-alpha-sig.figma.com/img/8238/d197/077f40948736f63966988f296dc35cdc?Expires=1731888000&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=SIW80GJs~r3Ieu~r0i1Ki5DSyrHjLMUafaUBQVmPJM5i8Idxtq~OVbCpiUtiRjY92LK5xCQg~PJq7r7GZW3QOO0BgQJKUGvs7SE0yPX8l5mVuXdTa0iyNSJ1C~hkHpF4OSFvFdy11oObQ9Y~l5SvMw4Z2FE5IZ7QqARtVWCC~x9zit5NbGdg0muVDYuBsXv~Xgmd1BWXxzIkYFXrCCFS~lqePGiAMIiuJwFXD7NjB8bsnt4MMhfeIVY4zg2jjWUJABr-48PIoMjvOfOv~hVS-j4ud4LpgmPfkMEGDMacGA7QIGXceF7saDJTuls8ZBag4y31VDFNj7Nf9pwBWE8Bsw__"
+            src={imagePlaceholder}
             alt="Video Thumbnail"
             className="w-full h-full object-cover"
           />
@@ -294,18 +294,7 @@ export const HistoryTableList = ({ historyData }) => {
       <Table.Td className=" text-[14px] font-medium">
         {element.subject}
       </Table.Td>
-      <Table.Td>
-        <button
-          className="flex items-center gap-[4px]"
-          type="button"
-          onClick={() => {
-            alert("Table Row Expand");
-          }}
-        >
-          <p className="text-[14px] font-medium">Expand</p>
-          <img src={ArrowDownIcon} alt="Arrow Down Icon" />
-        </button>
-      </Table.Td>
+      <Table.Td>{element.status}</Table.Td>
     </Table.Tr>
   ));
   return (
@@ -324,7 +313,7 @@ export const HistoryTableList = ({ historyData }) => {
           <Table.Th>Contact Name</Table.Th>
           <Table.Th>Type</Table.Th>
           <Table.Th>Subject</Table.Th>
-          <Table.Th>Action</Table.Th>
+          <Table.Th>Status</Table.Th>
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>{rows}</Table.Tbody>

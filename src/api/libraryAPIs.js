@@ -2,11 +2,16 @@ import axios from "axios";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
+// Get the accountId and userLocationId from the Local Storage
+const accessToken = localStorage.getItem("accessToken");
+
 // API to get all videos from the database\
 export const getAllVideos = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}/video/getAllVideos`, {
-      withCredentials: true,
+    const response = await axios.get(`${BASE_URL}/video/getVideosByAccountId`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     });
     return {
       success: true,
@@ -27,7 +32,9 @@ export const getVideoById = async (videoId) => {
     const response = await axios.get(
       `${BASE_URL}/video/getVideoById/${videoId}`,
       {
-        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       }
     );
     return {
@@ -50,7 +57,9 @@ export const saveRecordedVideo = async (videoData) => {
       `${BASE_URL}/video/saveNewVideo`,
       videoData,
       {
-        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       }
     );
     return {
@@ -72,13 +81,14 @@ export const updateVideo = async (params) => {
     const response = await axios.put(
       `${BASE_URL}/video/updateVideo`,
       {
-        accountId: params.accountId,
         videoId: params.videoId,
         title: params.title,
         description: params.description,
       },
       {
-        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       }
     );
     return {
@@ -98,9 +108,11 @@ export const updateVideo = async (params) => {
 export const deleteVideo = async (params) => {
   try {
     const response = await axios.delete(
-      `${BASE_URL}/video/deleteVideo/${params.accountId}/${params.videoId}`,
+      `${BASE_URL}/video/deleteVideo/${params.videoId}`,
       {
-        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       }
     );
     return {

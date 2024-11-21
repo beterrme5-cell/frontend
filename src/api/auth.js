@@ -26,3 +26,23 @@ export const loginUser = async (params) => {
     };
   }
 };
+
+// API to get the UserData from the Backend
+export const getDecryptedUserData = async (params) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/user/decryptUserToken`, {
+      token: params.tokenKey,
+    });
+
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    console.error("Error while getting user data: ", error);
+    return {
+      success: false,
+      error: error.response?.data?.message || "An unexpected error occurred",
+    };
+  }
+};

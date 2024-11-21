@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { useEffect } from "react";
+import { getDecryptedUserData } from "./api/auth";
 
 function App() {
   useEffect(() => {
@@ -14,8 +15,10 @@ function App() {
       });
 
       // Send Data to the Backend API to Decrypt the code
+      const response = await getDecryptedUserData({ tokenKey: key });
 
-      console.log(key);
+      // Save the accountId and userLocationId in the Local Storage
+      localStorage.setItem("accessToken", response?.data?.accessToken);
     };
 
     postKeyToAPIAndCheckUserId();

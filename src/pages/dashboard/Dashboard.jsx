@@ -13,74 +13,55 @@ import {
 import { useGlobalModals } from "../../store/globalModals";
 import { useEffect, useState } from "react";
 import { getAllVideos } from "../../api/libraryAPIs";
-
-const SharedVideosData = [
-  {
-    _id: 1,
-    title: "You can be anywhere!",
-    description: "This is a video description",
-    videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
-  },
-  {
-    _id: 2,
-    title: "You can be anywhere!",
-    description: "This is a video description",
-    videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
-  },
-  {
-    _id: 3,
-    title: "You can be anywhere!",
-    description: "This is a video description",
-    videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
-  },
-  {
-    _id: 4,
-    title: "You can be anywhere!",
-    description: "This is a video description",
-    videoLink: "https://www.loom.com/embed/e0fdac661ea9418489951c1fb4c7373c",
-  },
-];
-
-const HistoryData = [
-  {
-    _id: 1,
-    recordingId: "xi120-csad-123",
-    contactId: "K3asdY2AdDaa",
-    contactName: "Alex Smith",
-    type: "email",
-    subject: "Test Video",
-  },
-  {
-    _id: 2,
-    recordingId: "si120-csad-123",
-    contactId: "K3asdY2AdDaa",
-    contactName: "John Doe",
-    type: "sms",
-    subject: "Recording Video",
-  },
-];
+import { useLoadingBackdrop } from "../../store/loadingBackdrop";
 
 const Dashboard = () => {
   const [videosData, setVideosData] = useState([]);
+  const [historyData, setHistoryData] = useState([]);
 
   const setIsUploadVideoModalOpen = useGlobalModals(
     (state) => state.setIsUploadVideoModalOpen
   );
 
-  // Use Effect to Fetch All Videos
+  const setLoading = useLoadingBackdrop((state) => state.setLoading);
+
   useEffect(() => {
-    // const fetchAllVideos = async () => {
-    //   // Fetch all videos here
-    //   const videosResponse = await getAllVideos();
-    //   if (videosResponse.success) {
-    //     console.log("Videos Data: ", videosResponse.data.videos);
-    //     setVideosData(videosResponse.data.videos);
-    //   } else {
-    //     console.error("Error fetching videos: ", videosResponse.error);
-    //   }
-    // };
-    // fetchAllVideos();
-  }, []);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Fetch all data in parallel
+        const [videosResponse, historyResponse] = await Promise.all([
+          getAllVideos(),
+          getAllVideos(),
+        ]);
+
+        // Check responses and set state only after all are resolved
+        if (videosResponse.success && historyResponse.success) {
+          console.log("Videos Data: ", videosResponse.data.videos);
+          console.log("History Data: ", historyResponse.data.videos);
+
+          // Update states
+          setVideosData(videosResponse.data.videos);
+          setHistoryData(historyResponse.data.videos);
+        } else {
+          console.error("Error fetching data");
+          if (!videosResponse.success) {
+            console.error("Error fetching videos: ", videosResponse.error);
+          }
+          if (!historyResponse.success) {
+            console.error("Error fetching history: ", historyResponse.error);
+          }
+        }
+
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
+        console.error("Error fetching data: ", error);
+      }
+    };
+
+    fetchData();
+  }, [setLoading]);
 
   return (
     <LibraryRoot>
@@ -99,24 +80,32 @@ const Dashboard = () => {
 
           <Tabs.Panel value="videos">
             <VideoTabSection heading="My Videos">
-              <VideoTabItemsList>
-                {videosData.map((video) => (
-                  <VideoTabItem key={video._id} videoData={video} />
-                ))}
-              </VideoTabItemsList>
+              {videosData && videosData.length > 0 ? (
+                <VideoTabItemsList>
+                  {videosData.map((video) => (
+                    <VideoTabItem key={video._id} videoData={video} />
+                  ))}
+                </VideoTabItemsList>
+              ) : (
+                <div className="py-[10px] max-w-[450px] mx-auto">
+                  <p className="text-center text-gray-500 text-[16px]">
+                    No Recorded videos found! Please record a new Video or Click
+                    on the upload button to upload a new video.
+                  </p>
+                </div>
+              )}
             </VideoTabSection>{" "}
-            <VideoTabSection heading="Videos Shared With me">
-              <VideoTabItemsList>
-                {SharedVideosData.map((video) => (
-                  <VideoTabItem key={video._id} videoData={video} />
-                ))}
-              </VideoTabItemsList>
-            </VideoTabSection>
           </Tabs.Panel>
 
           <Tabs.Panel value="history">
             <HistoryTabSection>
-              <HistoryTableList historyData={HistoryData} />
+              {historyData && historyData.length > 0 ? (
+                <HistoryTableList historyData={historyData} />
+              ) : (
+                <p className="text-center text-gray-500 text-[16px]">
+                  No History Found!
+                </p>
+              )}
             </HistoryTabSection>
           </Tabs.Panel>
         </BodyTabsRoot>
