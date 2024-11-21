@@ -15,6 +15,7 @@ import { isSupported } from "@loomhq/record-sdk/is-supported";
 import { saveRecordedVideo } from "../../api/libraryAPIs";
 import axios from "axios";
 import imagePlaceholder from "../../assets/imagePlaceholder.jpeg";
+import { useUserStore } from "../../store/userStore";
 
 export const LibraryRoot = ({ children }) => {
   return (
@@ -40,7 +41,8 @@ export const LibraryHeader = ({ title, onUploadVideoBtnClick }) => {
 
 const RecordLoomVideoBtn = () => {
   const BUTTON_ID = "loom-record-sdk-button";
-  // const PUBLIC_APP_ID = "d5dfdcdb-3445-443a-9fca-a61b0161a9ae";
+  const videosData = useUserStore((state) => state.videosData);
+  const setVideosData = useUserStore((state) => state.setVideosData);
 
   // Loom SDK Setup
   useEffect(() => {
@@ -92,10 +94,23 @@ const RecordLoomVideoBtn = () => {
 
           try {
             const response = await saveRecordedVideo(videoData);
-            console.log("Video saved successfully", response.data);
-            // setVideosUpdated((prev) => prev + 1);
+
+            console.log("Response", response);
+
+            if (response.success) {
+              const updatedVideosData = [...videosData, response.data.video];
+              setVideosData(updatedVideosData);
+            } else {
+              console.error(
+                "Error saving video to Database:",
+                response.error || "Unknown error"
+              );
+            }
           } catch (error) {
-            console.error("Error saving video:", error.response);
+            console.error(
+              "Error saving video:",
+              error.response || error.message || error
+            );
           }
         });
       } catch (error) {
@@ -104,7 +119,7 @@ const RecordLoomVideoBtn = () => {
     }
 
     setupLoom();
-  }, []);
+  }, [setVideosData, videosData]);
 
   return (
     <button

@@ -666,7 +666,6 @@ export const DeleteVideoConfirmationModal = () => {
     setModalLoadingOverlay(true);
 
     const response = await deleteVideo({
-      accountId: videoToBeDeleted.accountId,
       videoId: videoToBeDeleted._id,
     });
 
