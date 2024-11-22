@@ -38,4 +38,9 @@ export const useGlobalModals = create((set) => ({
   setVideoToBeShared: (video) => set({ videoToBeShared: video }),
   isShareVideoModalOpen: false,
   setIsShareVideoModalOpen: (isOpen) => set({ isShareVideoModalOpen: isOpen }),
+  isContactsSelectionModalOpen: false,
+  setIsContactsSelectionModalOpen: (isOpen) =>
+    set({ isContactsSelectionModalOpen: isOpen }),
+  selectedContacts: [],
+  setSelectedContacts: (contacts) => set({ selectedContacts: contacts }),
 }));

@@ -5,6 +5,8 @@ import {
   CopyButton,
   ActionIcon,
   Textarea,
+  Table,
+  Checkbox,
 } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
 import { LoadingOverlay, MultiSelect } from "@mantine/core";
@@ -21,8 +23,9 @@ import {
   SMS_ICON,
 } from "../../assets/icons/DynamicIcons";
 import { TextEditor } from "./LibraryComponents";
-import { deleteVideo, updateVideo } from "../../api/libraryAPIs";
+import { deleteVideo, getContacts, updateVideo } from "../../api/libraryAPIs";
 import { useUserStore } from "../../store/userStore";
+import ArrowRightIcon from "../../assets/icons/ArrowRight.svg";
 
 function quillGetHTML(inputDelta) {
   var tempCont = document.createElement("div");
@@ -289,6 +292,9 @@ export const ShareVideoModal = () => {
   const setIsShareVideoModalOpen = useGlobalModals(
     (state) => state.setIsShareVideoModalOpen
   );
+  const setIsContactsSelectionModalOpen = useGlobalModals(
+    (state) => state.setIsContactsSelectionModalOpen
+  );
   const videoToBeShared = useGlobalModals((state) => state.videoToBeShared);
 
   const [activeTab, setActiveTab] = useState("email");
@@ -298,10 +304,30 @@ export const ShareVideoModal = () => {
   const [smsContent, setSmsContent] = useState("");
 
   // State to store the Email Content
+  // eslint-disable-next-line no-unused-vars
   const [emailContent, setEmailContent] = useState("");
 
   // Use a ref to access the quill instance directly
   const quillRef = useRef();
+
+  const handleSubmitEmail = () => {
+    let delta = quillRef.current.getContents();
+    console.log("Email Content:", delta);
+    const finalHtmlContent = `
+                      <!DOCTYPE html>
+                      <html lang="en">
+                      <head>
+                          <meta charset="UTF-8">
+                          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                          <title>Email</title>
+                      </head>
+                      <body style="font-family: Arial, sans-serif; color: #000000; line-height: 1.6; padding: 20px;">
+                          ${quillGetHTML(delta)}
+                      </body>
+                      </html>
+                    `;
+    console.log("Formatted HTML Email:", finalHtmlContent);
+  };
 
   return (
     <ModalRoot
@@ -400,15 +426,17 @@ export const ShareVideoModal = () => {
                   </Tabs.Tab>
                 </Tabs.List>
                 <Tabs.Panel value="contacts" className="mt-[12px]">
-                  <MultiSelect
-                    className="md:w-1/2 w-full"
-                    placeholder="Select one or Multiple Contacts"
-                    data={["Brad", "Colin", "Babar", "Mohsin"]}
-                    clearable
-                    searchable
-                    nothingFoundMessage="Nothing found..."
-                    hidePickedOptions
-                  />
+                  <button
+                    className="flex justify-center items-center border border-[##E9E8ED] rounded-[8px] p-[8px_12px] text-[14px] gap-[8px] font-medium text-darkBlue"
+                    type="button"
+                    onClick={() => {
+                      setIsContactsSelectionModalOpen(true);
+                      setIsShareVideoModalOpen(false);
+                    }}
+                  >
+                    <p>Select Contacts</p>
+                    <img src={ArrowRightIcon} alt="Arrow Right Icon" />
+                  </button>
                 </Tabs.Panel>
 
                 <Tabs.Panel value="tags" className="mt-[12px]">
@@ -429,24 +457,7 @@ export const ShareVideoModal = () => {
                   label="Send Email"
                   varient="filled"
                   className="w-fit"
-                  onClick={() => {
-                    let delta = quillRef.current.getContents();
-                    console.log("Email Content:", delta);
-                    const finalHtmlContent = `
-                      <!DOCTYPE html>
-                      <html lang="en">
-                      <head>
-                          <meta charset="UTF-8">
-                          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                          <title>Email</title>
-                      </head>
-                      <body style="font-family: Arial, sans-serif; color: #000000; line-height: 1.6; padding: 20px;">
-                          ${quillGetHTML(delta)}
-                      </body>
-                      </html>
-                    `;
-                    console.log("Formatted HTML Email:", finalHtmlContent);
-                  }}
+                  onClick={handleSubmitEmail}
                 />
                 <CustomButton
                   label="Cancel"
@@ -728,4 +739,212 @@ export const DeleteVideoConfirmationModal = () => {
   );
 };
 
-export const ContactsSelectionModal = () => {};
+export const ContactsSelectionModalEmail = () => {
+  const selectedContacts = useGlobalModals((state) => state.selectedContacts);
+  const setSelectedContacts = useGlobalModals(
+    (state) => state.setSelectedContacts
+  );
+  const modalLoadingOverlay = useGlobalModals(
+    (state) => state.modalLoadingOverlay
+  );
+
+  const setModalLoadingOverlay = useGlobalModals(
+    (state) => state.setModalLoadingOverlay
+  );
+
+  const setIsShareVideoModalOpen = useGlobalModals(
+    (state) => state.setIsShareVideoModalOpen
+  );
+  const isContactsSelectionModalOpen = useGlobalModals(
+    (state) => state.isContactsSelectionModalOpen
+  );
+
+  const setIsContactsSelectionModalOpen = useGlobalModals(
+    (state) => state.setIsContactsSelectionModalOpen
+  );
+
+  const userContactsData = useUserStore((state) => state.userContactsData);
+  const setUserContactsData = useUserStore(
+    (state) => state.setUserContactsData
+  );
+
+  const [selectAllValue, setSelectAllValue] = useState(false);
+
+  const filteredContacts = userContactsData?.contacts?.filter((contact) => {
+    return (
+      contact?.email !== null &&
+      contact?.email !== undefined &&
+      contact?.email !== ""
+    );
+  });
+
+  const handleSelectContact = (contactDetails) => {
+    // Check if the Contact is already selected then on unchecking remove it from the selected contacts
+    const isContactSelected = selectedContacts.some(
+      (contact) => contact.id === contactDetails.id
+    );
+
+    if (isContactSelected) {
+      const updatedSelectedContacts = selectedContacts.filter(
+        (contact) => contact.id !== contactDetails.id
+      );
+      setSelectedContacts(updatedSelectedContacts);
+      setSelectAllValue(
+        updatedSelectedContacts.length === filteredContacts.length
+      );
+    } else {
+      setSelectedContacts([
+        ...selectedContacts,
+        {
+          ...contactDetails,
+          isChecked: true,
+        },
+      ]);
+      setSelectAllValue(
+        [...selectedContacts, contactDetails].length === filteredContacts.length
+      );
+    }
+  };
+
+  const handleSelectAll = (isChecked) => {
+    setSelectAllValue(isChecked);
+    if (isChecked) {
+      // Select all contacts
+      const updatedSelectedContacts = filteredContacts.map((contact) => ({
+        ...contact,
+        isChecked: true,
+      }));
+      setSelectedContacts(updatedSelectedContacts);
+    } else {
+      // Deselect all contacts
+      setSelectedContacts([]);
+    }
+  };
+
+  const handleLoadMoreContacts = () => {};
+
+  const handleSaveSelectedContacts = () => {
+    console.log("Selected Contacts: ", selectedContacts);
+  };
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      setModalLoadingOverlay(true);
+      // Fetch Contacts from the Database
+      const response = await getContacts({
+        page: 1,
+        pageLimit: 100,
+      });
+
+      if (response.success) {
+        setUserContactsData(response.data.contacts);
+      } else {
+        console.log("Error while fetching contacts: ", response.error);
+      }
+      setModalLoadingOverlay(false);
+    };
+
+    fetchContacts();
+  }, [setModalLoadingOverlay, setUserContactsData]);
+
+  return (
+    <ModalRoot
+      loadingOverlay={modalLoadingOverlay}
+      showModal={isContactsSelectionModalOpen}
+      onClose={() => {
+        setIsContactsSelectionModalOpen(false);
+        setIsShareVideoModalOpen(true);
+        setSelectedContacts([]);
+      }}
+    >
+      <div className="w-[70vw] flex flex-col gap-[10px] h-[80dvh] max-h-[90vh]">
+        <div className="flex flex-col gap-[16px] h-[calc(100%-115px)] overflow-auto">
+          <h2 className="font-medium text-[24px]">Select Contacts</h2>
+          <Table>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Contact ID</Table.Th>
+                <Table.Th>Contact Name</Table.Th>
+                <Table.Th>Date Added</Table.Th>
+                <Table.Th>
+                  <Checkbox
+                    value={selectAllValue}
+                    onChange={(event) => handleSelectAll(event.target.checked)}
+                    labelPosition="left"
+                    label={
+                      <p className="text-[14px] font-bold">
+                        Action{" "}
+                        <span className="!font-normal">
+                          {selectAllValue ? "(Deselect All)" : "(Select All)"}
+                        </span>
+                      </p>
+                    }
+                  />
+                </Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {filteredContacts?.map((contact) => {
+                const date = new Date(contact.dateAdded);
+
+                // Format the date as MM/DD/YYYY
+                const formattedDate = `${String(date.getMonth() + 1).padStart(
+                  2,
+                  "0"
+                )}/${String(date.getDate()).padStart(
+                  2,
+                  "0"
+                )}/${date.getFullYear()}`;
+
+                const isChecked =
+                  selectAllValue ||
+                  selectedContacts?.some(
+                    (selectedContact) =>
+                      selectedContact?.id === contact?.id &&
+                      selectedContact?.isChecked
+                  );
+
+                return (
+                  <Table.Tr key={contact.id}>
+                    <Table.Td>{contact.id}</Table.Td>
+                    <Table.Td className="capitalize">
+                      {contact?.firstNameLowerCase +
+                        " " +
+                        contact?.lastNameLowerCase}
+                    </Table.Td>
+                    <Table.Td>{formattedDate}</Table.Td>
+                    <Table.Td>
+                      <Checkbox
+                        checked={isChecked}
+                        onChange={() => handleSelectContact(contact)}
+                      />
+                    </Table.Td>
+                  </Table.Tr>
+                );
+              })}
+            </Table.Tbody>
+          </Table>
+        </div>
+        <div className="bg-white p-[12px_24px] flex flex-col">
+          <button
+            className="loadMoreContactsBtn p-[10px_16px] border border-[##DBDBDB] rounded-[8px] text-[14px] font-medium text-darkBlue mx-auto"
+            type="button"
+            onClick={handleLoadMoreContacts}
+            disabled={
+              userContactsData?.length === userContactsData?.contacts?.total
+            }
+          >
+            Load More
+          </button>
+          <button
+            className="p-[10px_16px] bg-primary text-white rounded-[8px] text-[14px] font-medium w-[125px]"
+            type="button"
+            onClick={handleSaveSelectedContacts}
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </ModalRoot>
+  );
+};

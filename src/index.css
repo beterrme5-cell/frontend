@@ -160,3 +160,9 @@ span .em-lns-1do042d {
   padding: 25px 20px !important;
   height: 60px !important;
 }
+
+.loadMoreContactsBtn:disabled {
+  background-color: #e0e0e0;
+  color: #9e9e9e;
+  cursor: not-allowed;
+}

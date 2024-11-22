@@ -9,6 +9,7 @@ import { RouterProvider } from "react-router-dom";
 // Mantine Dev Styles
 import "@mantine/core/styles.css";
 import {
+  ContactsSelectionModalEmail,
   DeleteVideoConfirmationModal,
   EditVideoModal,
   ShareVideoModal,
@@ -27,6 +28,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <UploadVideoModal />
     <EditVideoModal />
     <ShareVideoModal />
+    <ContactsSelectionModalEmail />
     {/* Modals */}
     <LoadingBackdrop />
     <RouterProvider router={router} />
