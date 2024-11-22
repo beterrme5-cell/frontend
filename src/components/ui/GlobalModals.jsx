@@ -167,8 +167,6 @@ export const EditVideoModal = () => {
   const videosData = useUserStore((state) => state.videosData);
   const setVideosData = useUserStore((state) => state.setVideosData);
 
-  console.log("Videos Data ", videosData);
-
   // Modal Form
   const form = useForm({
     initialValues: {
@@ -304,8 +302,6 @@ export const ShareVideoModal = () => {
 
   // Use a ref to access the quill instance directly
   const quillRef = useRef();
-
-  console.log("Email Content: ", emailContent);
 
   return (
     <ModalRoot
@@ -662,6 +658,9 @@ export const DeleteVideoConfirmationModal = () => {
     (state) => state.setVideoToBeDeleted
   );
 
+  const videosData = useUserStore((state) => state.videosData);
+  const setVideosData = useUserStore((state) => state.setVideosData);
+
   const handleDeleteVideo = async () => {
     setModalLoadingOverlay(true);
 
@@ -671,6 +670,13 @@ export const DeleteVideoConfirmationModal = () => {
 
     if (response.success) {
       console.log("Video Deleted Successfully", response.data);
+
+      // Remove the Video from the Videos Data
+      const updatedVideosData = videosData.filter(
+        (video) => video._id !== videoToBeDeleted._id
+      );
+
+      setVideosData(updatedVideosData);
     } else {
       console.log("Error while deleting video: ", response.error);
     }
@@ -721,3 +727,5 @@ export const DeleteVideoConfirmationModal = () => {
     </ModalRoot>
   );
 };
+
+export const ContactsSelectionModal = () => {};

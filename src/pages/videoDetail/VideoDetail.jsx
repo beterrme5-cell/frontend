@@ -44,7 +44,6 @@ const VideoDetail = () => {
       const response = await getVideoById(videoId);
 
       if (response.success) {
-        console.log("Video By Id Data", response.data);
         setVideoData(response.data.video);
       }
 

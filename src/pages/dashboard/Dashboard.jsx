@@ -39,9 +39,6 @@ const Dashboard = () => {
 
         // Check responses and set state only after all are resolved
         if (videosResponse.success && historyResponse.success) {
-          console.log("Videos Data: ", videosResponse.data.videos);
-          console.log("History Data: ", historyResponse.data.videos);
-
           // Update states
           setVideosData(videosResponse.data.videos);
           setHistoryData(historyResponse.data.videos);
