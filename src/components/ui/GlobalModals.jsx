@@ -295,6 +295,11 @@ export const ShareVideoModal = () => {
   const setIsContactsSelectionModalOpen = useGlobalModals(
     (state) => state.setIsContactsSelectionModalOpen
   );
+
+  const setIsSMSContactsSelectionModalOpen = useGlobalModals(
+    (state) => state.setIsSMSContactsSelectionModalOpen
+  );
+
   const videoToBeShared = useGlobalModals((state) => state.videoToBeShared);
 
   const [activeTab, setActiveTab] = useState("email");
@@ -504,15 +509,17 @@ export const ShareVideoModal = () => {
                   </Tabs.Tab>
                 </Tabs.List>
                 <Tabs.Panel value="contacts" className="mt-[12px]">
-                  <MultiSelect
-                    className="md:w-1/2 w-full"
-                    placeholder="Select one or Multiple Contacts"
-                    data={["Brad", "Colin", "Babar", "Mohsin"]}
-                    clearable
-                    searchable
-                    nothingFoundMessage="Nothing found..."
-                    hidePickedOptions
-                  />
+                  <button
+                    className="flex justify-center items-center border border-[##E9E8ED] rounded-[8px] p-[8px_12px] text-[14px] gap-[8px] font-medium text-darkBlue"
+                    type="button"
+                    onClick={() => {
+                      setIsSMSContactsSelectionModalOpen(true);
+                      setIsShareVideoModalOpen(false);
+                    }}
+                  >
+                    <p>Select Contacts</p>
+                    <img src={ArrowRightIcon} alt="Arrow Right Icon" />
+                  </button>
                 </Tabs.Panel>
 
                 <Tabs.Panel value="tags" className="mt-[12px]">
@@ -876,6 +883,20 @@ export const ContactsSelectionModalEmail = () => {
     });
 
     setFilteredContacts(filteredContacts);
+
+    if (
+      filteredContacts.length === 0 &&
+      userContactsData?.contacts?.length !== userContactsData?.total &&
+      userContactsData.contacts.length > 0
+    ) {
+      console.log("Filtering Contacts", filteredContacts.length === 0);
+      console.log(
+        "Contacts Length",
+        userContactsData?.contacts?.length !== userContactsData?.total
+      );
+      console.log("3rd Condition", userContactsData.contacts.length > 0);
+      console.log("Fetching Next Page");
+    }
   }, [userContactsData]);
 
   return (
@@ -961,7 +982,239 @@ export const ContactsSelectionModalEmail = () => {
             className="loadMoreContactsBtn p-[10px_16px] border border-[##DBDBDB] rounded-[8px] text-[14px] font-medium text-darkBlue mx-auto"
             type="button"
             onClick={handleLoadMoreContacts}
-            disabled={filteredContacts?.length === userContactsData?.total}
+            disabled={
+              userContactsData?.contacts?.length === userContactsData?.total
+            }
+          >
+            Load More
+          </button>
+          <button
+            className="p-[10px_16px] bg-primary text-white rounded-[8px] text-[14px] font-medium w-[125px]"
+            type="button"
+            onClick={handleSaveSelectedContacts}
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </ModalRoot>
+  );
+};
+
+export const ContactsSelectionModalSMS = () => {
+  const selectedSMSContacts = useGlobalModals(
+    (state) => state.selectedSMSContacts
+  );
+  const setSelectedSMSContacts = useGlobalModals(
+    (state) => state.setSelectedSMSContacts
+  );
+  const modalLoadingOverlay = useGlobalModals(
+    (state) => state.modalLoadingOverlay
+  );
+
+  const setModalLoadingOverlay = useGlobalModals(
+    (state) => state.setModalLoadingOverlay
+  );
+
+  const setIsShareVideoModalOpen = useGlobalModals(
+    (state) => state.setIsShareVideoModalOpen
+  );
+  const isSMSContactsSelectionModalOpen = useGlobalModals(
+    (state) => state.isSMSContactsSelectionModalOpen
+  );
+
+  const setIsSMSContactsSelectionModalOpen = useGlobalModals(
+    (state) => state.setIsSMSContactsSelectionModalOpen
+  );
+
+  const userContactsData = useUserStore((state) => state.userContactsData);
+  const setUserContactsData = useUserStore(
+    (state) => state.setUserContactsData
+  );
+
+  const [selectAllValue, setSelectAllValue] = useState(false);
+
+  const [filteredContacts, setFilteredContacts] = useState([]);
+
+  const [contactsPagination, setContactsPagination] = useState(1);
+
+  console.log("User Contacts Data: ", userContactsData.contacts);
+
+  const handleSelectContact = (contactDetails) => {
+    // Check if the Contact is already selected then on unchecking remove it from the selected contacts
+    const isContactSelected = selectedSMSContacts.some(
+      (contact) => contact.id === contactDetails.id
+    );
+
+    if (isContactSelected) {
+      const updatedSelectedContacts = selectedSMSContacts.filter(
+        (contact) => contact.id !== contactDetails.id
+      );
+      selectedSMSContacts(updatedSelectedContacts);
+      setSelectAllValue(
+        updatedSelectedContacts.length === filteredContacts.length
+      );
+    } else {
+      selectedSMSContacts([
+        ...selectedSMSContacts,
+        {
+          ...contactDetails,
+          isChecked: true,
+        },
+      ]);
+      setSelectAllValue(
+        [...selectedSMSContacts, contactDetails].length ===
+          filteredContacts.length
+      );
+    }
+  };
+
+  const handleSelectAll = (isChecked) => {
+    setSelectAllValue(isChecked);
+    if (isChecked) {
+      // Select all contacts
+      const updatedSelectedContacts = filteredContacts.map((contact) => ({
+        ...contact,
+        isChecked: true,
+      }));
+      selectedSMSContacts(updatedSelectedContacts);
+    } else {
+      // Deselect all contacts
+      selectedSMSContacts([]);
+    }
+  };
+
+  const handleSaveSelectedContacts = () => {
+    console.log("Selected Contacts: ", selectedSMSContacts);
+  };
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      setModalLoadingOverlay(true);
+      // Fetch Contacts from the Database
+      const response = await getContacts({
+        page: contactsPagination,
+        pageLimit: 1,
+      });
+
+      if (response.success) {
+        setUserContactsData(response.data.contacts);
+      } else {
+        console.log("Error while fetching contacts: ", response.error);
+      }
+      setModalLoadingOverlay(false);
+    };
+
+    fetchContacts();
+  }, [setModalLoadingOverlay, setUserContactsData, contactsPagination]);
+
+  useEffect(() => {
+    const filteredContacts = userContactsData?.contacts?.filter((contact) => {
+      return (
+        contact?.phone !== null &&
+        contact?.phone !== undefined &&
+        contact?.phone !== ""
+      );
+    });
+
+    setFilteredContacts(filteredContacts);
+
+    // If filteredContacts are equal to zero then fetch the next page
+    if (
+      filteredContacts.length === 0 &&
+      userContactsData?.contacts?.length !== userContactsData?.total &&
+      userContactsData.contacts.length > 0
+    ) {
+      setContactsPagination((prev) => prev + 1);
+    }
+  }, [userContactsData]);
+
+  return (
+    <ModalRoot
+      loadingOverlay={modalLoadingOverlay}
+      showModal={isSMSContactsSelectionModalOpen}
+      onClose={() => {
+        setIsSMSContactsSelectionModalOpen(false);
+        setIsShareVideoModalOpen(true);
+        setSelectedSMSContacts([]);
+      }}
+    >
+      <div className="w-[70vw] flex flex-col gap-[10px] h-[80dvh] max-h-[90vh]">
+        <div className="flex flex-col gap-[16px] h-[calc(100%-115px)] overflow-auto">
+          <h2 className="font-medium text-[24px]">Select Contacts</h2>
+          <Table>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Contact ID</Table.Th>
+                <Table.Th>Contact Name</Table.Th>
+                <Table.Th>Date Added</Table.Th>
+                <Table.Th>
+                  <Checkbox
+                    value={selectAllValue}
+                    onChange={(event) => handleSelectAll(event.target.checked)}
+                    labelPosition="left"
+                    label={
+                      <p className="text-[14px] font-bold">
+                        Action{" "}
+                        <span className="!font-normal">
+                          {selectAllValue ? "(Deselect All)" : "(Select All)"}
+                        </span>
+                      </p>
+                    }
+                  />
+                </Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {filteredContacts?.map((contact) => {
+                const date = new Date(contact.dateAdded);
+
+                // Format the date as MM/DD/YYYY
+                const formattedDate = `${String(date.getMonth() + 1).padStart(
+                  2,
+                  "0"
+                )}/${String(date.getDate()).padStart(
+                  2,
+                  "0"
+                )}/${date.getFullYear()}`;
+
+                const isChecked =
+                  selectAllValue ||
+                  selectedSMSContacts?.some(
+                    (selectedContact) =>
+                      selectedContact?.id === contact?.id &&
+                      selectedContact?.isChecked
+                  );
+
+                return (
+                  <Table.Tr key={contact.id}>
+                    <Table.Td>{contact.id}</Table.Td>
+                    <Table.Td className="capitalize">
+                      {contact?.firstNameLowerCase +
+                        " " +
+                        contact?.lastNameLowerCase}
+                    </Table.Td>
+                    <Table.Td>{formattedDate}</Table.Td>
+                    <Table.Td>
+                      <Checkbox
+                        checked={isChecked}
+                        onChange={() => handleSelectContact(contact)}
+                      />
+                    </Table.Td>
+                  </Table.Tr>
+                );
+              })}
+            </Table.Tbody>
+          </Table>
+        </div>
+        <div className="bg-white p-[12px_24px] flex flex-col">
+          <button
+            className="loadMoreContactsBtn p-[10px_16px] border border-[##DBDBDB] rounded-[8px] text-[14px] font-medium text-darkBlue mx-auto"
+            type="button"
+            onClick={() => setContactsPagination(contactsPagination + 1)}
+            disabled={
+              userContactsData?.contacts?.length === userContactsData?.total
+            }
           >
             Load More
           </button>

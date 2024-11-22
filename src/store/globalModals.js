@@ -43,4 +43,13 @@ export const useGlobalModals = create((set) => ({
     set({ isContactsSelectionModalOpen: isOpen }),
   selectedContacts: [],
   setSelectedContacts: (contacts) => set({ selectedContacts: contacts }),
+
+  // --------------------------------------------------
+  // Contacts Selection Modal - SMS
+  // --------------------------------------------------
+  isSMSContactsSelectionModalOpen: false,
+  setIsSMSContactsSelectionModalOpen: (isOpen) =>
+    set({ isSMSContactsSelectionModalOpen: isOpen }),
+  selectedSMSContacts: [],
+  setSelectedSMSContacts: (contacts) => set({ selectedSMSContacts: contacts }),
 }));
