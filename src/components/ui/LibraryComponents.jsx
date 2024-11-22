@@ -378,13 +378,13 @@ export const TextEditor = forwardRef(({ onTextChange }, ref) => {
     customButtonsWrapper.id = "custom-buttons-wrapper";
 
     // Add custom buttons to the toolbar
-    const embedButton = document.createElement("button");
-    embedButton.innerHTML = "Embed Video";
-    embedButton.setAttribute("type", "button");
-    embedButton.onclick = () => {
-      // Define what happens when the "Embed Video" button is clicked
-      console.log("Embed Video clicked");
-    };
+    // const embedButton = document.createElement("button");
+    // embedButton.innerHTML = "Embed Video";
+    // embedButton.setAttribute("type", "button");
+    // embedButton.onclick = () => {
+    //   // Define what happens when the "Embed Video" button is clicked
+    //   console.log("Embed Video clicked");
+    // };
 
     const pasteLinkButton = document.createElement("button");
     pasteLinkButton.innerHTML = "Paste Video Link";
@@ -402,12 +402,12 @@ export const TextEditor = forwardRef(({ onTextChange }, ref) => {
       console.log("Paste Thumbnail clicked");
     };
 
-    embedButton.classList.add("ql-formats");
+    // embedButton.classList.add("ql-formats");
     pasteLinkButton.classList.add("ql-formats");
     pasteThumbnailButton.classList.add("ql-formats");
 
     // Append custom buttons to the wrapper
-    customButtonsWrapper.appendChild(embedButton);
+    // customButtonsWrapper.appendChild(embedButton);
     customButtonsWrapper.appendChild(pasteLinkButton);
     customButtonsWrapper.appendChild(pasteThumbnailButton);
 
