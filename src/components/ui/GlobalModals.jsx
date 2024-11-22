@@ -770,13 +770,7 @@ export const ContactsSelectionModalEmail = () => {
 
   const [selectAllValue, setSelectAllValue] = useState(false);
 
-  const filteredContacts = userContactsData?.contacts?.filter((contact) => {
-    return (
-      contact?.email !== null &&
-      contact?.email !== undefined &&
-      contact?.email !== ""
-    );
-  });
+  const [filteredContacts, setFilteredContacts] = useState([]);
 
   const handleSelectContact = (contactDetails) => {
     // Check if the Contact is already selected then on unchecking remove it from the selected contacts
@@ -821,7 +815,32 @@ export const ContactsSelectionModalEmail = () => {
     }
   };
 
-  const handleLoadMoreContacts = () => {};
+  const handleLoadMoreContacts = async () => {
+    setModalLoadingOverlay(true);
+    // Fetch Contacts from the Database
+    const response = await getContacts({
+      page: 2,
+      pageLimit: 1,
+    });
+
+    if (response.success) {
+      console.log("Contacts Next Page Fetched Successfully", response.data);
+      const updatedContacts = {
+        ...userContactsData, // Spread existing data
+        contacts: [
+          ...userContactsData.contacts, // Append existing contacts
+          ...response.data.contacts.contacts, // Add new contacts
+        ],
+      };
+
+      // Update the state with the merged contacts
+      setUserContactsData(updatedContacts);
+    } else {
+      console.log("Error while fetching contacts: ", response.error);
+    }
+
+    setModalLoadingOverlay(false);
+  };
 
   const handleSaveSelectedContacts = () => {
     console.log("Selected Contacts: ", selectedContacts);
@@ -833,7 +852,7 @@ export const ContactsSelectionModalEmail = () => {
       // Fetch Contacts from the Database
       const response = await getContacts({
         page: 1,
-        pageLimit: 100,
+        pageLimit: 1,
       });
 
       if (response.success) {
@@ -846,6 +865,18 @@ export const ContactsSelectionModalEmail = () => {
 
     fetchContacts();
   }, [setModalLoadingOverlay, setUserContactsData]);
+
+  useEffect(() => {
+    const filteredContacts = userContactsData?.contacts?.filter((contact) => {
+      return (
+        contact?.email !== null &&
+        contact?.email !== undefined &&
+        contact?.email !== ""
+      );
+    });
+
+    setFilteredContacts(filteredContacts);
+  }, [userContactsData]);
 
   return (
     <ModalRoot
@@ -930,9 +961,7 @@ export const ContactsSelectionModalEmail = () => {
             className="loadMoreContactsBtn p-[10px_16px] border border-[##DBDBDB] rounded-[8px] text-[14px] font-medium text-darkBlue mx-auto"
             type="button"
             onClick={handleLoadMoreContacts}
-            disabled={
-              userContactsData?.length === userContactsData?.contacts?.total
-            }
+            disabled={filteredContacts?.length === userContactsData?.total}
           >
             Load More
           </button>
