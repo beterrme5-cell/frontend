@@ -18,6 +18,6 @@ export const useUserStore = create((set) => ({
   // --------------------------------------------------
   // User Contacts
   // --------------------------------------------------
-  userContactsData: [],
+  userContactsData: {},
   setUserContactsData: (contacts) => set({ userContactsData: contacts }),
 }));

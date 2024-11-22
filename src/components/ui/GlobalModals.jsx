@@ -777,7 +777,15 @@ export const ContactsSelectionModalEmail = () => {
 
   const [selectAllValue, setSelectAllValue] = useState(false);
 
-  const [filteredContacts, setFilteredContacts] = useState([]);
+  const [contactsPagination, setContactsPagination] = useState(1);
+
+  const filteredContacts = userContactsData?.contacts?.filter((contact) => {
+    return (
+      contact?.email !== null &&
+      contact?.email !== undefined &&
+      contact?.email !== ""
+    );
+  });
 
   const handleSelectContact = (contactDetails) => {
     // Check if the Contact is already selected then on unchecking remove it from the selected contacts
@@ -822,33 +830,6 @@ export const ContactsSelectionModalEmail = () => {
     }
   };
 
-  const handleLoadMoreContacts = async () => {
-    setModalLoadingOverlay(true);
-    // Fetch Contacts from the Database
-    const response = await getContacts({
-      page: 2,
-      pageLimit: 1,
-    });
-
-    if (response.success) {
-      console.log("Contacts Next Page Fetched Successfully", response.data);
-      const updatedContacts = {
-        ...userContactsData, // Spread existing data
-        contacts: [
-          ...userContactsData.contacts, // Append existing contacts
-          ...response.data.contacts.contacts, // Add new contacts
-        ],
-      };
-
-      // Update the state with the merged contacts
-      setUserContactsData(updatedContacts);
-    } else {
-      console.log("Error while fetching contacts: ", response.error);
-    }
-
-    setModalLoadingOverlay(false);
-  };
-
   const handleSaveSelectedContacts = () => {
     console.log("Selected Contacts: ", selectedContacts);
   };
@@ -858,12 +839,25 @@ export const ContactsSelectionModalEmail = () => {
       setModalLoadingOverlay(true);
       // Fetch Contacts from the Database
       const response = await getContacts({
-        page: 1,
-        pageLimit: 1,
+        page: contactsPagination,
+        pageLimit: 100,
       });
 
       if (response.success) {
-        setUserContactsData(response.data.contacts);
+        if (userContactsData.contacts) {
+          const updatedContacts = {
+            ...userContactsData, // Spread existing data
+            contacts: [
+              ...userContactsData.contacts, // Append existing contacts
+              ...response.data.contacts.contacts, // Add new contacts
+            ],
+          };
+
+          // Update the state with the merged contacts
+          setUserContactsData(updatedContacts);
+        } else {
+          setUserContactsData(response.data.contacts);
+        }
       } else {
         console.log("Error while fetching contacts: ", response.error);
       }
@@ -871,33 +865,8 @@ export const ContactsSelectionModalEmail = () => {
     };
 
     fetchContacts();
-  }, [setModalLoadingOverlay, setUserContactsData]);
-
-  useEffect(() => {
-    const filteredContacts = userContactsData?.contacts?.filter((contact) => {
-      return (
-        contact?.email !== null &&
-        contact?.email !== undefined &&
-        contact?.email !== ""
-      );
-    });
-
-    setFilteredContacts(filteredContacts);
-
-    if (
-      filteredContacts.length === 0 &&
-      userContactsData?.contacts?.length !== userContactsData?.total &&
-      userContactsData.contacts.length > 0
-    ) {
-      console.log("Filtering Contacts", filteredContacts.length === 0);
-      console.log(
-        "Contacts Length",
-        userContactsData?.contacts?.length !== userContactsData?.total
-      );
-      console.log("3rd Condition", userContactsData.contacts.length > 0);
-      console.log("Fetching Next Page");
-    }
-  }, [userContactsData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setModalLoadingOverlay, setUserContactsData, contactsPagination]);
 
   return (
     <ModalRoot
@@ -906,11 +875,12 @@ export const ContactsSelectionModalEmail = () => {
       onClose={() => {
         setIsContactsSelectionModalOpen(false);
         setIsShareVideoModalOpen(true);
+        setUserContactsData({});
         setSelectedContacts([]);
       }}
     >
-      <div className="w-[70vw] flex flex-col gap-[10px] h-[80dvh] max-h-[90vh]">
-        <div className="flex flex-col gap-[16px] h-[calc(100%-115px)] overflow-auto">
+      <div className="w-[70vw] flex flex-col gap-[10px] h-[70dvh] max-h-[90vh]">
+        <div className="flex flex-col gap-[16px] h-[calc(100%-110px)] overflow-auto">
           <h2 className="font-medium text-[24px]">Select Contacts</h2>
           <Table>
             <Table.Thead>
@@ -981,7 +951,7 @@ export const ContactsSelectionModalEmail = () => {
           <button
             className="loadMoreContactsBtn p-[10px_16px] border border-[##DBDBDB] rounded-[8px] text-[14px] font-medium text-darkBlue mx-auto"
             type="button"
-            onClick={handleLoadMoreContacts}
+            onClick={() => setContactsPagination(contactsPagination + 1)}
             disabled={
               userContactsData?.contacts?.length === userContactsData?.total
             }
@@ -1034,11 +1004,15 @@ export const ContactsSelectionModalSMS = () => {
 
   const [selectAllValue, setSelectAllValue] = useState(false);
 
-  const [filteredContacts, setFilteredContacts] = useState([]);
-
   const [contactsPagination, setContactsPagination] = useState(1);
 
-  console.log("User Contacts Data: ", userContactsData.contacts);
+  const filteredContacts = userContactsData?.contacts?.filter((contact) => {
+    return (
+      contact?.phone !== null &&
+      contact?.phone !== undefined &&
+      contact?.phone !== ""
+    );
+  });
 
   const handleSelectContact = (contactDetails) => {
     // Check if the Contact is already selected then on unchecking remove it from the selected contacts
@@ -1094,11 +1068,24 @@ export const ContactsSelectionModalSMS = () => {
       // Fetch Contacts from the Database
       const response = await getContacts({
         page: contactsPagination,
-        pageLimit: 1,
+        pageLimit: 100,
       });
 
       if (response.success) {
-        setUserContactsData(response.data.contacts);
+        if (userContactsData.contacts) {
+          const updatedContacts = {
+            ...userContactsData, // Spread existing data
+            contacts: [
+              ...userContactsData.contacts, // Append existing contacts
+              ...response.data.contacts.contacts, // Add new contacts
+            ],
+          };
+
+          // Update the state with the merged contacts
+          setUserContactsData(updatedContacts);
+        } else {
+          setUserContactsData(response.data.contacts);
+        }
       } else {
         console.log("Error while fetching contacts: ", response.error);
       }
@@ -1106,28 +1093,8 @@ export const ContactsSelectionModalSMS = () => {
     };
 
     fetchContacts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setModalLoadingOverlay, setUserContactsData, contactsPagination]);
-
-  useEffect(() => {
-    const filteredContacts = userContactsData?.contacts?.filter((contact) => {
-      return (
-        contact?.phone !== null &&
-        contact?.phone !== undefined &&
-        contact?.phone !== ""
-      );
-    });
-
-    setFilteredContacts(filteredContacts);
-
-    // If filteredContacts are equal to zero then fetch the next page
-    if (
-      filteredContacts.length === 0 &&
-      userContactsData?.contacts?.length !== userContactsData?.total &&
-      userContactsData.contacts.length > 0
-    ) {
-      setContactsPagination((prev) => prev + 1);
-    }
-  }, [userContactsData]);
 
   return (
     <ModalRoot
@@ -1137,10 +1104,11 @@ export const ContactsSelectionModalSMS = () => {
         setIsSMSContactsSelectionModalOpen(false);
         setIsShareVideoModalOpen(true);
         setSelectedSMSContacts([]);
+        setUserContactsData({});
       }}
     >
-      <div className="w-[70vw] flex flex-col gap-[10px] h-[80dvh] max-h-[90vh]">
-        <div className="flex flex-col gap-[16px] h-[calc(100%-115px)] overflow-auto">
+      <div className="w-[70vw] flex flex-col gap-[10px] h-[70dvh] max-h-[90vh]">
+        <div className="flex flex-col gap-[16px] h-[calc(100%-110px)] overflow-auto">
           <h2 className="font-medium text-[24px]">Select Contacts</h2>
           <Table>
             <Table.Thead>
