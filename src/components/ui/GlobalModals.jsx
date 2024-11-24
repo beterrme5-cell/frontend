@@ -369,8 +369,6 @@ export const ShareVideoModal = () => {
     // extract the emails from the selected contacts
     const selectedContactIds = selectedSMSContacts.map((contact) => contact.id);
 
-    console.log("Selected Contacts: ", selectedContactIds);
-
     // Send Email API
     const response = await sendSMSToSelectedContacts({
       contactIds: selectedContactIds,
