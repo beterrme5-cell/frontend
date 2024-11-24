@@ -336,6 +336,8 @@ export const HistoryTableList = ({ historyData }) => {
 };
 
 export const TextEditor = forwardRef(({ onTextChange }, ref) => {
+  const videoToBeShared = useGlobalModals((state) => state.videoToBeShared);
+
   const containerRef = useRef(null);
   const onTextChangeRef = useRef(onTextChange);
 
@@ -377,29 +379,40 @@ export const TextEditor = forwardRef(({ onTextChange }, ref) => {
     const customButtonsWrapper = document.createElement("div");
     customButtonsWrapper.id = "custom-buttons-wrapper";
 
-    // Add custom buttons to the toolbar
-    // const embedButton = document.createElement("button");
-    // embedButton.innerHTML = "Embed Video";
-    // embedButton.setAttribute("type", "button");
-    // embedButton.onclick = () => {
-    //   // Define what happens when the "Embed Video" button is clicked
-    //   console.log("Embed Video clicked");
-    // };
-
     const pasteLinkButton = document.createElement("button");
     pasteLinkButton.innerHTML = "Paste Video Link";
     pasteLinkButton.setAttribute("type", "button");
     pasteLinkButton.onclick = () => {
-      // Define what happens when the "Paste Video Link" button is clicked
-      console.log("Paste Video Link clicked");
+      // Paste the video link into the editor
+      const range = quill.getSelection();
+
+      if (range === null) {
+        const updatedVideoLink = `${videoToBeShared?.shareableLink} `;
+
+        quill.insertText(0, updatedVideoLink, {
+          bold: true,
+        });
+
+        return quill.setSelection(range.index + updatedVideoLink.length);
+      }
+
+      // Adding a space before and after the link
+      const updatedVideoLink = ` ${videoToBeShared?.shareableLink} `;
+
+      // Insert the link with formatting
+      quill.insertText(range.index, updatedVideoLink, {
+        bold: true,
+      });
+
+      // Move the cursor to the end of the inserted link
+      quill.setSelection(range.index + updatedVideoLink.length);
     };
 
     const pasteThumbnailButton = document.createElement("button");
     pasteThumbnailButton.innerHTML = "Paste Thumbnail";
     pasteThumbnailButton.setAttribute("type", "button");
     pasteThumbnailButton.onclick = () => {
-      // Define what happens when the "Paste Thumbnail" button is clicked
-      console.log("Paste Thumbnail clicked");
+      console.log("Paste Thumbnail clicked", videoToBeShared);
     };
 
     // embedButton.classList.add("ql-formats");
@@ -424,6 +437,7 @@ export const TextEditor = forwardRef(({ onTextChange }, ref) => {
       ref.current = null;
       container.innerHTML = "";
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ref]);
   return (
     <div className="flex flex-col gap-[8px]">

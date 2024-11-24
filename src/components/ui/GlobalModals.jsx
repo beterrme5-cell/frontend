@@ -26,6 +26,7 @@ import { TextEditor } from "./LibraryComponents";
 import { deleteVideo, getContacts, updateVideo } from "../../api/libraryAPIs";
 import { useUserStore } from "../../store/userStore";
 import ArrowRightIcon from "../../assets/icons/ArrowRight.svg";
+import { sendEmailToSelectedContacts } from "../../api/commsAPIs";
 
 function quillGetHTML(inputDelta) {
   var tempCont = document.createElement("div");
@@ -283,8 +284,17 @@ export const EditVideoModal = () => {
 
 // Modal to share the video
 export const ShareVideoModal = () => {
+  const selectedContacts = useGlobalModals((state) => state.selectedContacts);
+  const setSelectedContacts = useGlobalModals(
+    (state) => state.setSelectedContacts
+  );
+
   const modalLoadingOverlay = useGlobalModals(
     (state) => state.modalLoadingOverlay
+  );
+
+  const setModalLoadingOverlay = useGlobalModals(
+    (state) => state.setModalLoadingOverlay
   );
   const isShareVideoModalOpen = useGlobalModals(
     (state) => state.isShareVideoModalOpen
@@ -308,30 +318,45 @@ export const ShareVideoModal = () => {
   // State to store the content of Input Field of SMS
   const [smsContent, setSmsContent] = useState("");
 
-  // State to store the Email Content
-  // eslint-disable-next-line no-unused-vars
-  const [emailContent, setEmailContent] = useState("");
-
   // Use a ref to access the quill instance directly
   const quillRef = useRef();
 
-  const handleSubmitEmail = () => {
+  const handleSubmitEmail = async () => {
+    // Get the Delta of the Quill Editor
     let delta = quillRef.current.getContents();
-    console.log("Email Content:", delta);
-    const finalHtmlContent = `
-                      <!DOCTYPE html>
-                      <html lang="en">
-                      <head>
-                          <meta charset="UTF-8">
-                          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                          <title>Email</title>
-                      </head>
-                      <body style="font-family: Arial, sans-serif; color: #000000; line-height: 1.6; padding: 20px;">
-                          ${quillGetHTML(delta)}
-                      </body>
-                      </html>
-                    `;
-    console.log("Formatted HTML Email:", finalHtmlContent);
+
+    setModalLoadingOverlay(true);
+
+    // extract the emails from the selected contacts
+    const selectedContactIds = selectedContacts.map((contact) => contact.id);
+
+    // Send Email API
+    const response = await sendEmailToSelectedContacts({
+      contactIds: selectedContactIds,
+      message: quillGetHTML(delta),
+    });
+
+    if (response.success) {
+      console.log("Email Sent Successfully", response.data);
+
+      // Clear the selected contacts
+      setSelectedContacts([]);
+
+      // Clear the Quill Editor
+      quillRef.current.setContents("");
+
+      // Close the Modal
+      setIsShareVideoModalOpen(false);
+    } else {
+      console.log("Error while sending email: ", response.error);
+    }
+    setModalLoadingOverlay(false);
+  };
+
+  const handleSubmitSMS = async () => {
+    console.log("SMS Content:", smsContent);
+
+    console.log("selectedContacts", selectedContacts);
   };
 
   return (
@@ -456,7 +481,7 @@ export const ShareVideoModal = () => {
                   />
                 </Tabs.Panel>
               </Tabs>
-              <TextEditor ref={quillRef} onTextChange={setEmailContent} />
+              <TextEditor ref={quillRef} />
               <div className="flex items-center gap-[16px]">
                 <CustomButton
                   label="Send Email"
@@ -535,8 +560,8 @@ export const ShareVideoModal = () => {
                 </Tabs.Panel>
               </Tabs>
               <div className="w-full">
-                <p className="text-[14px] mb-[8px]">Embed Link</p>
-                <div className="relative rounded-[12px] w-full h-[350px] bg-[#F7F7F8] border border-[#D7D5DD] overflow-hidden">
+                <p className="text-[14px] mb-[8px]">Content</p>
+                <div className="relative rounded-[12px] w-full h-[350px] !bg-[#F7F7F8] border border-[#D7D5DD] overflow-hidden">
                   <button
                     type="button"
                     className="bg-white p-[8px] text-darkBlue text-[14px] font-medium shadow-sm w-full text-start"
@@ -547,10 +572,10 @@ export const ShareVideoModal = () => {
                     Paste Video Link
                   </button>
                   <textarea
-                    placeholder="SMs Content"
+                    placeholder="SMS Content"
                     value={smsContent}
                     onChange={(e) => setSmsContent(e.target.value)}
-                    className="!bg-transparent w-full m-[8px] text-[14px] outline-none"
+                    className="!bg-transparent h-full w-full text-[14px] outline-none p-[8px]"
                   />
                 </div>
               </div>
@@ -559,7 +584,7 @@ export const ShareVideoModal = () => {
                   label="Send SMS"
                   varient="filled"
                   className="w-fit"
-                  onClick={() => {}}
+                  onClick={handleSubmitSMS}
                 />
                 <CustomButton
                   label="Cancel"
@@ -831,7 +856,8 @@ export const ContactsSelectionModalEmail = () => {
   };
 
   const handleSaveSelectedContacts = () => {
-    console.log("Selected Contacts: ", selectedContacts);
+    setIsContactsSelectionModalOpen(false);
+    setIsShareVideoModalOpen(true);
   };
 
   useEffect(() => {
@@ -844,20 +870,7 @@ export const ContactsSelectionModalEmail = () => {
       });
 
       if (response.success) {
-        if (userContactsData.contacts) {
-          const updatedContacts = {
-            ...userContactsData, // Spread existing data
-            contacts: [
-              ...userContactsData.contacts, // Append existing contacts
-              ...response.data.contacts.contacts, // Add new contacts
-            ],
-          };
-
-          // Update the state with the merged contacts
-          setUserContactsData(updatedContacts);
-        } else {
-          setUserContactsData(response.data.contacts);
-        }
+        setUserContactsData(response.data.contacts);
       } else {
         console.log("Error while fetching contacts: ", response.error);
       }
@@ -866,7 +879,35 @@ export const ContactsSelectionModalEmail = () => {
 
     fetchContacts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setModalLoadingOverlay, setUserContactsData, contactsPagination]);
+  }, [setModalLoadingOverlay, setUserContactsData]);
+
+  const handleLoadMoreContacts = async () => {
+    setModalLoadingOverlay(true);
+
+    // Fetch Contacts from the Database
+    const response = await getContacts({
+      page: contactsPagination + 1,
+      pageLimit: 100,
+    });
+
+    if (response.success) {
+      const updatedContacts = {
+        ...userContactsData, // Spread existing data
+        contacts: [
+          ...userContactsData.contacts, // Append existing contacts
+          ...response.data.contacts.contacts, // Add new contacts
+        ],
+      };
+
+      // Update the state with the merged contacts
+      setUserContactsData(updatedContacts);
+      setContactsPagination(contactsPagination + 1);
+    } else {
+      console.log("Error while fetching contacts: ", response.error);
+    }
+
+    setModalLoadingOverlay(false);
+  };
 
   return (
     <ModalRoot
@@ -951,7 +992,7 @@ export const ContactsSelectionModalEmail = () => {
           <button
             className="loadMoreContactsBtn p-[10px_16px] border border-[##DBDBDB] rounded-[8px] text-[14px] font-medium text-darkBlue mx-auto"
             type="button"
-            onClick={() => setContactsPagination(contactsPagination + 1)}
+            onClick={handleLoadMoreContacts}
             disabled={
               userContactsData?.contacts?.length === userContactsData?.total
             }
@@ -1072,20 +1113,7 @@ export const ContactsSelectionModalSMS = () => {
       });
 
       if (response.success) {
-        if (userContactsData.contacts) {
-          const updatedContacts = {
-            ...userContactsData, // Spread existing data
-            contacts: [
-              ...userContactsData.contacts, // Append existing contacts
-              ...response.data.contacts.contacts, // Add new contacts
-            ],
-          };
-
-          // Update the state with the merged contacts
-          setUserContactsData(updatedContacts);
-        } else {
-          setUserContactsData(response.data.contacts);
-        }
+        setUserContactsData(response.data.contacts);
       } else {
         console.log("Error while fetching contacts: ", response.error);
       }
@@ -1094,7 +1122,35 @@ export const ContactsSelectionModalSMS = () => {
 
     fetchContacts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setModalLoadingOverlay, setUserContactsData, contactsPagination]);
+  }, [setModalLoadingOverlay, setUserContactsData]);
+
+  const handleLoadMoreContacts = async () => {
+    setModalLoadingOverlay(true);
+
+    // Fetch Contacts from the Database
+    const response = await getContacts({
+      page: contactsPagination + 1,
+      pageLimit: 100,
+    });
+
+    if (response.success) {
+      const updatedContacts = {
+        ...userContactsData, // Spread existing data
+        contacts: [
+          ...userContactsData.contacts, // Append existing contacts
+          ...response.data.contacts.contacts, // Add new contacts
+        ],
+      };
+
+      // Update the state with the merged contacts
+      setUserContactsData(updatedContacts);
+      setContactsPagination(contactsPagination + 1);
+    } else {
+      console.log("Error while fetching contacts: ", response.error);
+    }
+
+    setModalLoadingOverlay(false);
+  };
 
   return (
     <ModalRoot
@@ -1179,7 +1235,7 @@ export const ContactsSelectionModalSMS = () => {
           <button
             className="loadMoreContactsBtn p-[10px_16px] border border-[##DBDBDB] rounded-[8px] text-[14px] font-medium text-darkBlue mx-auto"
             type="button"
-            onClick={() => setContactsPagination(contactsPagination + 1)}
+            onClick={handleLoadMoreContacts}
             disabled={
               userContactsData?.contacts?.length === userContactsData?.total
             }
