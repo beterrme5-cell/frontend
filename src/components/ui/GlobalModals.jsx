@@ -26,7 +26,10 @@ import { TextEditor } from "./LibraryComponents";
 import { deleteVideo, getContacts, updateVideo } from "../../api/libraryAPIs";
 import { useUserStore } from "../../store/userStore";
 import ArrowRightIcon from "../../assets/icons/ArrowRight.svg";
-import { sendEmailToSelectedContacts } from "../../api/commsAPIs";
+import {
+  sendEmailToSelectedContacts,
+  sendSMSToSelectedContacts,
+} from "../../api/commsAPIs";
 
 function quillGetHTML(inputDelta) {
   var tempCont = document.createElement("div");
@@ -289,6 +292,13 @@ export const ShareVideoModal = () => {
     (state) => state.setSelectedContacts
   );
 
+  const selectedSMSContacts = useGlobalModals(
+    (state) => state.selectedSMSContacts
+  );
+  const setSelectedSMSContacts = useGlobalModals(
+    (state) => state.setSelectedSMSContacts
+  );
+
   const modalLoadingOverlay = useGlobalModals(
     (state) => state.modalLoadingOverlay
   );
@@ -354,9 +364,31 @@ export const ShareVideoModal = () => {
   };
 
   const handleSubmitSMS = async () => {
-    console.log("SMS Content:", smsContent);
+    setModalLoadingOverlay(true);
 
-    console.log("selectedContacts", selectedContacts);
+    // extract the emails from the selected contacts
+    const selectedContactIds = selectedSMSContacts.map((contact) => contact.id);
+
+    console.log("Selected Contacts: ", selectedContactIds);
+
+    // Send Email API
+    const response = await sendSMSToSelectedContacts({
+      contactIds: selectedContactIds,
+      message: smsContent,
+    });
+
+    if (response.success) {
+      console.log("SMS Sent Successfully", response.data);
+
+      // Clear the selected contacts
+      setSelectedSMSContacts([]);
+
+      // Close the Modal
+      setIsShareVideoModalOpen(false);
+    } else {
+      console.log("Error while sending SMS: ", response.error);
+    }
+    setModalLoadingOverlay(false);
   };
 
   return (
@@ -566,7 +598,9 @@ export const ShareVideoModal = () => {
                     type="button"
                     className="bg-white p-[8px] text-darkBlue text-[14px] font-medium shadow-sm w-full text-start"
                     onClick={() => {
-                      setSmsContent(`${videoToBeShared.videoLink}`);
+                      setSmsContent(
+                        `${smsContent} ${videoToBeShared?.shareableLink} `
+                      );
                     }}
                   >
                     Paste Video Link
@@ -1065,12 +1099,12 @@ export const ContactsSelectionModalSMS = () => {
       const updatedSelectedContacts = selectedSMSContacts.filter(
         (contact) => contact.id !== contactDetails.id
       );
-      selectedSMSContacts(updatedSelectedContacts);
+      setSelectedSMSContacts(updatedSelectedContacts);
       setSelectAllValue(
         updatedSelectedContacts.length === filteredContacts.length
       );
     } else {
-      selectedSMSContacts([
+      setSelectedSMSContacts([
         ...selectedSMSContacts,
         {
           ...contactDetails,
@@ -1100,7 +1134,8 @@ export const ContactsSelectionModalSMS = () => {
   };
 
   const handleSaveSelectedContacts = () => {
-    console.log("Selected Contacts: ", selectedSMSContacts);
+    setIsSMSContactsSelectionModalOpen(false);
+    setIsShareVideoModalOpen(true);
   };
 
   useEffect(() => {
