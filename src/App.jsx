@@ -6,6 +6,7 @@ import {
   ContactsSelectionModalEmail,
   ContactsSelectionModalSMS,
 } from "./components/ui/GlobalModals";
+import { useUserStore } from "./store/userStore";
 
 function App() {
   const isSMSContactsSelectionModalOpen = useGlobalModals(
@@ -15,6 +16,8 @@ function App() {
   const isContactsSelectionModalOpen = useGlobalModals(
     (state) => state.isContactsSelectionModalOpen
   );
+
+  const setFetchVideosData = useUserStore((state) => state.setFetchVideosData);
 
   useEffect(() => {
     const postKeyToAPIAndCheckUserId = async () => {
@@ -32,10 +35,13 @@ function App() {
 
       // Save the accountId and userLocationId in the Local Storage
       localStorage.setItem("accessToken", response?.data?.accessToken);
+
+      // Set the fetchVideosData to true
+      setFetchVideosData((prev) => !prev);
     };
 
     postKeyToAPIAndCheckUserId();
-  }, []);
+  }, [setFetchVideosData]);
 
   return (
     <main className="App overflow-x-hidden md:p-[32px] p-[20px]">

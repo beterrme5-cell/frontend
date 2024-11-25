@@ -27,6 +27,8 @@ const Dashboard = () => {
 
   const setLoading = useLoadingBackdrop((state) => state.setLoading);
 
+  const fetchVideosData = useUserStore((state) => state.fetchVideosData);
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -60,7 +62,7 @@ const Dashboard = () => {
     };
 
     fetchData();
-  }, [setLoading, setVideosData]);
+  }, [setLoading, setVideosData, fetchVideosData]);
 
   return (
     <LibraryRoot>

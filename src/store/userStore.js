@@ -1,6 +1,10 @@
 import { create } from "zustand";
 
 export const useUserStore = create((set) => ({
+  // State to fetch the videos data when the access token is available
+  fetchVideosData: false,
+  setFetchVideosData: (fetchVideosData) => set({ fetchVideosData }),
+
   // --------------------------------------------------
   // User State
   // --------------------------------------------------

@@ -2,11 +2,10 @@ import axios from "axios";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-// Get the accountId and userLocationId from the Local Storage
-const accessToken = localStorage.getItem("accessToken");
-
 // API to get all videos from the database\
 export const getAllVideos = async () => {
+  // Get the accountId and userLocationId from the Local Storage
+  const accessToken = localStorage.getItem("accessToken");
   try {
     const response = await axios.get(`${BASE_URL}/video/getVideosByAccountId`, {
       headers: {
@@ -28,6 +27,8 @@ export const getAllVideos = async () => {
 
 // API to get Speific video from the database by id
 export const getVideoById = async (videoId) => {
+  const accessToken = localStorage.getItem("accessToken");
+
   try {
     const response = await axios.get(
       `${BASE_URL}/video/getVideoById/${videoId}`,
@@ -52,6 +53,8 @@ export const getVideoById = async (videoId) => {
 
 // API to save recorded video to the database
 export const saveRecordedVideo = async (videoData) => {
+  const accessToken = localStorage.getItem("accessToken");
+
   try {
     const response = await axios.post(
       `${BASE_URL}/video/saveNewVideo`,
@@ -77,6 +80,8 @@ export const saveRecordedVideo = async (videoData) => {
 
 // API to update video in the database
 export const updateVideo = async (params) => {
+  const accessToken = localStorage.getItem("accessToken");
+
   try {
     const response = await axios.put(
       `${BASE_URL}/video/updateVideo`,
@@ -106,6 +111,8 @@ export const updateVideo = async (params) => {
 
 // API to delete video from the database
 export const deleteVideo = async (params) => {
+  const accessToken = localStorage.getItem("accessToken");
+
   try {
     const response = await axios.delete(
       `${BASE_URL}/video/deleteVideo/${params.videoId}`,
@@ -130,6 +137,8 @@ export const deleteVideo = async (params) => {
 
 // API to get the Contacts of the user
 export const getContacts = async (params) => {
+  const accessToken = localStorage.getItem("accessToken");
+
   try {
     const response = await axios.post(
       `${BASE_URL}/user/getUserContacts`,
