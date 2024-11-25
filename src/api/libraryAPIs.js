@@ -54,7 +54,6 @@ export const getVideoById = async (videoId) => {
 // API to save recorded video to the database
 export const saveRecordedVideo = async (videoData) => {
   const accessToken = localStorage.getItem("accessToken");
-
   try {
     const response = await axios.post(
       `${BASE_URL}/video/saveNewVideo`,

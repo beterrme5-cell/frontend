@@ -102,15 +102,15 @@ export const RecordLoomVideoBtn = () => {
 };
 
 // Start Recording Button for the Record Video Modal
-export const StartRecordingBtn = ({ onStartRecording }) => {
+export const StartRecordingBtn = ({
+  onStartRecording,
+  afterRecordingStart,
+  newvideoFormData,
+}) => {
   const BUTTON_ID = "start-recording-button";
   const videosData = useUserStore((state) => state.videosData);
   const setVideosData = useUserStore((state) => state.setVideosData);
   const LOOM_APP_ID = "d5dfdcdb-3445-443a-9fca-a61b0161a9ae";
-
-  const newRecordingVideoData = useGlobalModals(
-    (state) => state.newRecordingVideoData
-  );
 
   // Loom SDK Setup
   useEffect(() => {
@@ -153,7 +153,7 @@ export const StartRecordingBtn = ({ onStartRecording }) => {
 
         sdkButton.on("insert-click", async (LoomVideo) => {
           const videoData = {
-            title: newRecordingVideoData.recordingName || LoomVideo.title,
+            title: newvideoFormData.recordingName || LoomVideo.title,
             embeddedLink: LoomVideo.embedUrl || "",
             shareableLink: LoomVideo.sharedUrl || "",
           };
@@ -178,10 +178,16 @@ export const StartRecordingBtn = ({ onStartRecording }) => {
           }
         });
 
+        // Event emitted when video capture has begun (after 3..2..1 countdown)
+        sdkButton.on("recording-start", () => {
+          afterRecordingStart();
+        });
+
         // sdkButton.on("recording-complete", async (LoomVideo) => {
         //   console.log("Recording Completed", LoomVideo);
         // });
 
+        // Event emitted when user has selected start recording
         sdkButton.on("start", () => {
           onStartRecording();
         });

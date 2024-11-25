@@ -74,10 +74,6 @@ export const PreRecordingDataInputModal = () => {
     (state) => state.setIsNewRecordingModalOpen
   );
 
-  const setNewRecordingVideoData = useGlobalModals(
-    (state) => state.setNewRecordingVideoData
-  );
-
   const form = useForm({
     initialValues: {
       recordingName: "",
@@ -103,13 +99,6 @@ export const PreRecordingDataInputModal = () => {
 
       return;
     }
-
-    setNewRecordingVideoData({
-      recordingName: recordingName,
-      recordingDescription: recordingDescription,
-    });
-
-    setIsNewRecordingModalOpen(false);
   };
 
   return (
@@ -140,7 +129,24 @@ export const PreRecordingDataInputModal = () => {
             error={form.errors.recordingDescription}
           />
 
-          <StartRecordingBtn onStartRecording={() => handleStartRecording()} />
+          {form.values.recordingName.length < 3 ||
+          form.values.recordingDescription.length < 3 ? (
+            <button
+              className="bg-primary text-white border-none p-[8px_16px] text-[14px] font-medium rounded-[8px] hover:cursor-pointer"
+              type="button"
+              onClick={() => {
+                handleStartRecording();
+              }}
+            >
+              Start Reacording
+            </button>
+          ) : (
+            <StartRecordingBtn
+              onStartRecording={() => setIsNewRecordingModalOpen(false)}
+              afterRecordingStart={() => form.reset()}
+              newvideoFormData={form.values}
+            />
+          )}
         </form>
       </div>
     </ModalRoot>
