@@ -10,7 +10,7 @@ import { useGlobalModals } from "../../store/globalModals";
 import { Link } from "react-router-dom";
 import { forwardRef, useEffect, useLayoutEffect, useRef } from "react";
 import Quill from "quill";
-import { setup } from "@loomhq/record-sdk";
+import { createInstance } from "@loomhq/record-sdk";
 import { isSupported } from "@loomhq/record-sdk/is-supported";
 import { saveRecordedVideo } from "../../api/libraryAPIs";
 import axios from "axios";
@@ -43,15 +43,13 @@ const RecordLoomVideoBtn = () => {
   const BUTTON_ID = "loom-record-sdk-button";
   const videosData = useUserStore((state) => state.videosData);
   const setVideosData = useUserStore((state) => state.setVideosData);
-
+  const LOOM_APP_ID = "d5dfdcdb-3445-443a-9fca-a61b0161a9ae";
   // Loom SDK Setup
   useEffect(() => {
     async function setupLoom() {
       try {
         // Fetch the signed JWT from the server
-        const response = await axios.get(
-          "http://localhost:8000/get-loom-token"
-        );
+        const response = await axios.get("http://localhost:8000/setup");
 
         if (response.status !== 200) throw new Error("Failed to fetch token");
         const { token: serverJws } = response.data;
@@ -64,12 +62,10 @@ const RecordLoomVideoBtn = () => {
         }
 
         // Initialize Loom SDK with the JWT and Public App ID
-        const { configureButton } = await setup({
-          mode: "standard",
+        const { configureButton } = await createInstance({
+          mode: "custom",
           jws: serverJws,
-          config: {
-            insertButtonText: "Save Video",
-          },
+          publicAppId: LOOM_APP_ID,
         });
 
         const button = document.getElementById(BUTTON_ID);
