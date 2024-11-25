@@ -11,7 +11,9 @@ import "@mantine/core/styles.css";
 import {
   DeleteVideoConfirmationModal,
   EditVideoModal,
+  PreRecordingDataInputModal,
   ShareVideoModal,
+  StartRecordingWarningModal,
   UploadVideoModal,
 } from "./components/ui/GlobalModals.jsx";
 import LoadingBackdrop from "./components/ui/LoadingBackdrop.jsx";
@@ -27,6 +29,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <UploadVideoModal />
     <EditVideoModal />
     <ShareVideoModal />
+    <PreRecordingDataInputModal />
+    <StartRecordingWarningModal />
     {/* Modals */}
     <LoadingBackdrop />
     <RouterProvider router={router} />

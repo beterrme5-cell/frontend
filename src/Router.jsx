@@ -3,6 +3,7 @@ import App from "./App.jsx";
 import Dashboard from "./pages/dashboard/Dashboard";
 import VideoDetail from "./pages/videoDetail/VideoDetail.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
+import RecordVideo from "./pages/recordVideo/RecordVideo.jsx";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -11,6 +12,10 @@ export const router = createBrowserRouter([
       {
         path: "",
         element: <Dashboard />,
+      },
+      {
+        path: "/recordings",
+        element: <RecordVideo />,
       },
       {
         path: "video-detail/:videoId",
@@ -42,5 +47,5 @@ export const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />,
-  }
+  },
 ]);

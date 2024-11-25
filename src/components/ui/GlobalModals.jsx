@@ -22,7 +22,7 @@ import {
   EMBED_ICON,
   SMS_ICON,
 } from "../../assets/icons/DynamicIcons";
-import { TextEditor } from "./LibraryComponents";
+import { StartRecordingBtn, TextEditor } from "./LibraryComponents";
 import { deleteVideo, getContacts, updateVideo } from "../../api/libraryAPIs";
 import { useUserStore } from "../../store/userStore";
 import ArrowRightIcon from "../../assets/icons/ArrowRight.svg";
@@ -58,6 +58,139 @@ const ModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
       </button>
       {children}
     </Modal>
+  );
+};
+
+// New Recording Modal
+export const PreRecordingDataInputModal = () => {
+  const modalLoadingOverlay = useGlobalModals(
+    (state) => state.modalLoadingOverlay
+  );
+
+  const isNewRecordingModalOpen = useGlobalModals(
+    (state) => state.isNewRecordingModalOpen
+  );
+  const setIsNewRecordingModalOpen = useGlobalModals(
+    (state) => state.setIsNewRecordingModalOpen
+  );
+
+  const setNewRecordingVideoData = useGlobalModals(
+    (state) => state.setNewRecordingVideoData
+  );
+
+  const form = useForm({
+    initialValues: {
+      recordingName: "",
+      recordingDescription: "",
+    },
+  });
+
+  const handleStartRecording = () => {
+    const { recordingName, recordingDescription } = form.values;
+
+    if (recordingName.length < 3) {
+      form.setFieldError(
+        "recordingName",
+        "Recording Name must be at least 3 characters long"
+      );
+
+      if (recordingDescription.length < 3) {
+        form.setFieldError(
+          "recordingDescription",
+          "Recording Description must be at least 3 characters long"
+        );
+      }
+
+      return;
+    }
+
+    setNewRecordingVideoData({
+      recordingName: recordingName,
+      recordingDescription: recordingDescription,
+    });
+
+    setIsNewRecordingModalOpen(false);
+  };
+
+  return (
+    <ModalRoot
+      loadingOverlay={modalLoadingOverlay}
+      showModal={isNewRecordingModalOpen}
+      onClose={() => {
+        setIsNewRecordingModalOpen(false);
+      }}
+    >
+      <div className="flex flex-col gap-[24px] w-[738px]">
+        <h3 className="text-[24px] font-medium">New Video Record</h3>
+        <form className="flex flex-col gap-[24px]">
+          <TextInput
+            label="Recording Name"
+            placeholder="Enter Recording Name"
+            {...form.getInputProps("recordingName")}
+            id="recordingName"
+            className="w-[350px]"
+            error={form.errors.recordingName}
+          />
+
+          <Textarea
+            id="recordingDescription"
+            label="Recording Description"
+            placeholder="Enter Recording Description"
+            {...form.getInputProps("recordingDescription")}
+            error={form.errors.recordingDescription}
+          />
+
+          <StartRecordingBtn onStartRecording={() => handleStartRecording()} />
+        </form>
+      </div>
+    </ModalRoot>
+  );
+};
+
+// Modal to show warning to the User before starting the recording
+export const StartRecordingWarningModal = () => {
+  const isWarningModalOpen = useGlobalModals(
+    (state) => state.isWarningModalOpen
+  );
+  const setIsWarningModalOpen = useGlobalModals(
+    (state) => state.setIsWarningModalOpen
+  );
+
+  return (
+    <ModalRoot
+      loadingOverlay={false}
+      showModal={isWarningModalOpen}
+      onClose={() => {
+        setIsWarningModalOpen(false);
+      }}
+    >
+      <div className="flex flex-col items-center text-center gap-[12px] w-[500px]">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="50"
+          height="50"
+          viewBox="0 0 24 24"
+          fill="red"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M12 1.67c.955 0 1.845 .467 2.39 1.247l.105 .16l8.114 13.548a2.914 2.914 0 0 1 -2.307 4.363l-.195 .008h-16.225a2.914 2.914 0 0 1 -2.582 -4.2l.099 -.185l8.11 -13.538a2.914 2.914 0 0 1 2.491 -1.403zm.01 13.33l-.127 .007a1 1 0 0 0 0 1.986l.117 .007l.127 -.007a1 1 0 0 0 0 -1.986l-.117 -.007zm-.01 -7a1 1 0 0 0 -.993 .883l-.007 .117v4l.007 .117a1 1 0 0 0 1.986 0l.007 -.117v-4l-.007 -.117a1 1 0 0 0 -.993 -.883z" />
+        </svg>
+        <h2 className="font-bold text-[24px]">Oops...</h2>
+        <p className="text-[14px] text-gray-500">
+          Due to the security reasons, you can&apos;t record a screen inside the
+          iframe. Please do screen recording in new tab opened.
+        </p>
+        <button
+          className="bg-primary text-[16px] font-medium w-[150px] p-[12px_16px] text-white rounded-[8px] mt-[12px]"
+          type="button"
+          onClick={() => {
+            setIsWarningModalOpen(false);
+          }}
+        >
+          Ok
+        </button>
+      </div>
+    </ModalRoot>
   );
 };
 

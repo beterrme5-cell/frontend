@@ -6,6 +6,19 @@ export const useGlobalModals = create((set) => ({
   setModalLoadingOverlay: (isLoading) =>
     set({ modalLoadingOverlay: isLoading }),
 
+  // New Recording Modal States
+  isNewRecordingModalOpen: false,
+  setIsNewRecordingModalOpen: (isOpen) =>
+    set({ isNewRecordingModalOpen: isOpen }),
+  newRecordingVideoData: {
+    recordingName: "",
+    recordingDescription: "",
+  },
+  setNewRecordingVideoData: (videoData) =>
+    set({ newRecordingVideoData: videoData }),
+  isWarningModalOpen: false,
+  setIsWarningModalOpen: (isOpen) => set({ isWarningModalOpen: isOpen }),
+
   // --------------------------------------------------
   // Delete Video Confirmation Modal
   // --------------------------------------------------

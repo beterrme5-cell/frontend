@@ -7,7 +7,7 @@ import EditIcon from "../../assets/icons/edit-icon.svg";
 import DeleteIcon from "../../assets/icons/delete-icon.svg";
 import { Menu, Tabs, Table } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { forwardRef, useEffect, useLayoutEffect, useRef } from "react";
 import Quill from "quill";
 import { createInstance } from "@loomhq/record-sdk";
@@ -24,6 +24,8 @@ export const LibraryRoot = ({ children }) => {
 };
 
 export const LibraryHeader = ({ title, onUploadVideoBtnClick }) => {
+  const pageLocation = useLocation();
+
   return (
     <header className="flex items-center justify-between">
       <h1 className="text-[28px] font-bold ">{title}</h1>
@@ -33,17 +35,71 @@ export const LibraryHeader = ({ title, onUploadVideoBtnClick }) => {
           varient="outlined"
           label="Upload Video"
         />
-        <RecordLoomVideoBtn />
+        {pageLocation.pathname === "/recordings" ? (
+          <RecordLoomVideoBtn />
+        ) : (
+          <NewRecordingBtn />
+        )}
       </div>
     </header>
   );
 };
 
-const RecordLoomVideoBtn = () => {
-  const BUTTON_ID = "loom-record-sdk-button";
+const NewRecordingBtn = () => {
+  const setIsWarningModalOpen = useGlobalModals(
+    (state) => state.setIsWarningModalOpen
+  );
+
+  const handleNewRecordingBtnClick = async () => {
+    setIsWarningModalOpen(true);
+
+    // create a new tab and navigate to the new recording page
+    const newTab = window.open("http://localhost:5173/recordings", "_blank");
+
+    if (newTab) {
+      newTab.focus();
+    }
+  };
+
+  return (
+    <button
+      className="bg-primary text-white border-none p-[8px_16px] text-[14px] font-medium rounded-[8px] hover:cursor-pointer"
+      onClick={handleNewRecordingBtnClick}
+    >
+      Record Video
+    </button>
+  );
+};
+
+export const RecordLoomVideoBtn = () => {
+  const setIsNewRecordingModalOpen = useGlobalModals(
+    (state) => state.setIsNewRecordingModalOpen
+  );
+  return (
+    <button
+      id="loom-record-sdk-button"
+      className="bg-primary text-white border-none p-[8px_16px] text-[14px] font-medium rounded-[8px] hover:cursor-pointer"
+      type="button"
+      onClick={() => {
+        setIsNewRecordingModalOpen(true);
+      }}
+    >
+      Record Video
+    </button>
+  );
+};
+
+// Start Recording Button for the Record Video Modal
+export const StartRecordingBtn = ({ onStartRecording }) => {
+  const BUTTON_ID = "start-recording-button";
   const videosData = useUserStore((state) => state.videosData);
   const setVideosData = useUserStore((state) => state.setVideosData);
   const LOOM_APP_ID = "d5dfdcdb-3445-443a-9fca-a61b0161a9ae";
+
+  const newRecordingVideoData = useGlobalModals(
+    (state) => state.newRecordingVideoData
+  );
+
   // Loom SDK Setup
   useEffect(() => {
     async function setupLoom() {
@@ -66,6 +122,10 @@ const RecordLoomVideoBtn = () => {
           mode: "custom",
           jws: serverJws,
           publicAppId: LOOM_APP_ID,
+          config: {
+            disablePreviewModal: true,
+            insertButtonText: "Save Video to Library",
+          },
         });
 
         const button = document.getElementById(BUTTON_ID);
@@ -80,18 +140,14 @@ const RecordLoomVideoBtn = () => {
         });
 
         sdkButton.on("insert-click", async (LoomVideo) => {
-          console.log("LoomVideo", LoomVideo);
-
           const videoData = {
-            title: LoomVideo.title || "",
+            title: newRecordingVideoData.recordingName || LoomVideo.title,
             embeddedLink: LoomVideo.embedUrl || "",
             shareableLink: LoomVideo.sharedUrl || "",
           };
 
           try {
             const response = await saveRecordedVideo(videoData);
-
-            console.log("Response", response);
 
             if (response.success) {
               const updatedVideosData = [...videosData, response.data.video];
@@ -109,20 +165,30 @@ const RecordLoomVideoBtn = () => {
             );
           }
         });
+
+        // sdkButton.on("recording-complete", async (LoomVideo) => {
+        //   console.log("Recording Completed", LoomVideo);
+        // });
+
+        sdkButton.on("start", () => {
+          onStartRecording();
+        });
       } catch (error) {
         console.error("Error setting up Loom SDK:", error);
       }
     }
 
     setupLoom();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setVideosData, videosData]);
 
   return (
     <button
-      id="loom-record-sdk-button"
+      id="start-recording-button"
       className="bg-primary text-white border-none p-[8px_16px] text-[14px] font-medium rounded-[8px] hover:cursor-pointer"
+      type="button"
     >
-      Record Video
+      Start Recording
     </button>
   );
 };
