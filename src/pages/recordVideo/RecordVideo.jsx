@@ -12,14 +12,19 @@ import {
 } from "../../components/ui/LibraryComponents";
 import { useGlobalModals } from "../../store/globalModals";
 import { useEffect, useState } from "react";
-import { getAllVideos } from "../../api/libraryAPIs";
 import { useLoadingBackdrop } from "../../store/loadingBackdrop";
 import { useUserStore } from "../../store/userStore";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const RecordVideo = () => {
   const videosData = useUserStore((state) => state.videosData);
   const setVideosData = useUserStore((state) => state.setVideosData);
   const [historyData, setHistoryData] = useState([]);
+
+  const { accessToken } = useParams();
 
   const setIsNewRecordingModalOpen = useGlobalModals(
     (state) => state.setIsNewRecordingModalOpen
@@ -30,6 +35,29 @@ const RecordVideo = () => {
   );
 
   const setLoading = useLoadingBackdrop((state) => state.setLoading);
+
+  const getAllVideos = async () => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/video/getVideosByAccountId`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      console.error("Error while fetching all videos: ", error);
+      return {
+        success: false,
+        error: error.response?.data?.message || "An unexpected error occurred",
+      };
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,7 +92,8 @@ const RecordVideo = () => {
     };
 
     fetchData();
-  }, [setLoading, setVideosData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setLoading, setVideosData, accessToken]);
 
   useEffect(() => {
     setIsNewRecordingModalOpen(true);

@@ -35,7 +35,7 @@ export const LibraryHeader = ({ title, onUploadVideoBtnClick }) => {
           varient="outlined"
           label="Upload Video"
         />
-        {pageLocation.pathname === "/recordings" ? (
+        {pageLocation.pathname.split("/")[1] === "recordings" ? (
           <RecordLoomVideoBtn />
         ) : (
           <NewRecordingBtn />
@@ -53,8 +53,20 @@ const NewRecordingBtn = () => {
   const handleNewRecordingBtnClick = async () => {
     setIsWarningModalOpen(true);
 
+    const accessToken = localStorage.getItem("accessToken");
+
+    if (!accessToken) {
+      console.error("Access Token not found");
+      return;
+    }
+
+    // Set the access token in the local storage for the new tab
+
     // create a new tab and navigate to the new recording page
-    const newTab = window.open("http://localhost:5173/recordings", "_blank");
+    const newTab = window.open(
+      `https://d92b-39-58-184-166.ngrok-free.app/recordings/${accessToken}`,
+      "_blank"
+    );
 
     if (newTab) {
       newTab.focus();
