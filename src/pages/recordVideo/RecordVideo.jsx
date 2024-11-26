@@ -99,6 +99,10 @@ const RecordVideo = () => {
     setIsNewRecordingModalOpen(true);
   }, [setIsNewRecordingModalOpen]);
 
+  useEffect(() => {
+    localStorage.setItem("accessToken", accessToken);
+  }, [accessToken]);
+
   return (
     <LibraryRoot>
       <LibraryHeader

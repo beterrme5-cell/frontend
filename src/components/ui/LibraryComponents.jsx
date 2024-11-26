@@ -64,7 +64,7 @@ const NewRecordingBtn = () => {
 
     // create a new tab and navigate to the new recording page
     const newTab = window.open(
-      `https://d92b-39-58-184-166.ngrok-free.app/recordings/${accessToken}`,
+      `https://3326-39-58-184-166.ngrok-free.app/recordings/${accessToken}`,
       "_blank"
     );
 
