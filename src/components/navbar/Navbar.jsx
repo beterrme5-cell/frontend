@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Avatar, Popover, Button, Group, Text, Divider } from "@mantine/core";
-import logo from "../../assets/logo.svg";
+import logo from "@/assets/logo.svg";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import { useUserStore } from "../../store/userStore";
