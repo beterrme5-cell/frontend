@@ -56,6 +56,9 @@ export const useGlobalModals = create((set) => ({
     set({ isContactsSelectionModalOpen: isOpen }),
   selectedContacts: [],
   setSelectedContacts: (contacts) => set({ selectedContacts: contacts }),
+  // send to all the contacts in contact list
+  sendToAllContacts: false,
+  setSendToAllContacts: (sendToAll) => set({ sendToAllContacts: sendToAll }),
 
   // --------------------------------------------------
   // Contacts Selection Modal - SMS

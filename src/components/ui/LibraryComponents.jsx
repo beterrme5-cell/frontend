@@ -64,7 +64,7 @@ const NewRecordingBtn = () => {
 
     // create a new tab and navigate to the new recording page
     const newTab = window.open(
-      `https://3326-39-58-184-166.ngrok-free.app/recordings/${accessToken}`,
+      `${import.meta.env.VITE_RECORD_PAGE_URL}/recordings/${accessToken}`,
       "_blank"
     );
 
@@ -110,7 +110,7 @@ export const StartRecordingBtn = ({
   const BUTTON_ID = "start-recording-button";
   const videosData = useUserStore((state) => state.videosData);
   const setVideosData = useUserStore((state) => state.setVideosData);
-  const LOOM_APP_ID = "d5dfdcdb-3445-443a-9fca-a61b0161a9ae";
+  const LOOM_APP_ID = "a0b41709-338e-4393-8090-cb7ed475e127";
 
   // Loom SDK Setup
   useEffect(() => {
@@ -152,6 +152,8 @@ export const StartRecordingBtn = ({
         });
 
         sdkButton.on("insert-click", async (LoomVideo) => {
+          console.log("Recording Completed", LoomVideo);
+
           const videoData = {
             title: newvideoFormData.recordingName || LoomVideo.title,
             embeddedLink: LoomVideo.embedUrl || "",

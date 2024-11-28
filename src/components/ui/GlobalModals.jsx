@@ -459,6 +459,12 @@ export const ShareVideoModal = () => {
     (state) => state.setIsSMSContactsSelectionModalOpen
   );
 
+  const setSendToAllContacts = useGlobalModals(
+    (state) => state.setSendToAllContacts
+  );
+
+  const sendToAllContacts = useGlobalModals((state) => state.sendToAllContacts);
+
   const videoToBeShared = useGlobalModals((state) => state.videoToBeShared);
 
   const [activeTab, setActiveTab] = useState("email");
@@ -476,13 +482,12 @@ export const ShareVideoModal = () => {
 
     setModalLoadingOverlay(true);
 
-    // extract the emails from the selected contacts
-    const selectedContactIds = selectedContacts.map((contact) => contact.id);
-
     // Send Email API
     const response = await sendEmailToSelectedContacts({
-      contactIds: selectedContactIds,
+      contactIds: sendToAllContacts ? [] : selectedContacts,
       message: quillGetHTML(delta),
+      sendToAll: sendToAllContacts,
+      videoId: videoToBeShared._id,
     });
 
     if (response.success) {
@@ -500,18 +505,18 @@ export const ShareVideoModal = () => {
       console.log("Error while sending email: ", response.error);
     }
     setModalLoadingOverlay(false);
+    setSendToAllContacts(false);
   };
 
   const handleSubmitSMS = async () => {
     setModalLoadingOverlay(true);
 
-    // extract the emails from the selected contacts
-    const selectedContactIds = selectedSMSContacts.map((contact) => contact.id);
-
     // Send Email API
     const response = await sendSMSToSelectedContacts({
-      contactIds: selectedContactIds,
+      contactIds: sendToAllContacts ? [] : selectedSMSContacts,
       message: smsContent,
+      sendToAll: sendToAllContacts,
+      videoId: videoToBeShared._id,
     });
 
     if (response.success) {
@@ -526,6 +531,7 @@ export const ShareVideoModal = () => {
       console.log("Error while sending SMS: ", response.error);
     }
     setModalLoadingOverlay(false);
+    setSendToAllContacts(false);
   };
 
   return (
@@ -947,6 +953,7 @@ export const ContactsSelectionModalEmail = () => {
   const setSelectedContacts = useGlobalModals(
     (state) => state.setSelectedContacts
   );
+
   const modalLoadingOverlay = useGlobalModals(
     (state) => state.modalLoadingOverlay
   );
@@ -971,7 +978,9 @@ export const ContactsSelectionModalEmail = () => {
     (state) => state.setUserContactsData
   );
 
-  const [selectAllValue, setSelectAllValue] = useState(false);
+  const setSendToAllContacts = useGlobalModals(
+    (state) => state.setSendToAllContacts
+  );
 
   const [contactsPagination, setContactsPagination] = useState(1);
 
@@ -994,9 +1003,6 @@ export const ContactsSelectionModalEmail = () => {
         (contact) => contact.id !== contactDetails.id
       );
       setSelectedContacts(updatedSelectedContacts);
-      setSelectAllValue(
-        updatedSelectedContacts.length === filteredContacts.length
-      );
     } else {
       setSelectedContacts([
         ...selectedContacts,
@@ -1005,28 +1011,11 @@ export const ContactsSelectionModalEmail = () => {
           isChecked: true,
         },
       ]);
-      setSelectAllValue(
-        [...selectedContacts, contactDetails].length === filteredContacts.length
-      );
-    }
-  };
-
-  const handleSelectAll = (isChecked) => {
-    setSelectAllValue(isChecked);
-    if (isChecked) {
-      // Select all contacts
-      const updatedSelectedContacts = filteredContacts.map((contact) => ({
-        ...contact,
-        isChecked: true,
-      }));
-      setSelectedContacts(updatedSelectedContacts);
-    } else {
-      // Deselect all contacts
-      setSelectedContacts([]);
     }
   };
 
   const handleSaveSelectedContacts = () => {
+    setSendToAllContacts(false);
     setIsContactsSelectionModalOpen(false);
     setIsShareVideoModalOpen(true);
   };
@@ -1100,21 +1089,7 @@ export const ContactsSelectionModalEmail = () => {
                 <Table.Th>Contact ID</Table.Th>
                 <Table.Th>Contact Name</Table.Th>
                 <Table.Th>Date Added</Table.Th>
-                <Table.Th>
-                  <Checkbox
-                    value={selectAllValue}
-                    onChange={(event) => handleSelectAll(event.target.checked)}
-                    labelPosition="left"
-                    label={
-                      <p className="text-[14px] font-bold">
-                        Action{" "}
-                        <span className="!font-normal">
-                          {selectAllValue ? "(Deselect All)" : "(Select All)"}
-                        </span>
-                      </p>
-                    }
-                  />
-                </Table.Th>
+                <Table.Th></Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -1130,13 +1105,11 @@ export const ContactsSelectionModalEmail = () => {
                   "0"
                 )}/${date.getFullYear()}`;
 
-                const isChecked =
-                  selectAllValue ||
-                  selectedContacts?.some(
-                    (selectedContact) =>
-                      selectedContact?.id === contact?.id &&
-                      selectedContact?.isChecked
-                  );
+                const isChecked = selectedContacts?.some(
+                  (selectedContact) =>
+                    selectedContact?.id === contact?.id &&
+                    selectedContact?.isChecked
+                );
 
                 return (
                   <Table.Tr key={contact.id}>
@@ -1159,7 +1132,7 @@ export const ContactsSelectionModalEmail = () => {
             </Table.Tbody>
           </Table>
         </div>
-        <div className="bg-white p-[12px_24px] flex flex-col">
+        <div className="bg-white p-[12px_24px] flex flex-col gap-[10px]">
           <button
             className="loadMoreContactsBtn p-[10px_16px] border border-[##DBDBDB] rounded-[8px] text-[14px] font-medium text-darkBlue mx-auto"
             type="button"
@@ -1170,13 +1143,31 @@ export const ContactsSelectionModalEmail = () => {
           >
             Load More
           </button>
-          <button
-            className="p-[10px_16px] bg-primary text-white rounded-[8px] text-[14px] font-medium w-[125px]"
-            type="button"
-            onClick={handleSaveSelectedContacts}
-          >
-            Save
-          </button>
+          <div className="flex items-center gap-[16px]">
+            <button
+              className="p-[10px_16px] bg-primary text-white rounded-[8px] text-[14px] font-medium w-fit"
+              type="button"
+              onClick={() => {
+                setSendToAllContacts(true);
+                setIsContactsSelectionModalOpen(false);
+                setIsShareVideoModalOpen(true);
+              }}
+            >
+              Send To All Contacts
+            </button>
+            <button
+              className={`p-[10px_16px] ${
+                selectedContacts.length === 0
+                  ? "bg-[#CBCBCB] text-white hover:cursor-not-allowed"
+                  : "bg-primary text-white"
+              } rounded-[8px] text-[14px] font-medium w-fit`}
+              type="button"
+              onClick={handleSaveSelectedContacts}
+              disabled={selectedContacts.length === 0}
+            >
+              Send To Selected Contacts
+            </button>
+          </div>
         </div>
       </div>
     </ModalRoot>
@@ -1192,6 +1183,10 @@ export const ContactsSelectionModalSMS = () => {
   );
   const modalLoadingOverlay = useGlobalModals(
     (state) => state.modalLoadingOverlay
+  );
+
+  const setSendToAllContacts = useGlobalModals(
+    (state) => state.setSendToAllContacts
   );
 
   const setModalLoadingOverlay = useGlobalModals(
@@ -1214,8 +1209,6 @@ export const ContactsSelectionModalSMS = () => {
     (state) => state.setUserContactsData
   );
 
-  const [selectAllValue, setSelectAllValue] = useState(false);
-
   const [contactsPagination, setContactsPagination] = useState(1);
 
   const filteredContacts = userContactsData?.contacts?.filter((contact) => {
@@ -1237,9 +1230,6 @@ export const ContactsSelectionModalSMS = () => {
         (contact) => contact.id !== contactDetails.id
       );
       setSelectedSMSContacts(updatedSelectedContacts);
-      setSelectAllValue(
-        updatedSelectedContacts.length === filteredContacts.length
-      );
     } else {
       setSelectedSMSContacts([
         ...selectedSMSContacts,
@@ -1248,29 +1238,11 @@ export const ContactsSelectionModalSMS = () => {
           isChecked: true,
         },
       ]);
-      setSelectAllValue(
-        [...selectedSMSContacts, contactDetails].length ===
-          filteredContacts.length
-      );
-    }
-  };
-
-  const handleSelectAll = (isChecked) => {
-    setSelectAllValue(isChecked);
-    if (isChecked) {
-      // Select all contacts
-      const updatedSelectedContacts = filteredContacts.map((contact) => ({
-        ...contact,
-        isChecked: true,
-      }));
-      selectedSMSContacts(updatedSelectedContacts);
-    } else {
-      // Deselect all contacts
-      selectedSMSContacts([]);
     }
   };
 
   const handleSaveSelectedContacts = () => {
+    setSendToAllContacts(false);
     setIsSMSContactsSelectionModalOpen(false);
     setIsShareVideoModalOpen(true);
   };
@@ -1344,21 +1316,7 @@ export const ContactsSelectionModalSMS = () => {
                 <Table.Th>Contact ID</Table.Th>
                 <Table.Th>Contact Name</Table.Th>
                 <Table.Th>Date Added</Table.Th>
-                <Table.Th>
-                  <Checkbox
-                    value={selectAllValue}
-                    onChange={(event) => handleSelectAll(event.target.checked)}
-                    labelPosition="left"
-                    label={
-                      <p className="text-[14px] font-bold">
-                        Action{" "}
-                        <span className="!font-normal">
-                          {selectAllValue ? "(Deselect All)" : "(Select All)"}
-                        </span>
-                      </p>
-                    }
-                  />
-                </Table.Th>
+                <Table.Th></Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -1374,13 +1332,11 @@ export const ContactsSelectionModalSMS = () => {
                   "0"
                 )}/${date.getFullYear()}`;
 
-                const isChecked =
-                  selectAllValue ||
-                  selectedSMSContacts?.some(
-                    (selectedContact) =>
-                      selectedContact?.id === contact?.id &&
-                      selectedContact?.isChecked
-                  );
+                const isChecked = selectedSMSContacts?.some(
+                  (selectedContact) =>
+                    selectedContact?.id === contact?.id &&
+                    selectedContact?.isChecked
+                );
 
                 return (
                   <Table.Tr key={contact.id}>
@@ -1414,13 +1370,31 @@ export const ContactsSelectionModalSMS = () => {
           >
             Load More
           </button>
-          <button
-            className="p-[10px_16px] bg-primary text-white rounded-[8px] text-[14px] font-medium w-[125px]"
-            type="button"
-            onClick={handleSaveSelectedContacts}
-          >
-            Save
-          </button>
+          <div className="flex items-center gap-[16px]">
+            <button
+              className="p-[10px_16px] bg-primary text-white rounded-[8px] text-[14px] font-medium w-fit"
+              type="button"
+              onClick={() => {
+                setSendToAllContacts(true);
+                setIsSMSContactsSelectionModalOpen(false);
+                setIsShareVideoModalOpen(true);
+              }}
+            >
+              Send To All Contacts
+            </button>
+            <button
+              className={`p-[10px_16px] ${
+                selectedSMSContacts.length === 0
+                  ? "bg-[#CBCBCB] text-white hover:cursor-not-allowed"
+                  : "bg-primary text-white"
+              } rounded-[8px] text-[14px] font-medium w-fit`}
+              type="button"
+              onClick={handleSaveSelectedContacts}
+              disabled={selectedSMSContacts.length === 0}
+            >
+              Send To Selected Contacts
+            </button>
+          </div>
         </div>
       </div>
     </ModalRoot>

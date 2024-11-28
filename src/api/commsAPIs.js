@@ -40,6 +40,8 @@ export const sendEmailToSelectedContacts = async (params) => {
       {
         contactIds: params.contactIds,
         message: params.message,
+        sendToAll: params.sendToAll,
+        videoId: params.videoId,
       },
       {
         headers: {
@@ -53,6 +55,27 @@ export const sendEmailToSelectedContacts = async (params) => {
     };
   } catch (error) {
     console.error("Error while sending Email: ", error);
+    return {
+      success: false,
+      error: error.response?.data?.message || "An unexpected error occurred",
+    };
+  }
+};
+
+// API to get the History of the Messages sent by the user
+export const getHistoryOfMessages = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/user/getUserHistories`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    console.error("Error while getting History of Messages: ", error);
     return {
       success: false,
       error: error.response?.data?.message || "An unexpected error occurred",
