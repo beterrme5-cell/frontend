@@ -376,21 +376,32 @@ export const HistoryTabSection = ({ children }) => {
 export const HistoryTableList = ({ historyData }) => {
   const rows = historyData.map((element) => (
     <Table.Tr key={element._id}>
-      <Table.Td className=" text-[14px] font-medium">{element._id}</Table.Td>
       <Table.Td className=" text-[14px] font-medium">
-        {element.recordingId}
+        {element?.videoTitle}
       </Table.Td>
       <Table.Td className=" text-[14px] font-medium">
-        {element.contactId}
+        {element?.contactName}
       </Table.Td>
       <Table.Td className=" text-[14px] font-medium">
-        {element.contactName}
+        {element?.contactAddress}
       </Table.Td>
-      <Table.Td className=" text-[14px] font-medium">{element.type}</Table.Td>
       <Table.Td className=" text-[14px] font-medium">
-        {element.subject}
+        {element?.sendType}
       </Table.Td>
-      <Table.Td>{element.status}</Table.Td>
+      <Table.Td className=" text-[14px] font-medium">
+        {element?.subject}
+      </Table.Td>
+      <Table.Td>
+        <div
+          className={`${
+            element?.status === "sent"
+              ? "text-[#5AA63F] bg-[rgba(90,166,63,0.14)]"
+              : "text-[#FF613E] bg-[rgba(255,97,62,0.14)]"
+          } uppercase text-center text-[12px] font-medium py-[4px] px-[8px] rounded-[2px] w-fit`}
+        >
+          {element?.status}
+        </div>
+      </Table.Td>
     </Table.Tr>
   ));
   return (
@@ -403,10 +414,10 @@ export const HistoryTableList = ({ historyData }) => {
     >
       <Table.Thead>
         <Table.Tr>
-          <Table.Th>ID</Table.Th>
-          <Table.Th>Recording ID</Table.Th>
-          <Table.Th>Contact ID</Table.Th>
+          {/* <Table.Th>Serial No</Table.Th> */}
+          <Table.Th>Recording Name</Table.Th>
           <Table.Th>Contact Name</Table.Th>
+          <Table.Th>Contact Address</Table.Th>
           <Table.Th>Type</Table.Th>
           <Table.Th>Subject</Table.Th>
           <Table.Th>Status</Table.Th>

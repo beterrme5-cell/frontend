@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { getAllVideos } from "../../api/libraryAPIs";
 import { useLoadingBackdrop } from "../../store/loadingBackdrop";
 import { useUserStore } from "../../store/userStore";
+import { getHistoryOfMessages } from "../../api/commsAPIs";
 
 const Dashboard = () => {
   const videosData = useUserStore((state) => state.videosData);
@@ -36,14 +37,14 @@ const Dashboard = () => {
         // Fetch all data in parallel
         const [videosResponse, historyResponse] = await Promise.all([
           getAllVideos(),
-          getAllVideos(),
+          getHistoryOfMessages(),
         ]);
 
         // Check responses and set state only after all are resolved
         if (videosResponse.success && historyResponse.success) {
           // Update states
           setVideosData(videosResponse.data.videos);
-          setHistoryData(historyResponse.data.videos);
+          setHistoryData(historyResponse.data.histories);
         } else {
           console.error("Error fetching data");
           if (!videosResponse.success) {
