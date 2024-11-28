@@ -81,26 +81,6 @@ export const PreRecordingDataInputModal = () => {
     },
   });
 
-  const handleStartRecording = () => {
-    const { recordingName, recordingDescription } = form.values;
-
-    if (recordingName.length < 3) {
-      form.setFieldError(
-        "recordingName",
-        "Recording Name must be at least 3 characters long"
-      );
-
-      if (recordingDescription.length < 3) {
-        form.setFieldError(
-          "recordingDescription",
-          "Recording Description must be at least 3 characters long"
-        );
-      }
-
-      return;
-    }
-  };
-
   return (
     <ModalRoot
       loadingOverlay={modalLoadingOverlay}
@@ -116,37 +96,19 @@ export const PreRecordingDataInputModal = () => {
             label="Recording Name"
             placeholder="Enter Recording Name"
             {...form.getInputProps("recordingName")}
-            id="recordingName"
+            withAsterisk
+            description="Name must be at least 3 characters long"
+            id="recordingNameModalInput"
             className="w-[350px]"
             error={form.errors.recordingName}
           />
 
-          <Textarea
-            id="recordingDescription"
-            label="Recording Description"
-            placeholder="Enter Recording Description"
-            {...form.getInputProps("recordingDescription")}
-            error={form.errors.recordingDescription}
+          <StartRecordingBtn
+            onStartRecording={() => setIsNewRecordingModalOpen(false)}
+            afterRecordingStart={() => form.reset()}
+            newvideoFormData={form.values}
+            disabled={form.values.recordingName.length < 3}
           />
-
-          {form.values.recordingName.length < 3 ||
-          form.values.recordingDescription.length < 3 ? (
-            <button
-              className="bg-primary text-white border-none p-[8px_16px] text-[14px] font-medium rounded-[8px] hover:cursor-pointer"
-              type="button"
-              onClick={() => {
-                handleStartRecording();
-              }}
-            >
-              Start Reacording
-            </button>
-          ) : (
-            <StartRecordingBtn
-              onStartRecording={() => setIsNewRecordingModalOpen(false)}
-              afterRecordingStart={() => form.reset()}
-              newvideoFormData={form.values}
-            />
-          )}
         </form>
       </div>
     </ModalRoot>

@@ -106,6 +106,7 @@ export const StartRecordingBtn = ({
   onStartRecording,
   afterRecordingStart,
   newvideoFormData,
+  disabled,
 }) => {
   const BUTTON_ID = "start-recording-button";
   const videosData = useUserStore((state) => state.videosData);
@@ -152,8 +153,6 @@ export const StartRecordingBtn = ({
         });
 
         sdkButton.on("insert-click", async (LoomVideo) => {
-          console.log("Recording Completed", LoomVideo);
-
           const videoData = {
             title: newvideoFormData.recordingName || LoomVideo.title,
             embeddedLink: LoomVideo.embedUrl || "",
@@ -205,8 +204,13 @@ export const StartRecordingBtn = ({
   return (
     <button
       id="start-recording-button"
-      className="bg-primary text-white border-none p-[8px_16px] text-[14px] font-medium rounded-[8px] hover:cursor-pointer"
+      className={`${
+        disabled
+          ? "bg-[#CBCBCB] hover:cursor-not-allowed"
+          : "bg-primary hover:cursor-pointer"
+      } text-white border-none p-[8px_16px] text-[14px] font-medium rounded-[8px]`}
       type="button"
+      disabled={disabled}
     >
       Start Recording
     </button>
