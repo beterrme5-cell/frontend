@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
-import GoBackIcon from "@/assets/icons/goBack.svg";
+import GoBackIcon from "../../assets/icons/goBack.svg";
 import {
   DELETE_ICON,
   EDIT_ICON,
   SHARE_ICON,
-} from "@/assets/icons/DynamicIcons";
+} from "../../assets/icons/DynamicIcons";
 
 export const VideoDetailRoot = ({ children }) => {
   return (
