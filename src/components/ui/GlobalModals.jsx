@@ -38,6 +38,9 @@ function quillGetHTML(inputDelta) {
 }
 const ModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
   const pagePath = window.location.pathname.split("/")[1];
+
+  console.log("Page Path: ", pagePath);
+
   return (
     <Modal
       id="global-modal"
