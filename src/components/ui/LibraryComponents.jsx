@@ -1,10 +1,10 @@
 import CustomButton from "./CustomButton";
-import ShareVideoIcon from "../../assets/icons/shareVideoIcon.svg";
-import VideoOptionsIcon from "../../assets/icons/VideoOptionsIcon.svg";
-import CopyIcon from "../../assets/icons/copy-icon.svg";
-import ShareIcon from "../../assets/icons/share-icon.svg";
-import EditIcon from "../../assets/icons/edit-icon.svg";
-import DeleteIcon from "../../assets/icons/delete-icon.svg";
+import ShareVideoIcon from "./icons/shareVideoIcon.svg";
+import VideoOptionsIcon from "./icons/VideoOptionsIcon.svg";
+import CopyIcon from "./icons/copy-icon.svg";
+import ShareIcon from "./icons/share-icon.svg";
+import EditIcon from "./icons/edit-icon.svg";
+import DeleteIcon from "./icons/delete-icon.svg";
 import { Menu, Tabs, Table } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
 import { Link, useLocation } from "react-router-dom";
