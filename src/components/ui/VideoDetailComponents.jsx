@@ -1,6 +1,10 @@
 import { Link } from "react-router-dom";
-// import GoBackIcon from "./icons/goBack.svg";
-import { DELETE_ICON, EDIT_ICON, SHARE_ICON } from "./icons/DynamicIcons";
+// import GoBackIcon from "../../assets/icons/goBack.svg";
+import {
+  DELETE_ICON,
+  EDIT_ICON,
+  SHARE_ICON,
+} from "../../assets/icons/DynamicIcons.jsx";
 
 export const VideoDetailRoot = ({ children }) => {
   return (
@@ -9,7 +13,7 @@ export const VideoDetailRoot = ({ children }) => {
         to="/"
         className="flex items-center gap-[8px] text-[16px] font-medium text-primary"
       >
-        <img src="./icons/goBack.svg" alt="Go Back" />
+        <img src="../../assets/icons/goBack.svg" alt="Go Back" />
         Go back to Library
       </Link>
       <div className="flex flex-col gap-[24px]">{children}</div>

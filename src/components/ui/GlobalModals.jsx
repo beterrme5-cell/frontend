@@ -10,7 +10,7 @@ import {
 } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
 import { LoadingOverlay, MultiSelect } from "@mantine/core";
-// import closeIcon from "./icons/cancel-icon.svg";
+// import closeIcon from "../../assets/icons/cancel-icon.svg";
 import { useForm } from "@mantine/form";
 import CustomVideoInput from "./CustomVideoInput";
 import CustomButton from "./CustomButton";
@@ -21,11 +21,11 @@ import {
   EMAIL_ICON,
   EMBED_ICON,
   SMS_ICON,
-} from "./icons/DynamicIcons";
+} from "../../assets/icons/DynamicIcons.jsx";
 import { StartRecordingBtn, TextEditor } from "./LibraryComponents";
 import { deleteVideo, getContacts, updateVideo } from "../../api/libraryAPIs";
 import { useUserStore } from "../../store/userStore";
-// import ArrowRightIcon from "./icons/ArrowRight.svg";
+// import ArrowRightIcon from "../../assets/icons/ArrowRight.svg";
 import {
   sendEmailToSelectedContacts,
   sendSMSToSelectedContacts,
@@ -54,7 +54,7 @@ const ModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
         overlayProps={{ radius: "sm", blur: 2 }}
       />
       <button className="absolute top-[16px] right-[16px]" onClick={onClose}>
-        <img src="./icons/cancel-icon.svg" alt="close icon" />
+        <img src="../../assets/icons/cancel-icon.svg" alt="close icon" />
       </button>
       {children}
     </Modal>
@@ -602,7 +602,10 @@ export const ShareVideoModal = () => {
                     }}
                   >
                     <p>Select Contacts</p>
-                    <img src="./icons/ArrowRight.svg" alt="Arrow Right Icon" />
+                    <img
+                      src="../../assets/icons/ArrowRight.svg"
+                      alt="Arrow Right Icon"
+                    />
                   </button>
                 </Tabs.Panel>
 
@@ -680,7 +683,10 @@ export const ShareVideoModal = () => {
                     }}
                   >
                     <p>Select Contacts</p>
-                    <img src="./icons/ArrowRight.svg" alt="Arrow Right Icon" />
+                    <img
+                      src="../../assets/icons/ArrowRight.svg"
+                      alt="Arrow Right Icon"
+                    />
                   </button>
                 </Tabs.Panel>
 
