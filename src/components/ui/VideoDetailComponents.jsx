@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-// import GoBackIcon from "../../assets/icons/goBack.svg";
+import GoBackIcon from "../../assets/icons/goBack.png";
 import {
   DELETE_ICON,
   EDIT_ICON,
@@ -13,7 +13,7 @@ export const VideoDetailRoot = ({ children }) => {
         to="/"
         className="flex items-center gap-[8px] text-[16px] font-medium text-primary"
       >
-        <img src="../../assets/icons/goBack.png" alt="Go Back" />
+        <img src={GoBackIcon} alt="Go Back" />
         Go back to Library
       </Link>
       <div className="flex flex-col gap-[24px]">{children}</div>

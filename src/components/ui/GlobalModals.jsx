@@ -25,7 +25,7 @@ import {
 import { StartRecordingBtn, TextEditor } from "./LibraryComponents";
 import { deleteVideo, getContacts, updateVideo } from "../../api/libraryAPIs";
 import { useUserStore } from "../../store/userStore";
-// import ArrowRightIcon from "../../assets/icons/ArrowRight.svg";
+import ArrowRightIcon from "../../assets/icons/ArrowRight.svg";
 import {
   sendEmailToSelectedContacts,
   sendSMSToSelectedContacts,
@@ -602,10 +602,7 @@ export const ShareVideoModal = () => {
                     }}
                   >
                     <p>Select Contacts</p>
-                    <img
-                      src="../../assets/icons/ArrowRight.png"
-                      alt="Arrow Right Icon"
-                    />
+                    <img src={ArrowRightIcon} alt="Arrow Right Icon" />
                   </button>
                 </Tabs.Panel>
 
@@ -683,10 +680,7 @@ export const ShareVideoModal = () => {
                     }}
                   >
                     <p>Select Contacts</p>
-                    <img
-                      src="../../assets/icons/ArrowRight.png"
-                      alt="Arrow Right Icon"
-                    />
+                    <img src={ArrowRightIcon} alt="Arrow Right Icon" />
                   </button>
                 </Tabs.Panel>
 
