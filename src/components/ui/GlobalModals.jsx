@@ -10,7 +10,7 @@ import {
 } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
 import { LoadingOverlay, MultiSelect } from "@mantine/core";
-// import closeIcon from "../../assets/icons/cancel-icon.svg";
+import closeIcon from "../../assets/icons/cancel-icon.svg";
 import { useForm } from "@mantine/form";
 import CustomVideoInput from "./CustomVideoInput";
 import CustomButton from "./CustomButton";
@@ -25,7 +25,7 @@ import {
 import { StartRecordingBtn, TextEditor } from "./LibraryComponents";
 import { deleteVideo, getContacts, updateVideo } from "../../api/libraryAPIs";
 import { useUserStore } from "../../store/userStore";
-// import ArrowRightIcon from "../../assets/icons/ArrowRight.svg";
+import ArrowRightIcon from "../../assets/icons/ArrowRight.svg";
 import {
   sendEmailToSelectedContacts,
   sendSMSToSelectedContacts,
@@ -37,6 +37,7 @@ function quillGetHTML(inputDelta) {
   return tempCont.getElementsByClassName("ql-editor")[0].innerHTML;
 }
 const ModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
+  const pagePath = window.location.pathname.split("/")[1];
   return (
     <Modal
       id="global-modal"
@@ -54,7 +55,10 @@ const ModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
         overlayProps={{ radius: "sm", blur: 2 }}
       />
       <button className="absolute top-[16px] right-[16px]" onClick={onClose}>
-        <img src="./cancel-icon.png" alt="close icon" />
+        <img
+          src={pagePath === "recordings" ? closeIcon : "./cancel-icon.png"}
+          alt="close icon"
+        />
       </button>
       {children}
     </Modal>
@@ -388,6 +392,7 @@ export const EditVideoModal = () => {
 
 // Modal to share the video
 export const ShareVideoModal = () => {
+  const pagePath = window.location.pathname.split("/")[1];
   const selectedContacts = useGlobalModals((state) => state.selectedContacts);
   const setSelectedContacts = useGlobalModals(
     (state) => state.setSelectedContacts
@@ -603,7 +608,11 @@ export const ShareVideoModal = () => {
                   >
                     <p>Select Contacts</p>
                     <img
-                      src="./ArrowRight.png"
+                      src={
+                        pagePath === "recordings"
+                          ? ArrowRightIcon
+                          : "./ArrowRight.png"
+                      }
                       alt="Arrow Right Icon"
                     />
                   </button>
@@ -684,7 +693,11 @@ export const ShareVideoModal = () => {
                   >
                     <p>Select Contacts</p>
                     <img
-                      src="./ArrowRight.png"
+                      src={
+                        pagePath === "recordings"
+                          ? ArrowRightIcon
+                          : "./ArrowRight.png"
+                      }
                       alt="Arrow Right Icon"
                     />
                   </button>

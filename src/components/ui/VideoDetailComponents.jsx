@@ -5,14 +5,21 @@ import {
   SHARE_ICON,
 } from "../../assets/icons/DynamicIcons.jsx";
 
+import goBackIcon from "../../assets/icons/goBack.svg";
+
 export const VideoDetailRoot = ({ children }) => {
+  const pagePath = window.location.pathname.split("/")[1];
+
   return (
     <section className="bg-white p-[32px] rounded-[12px] flex flex-col gap-[12px]">
       <Link
         to="/"
         className="flex items-center gap-[8px] text-[16px] font-medium text-primary"
       >
-        <img src="./goBack.png" alt="Go Back" />
+        <img
+          src={`${pagePath === "recordings" ? goBackIcon : "./goBack.png"}`}
+          alt="Go Back"
+        />
         Go back to Library
       </Link>
       <div className="flex flex-col gap-[24px]">{children}</div>
