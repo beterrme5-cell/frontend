@@ -54,7 +54,7 @@ const ModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
         overlayProps={{ radius: "sm", blur: 2 }}
       />
       <button className="absolute top-[16px] right-[16px]" onClick={onClose}>
-        <img src="../../assets/icons/cancel-icon.svg" alt="close icon" />
+        <img src="../../assets/icons/cancel-icon.png" alt="close icon" />
       </button>
       {children}
     </Modal>
@@ -603,7 +603,7 @@ export const ShareVideoModal = () => {
                   >
                     <p>Select Contacts</p>
                     <img
-                      src="../../assets/icons/ArrowRight.svg"
+                      src="../../assets/icons/ArrowRight.png"
                       alt="Arrow Right Icon"
                     />
                   </button>
@@ -684,7 +684,7 @@ export const ShareVideoModal = () => {
                   >
                     <p>Select Contacts</p>
                     <img
-                      src="../../assets/icons/ArrowRight.svg"
+                      src="../../assets/icons/ArrowRight.png"
                       alt="Arrow Right Icon"
                     />
                   </button>

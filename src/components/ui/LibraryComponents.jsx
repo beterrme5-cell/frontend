@@ -286,7 +286,7 @@ export const VideoTabItem = ({ videoData }) => {
           />
         )}
         <img
-          src="../../assets/icons/shareVideoIcon.svg"
+          src="../../assets/icons/shareVideoIcon.png"
           alt="Share Video Icon"
           className={`absolute top-[8px] right-[8px] cursor-pointer`}
           onClick={() => {
@@ -322,7 +322,7 @@ export const VideoTabItem = ({ videoData }) => {
           <Menu.Target>
             <div className="w-[24px] h-[24px] flex justify-center items-center">
               <img
-                src="../../assets/icons/VideoOptionsIcon.svg"
+                src="../../assets/icons/VideoOptionsIcon.png"
                 alt="Video Options Icon"
               />
             </div>
@@ -331,7 +331,7 @@ export const VideoTabItem = ({ videoData }) => {
             <Menu.Item
               leftSection={
                 <img
-                  src="../../assets/icons/copy-icon.svg"
+                  src="../../assets/icons/copy-icon.png"
                   alt="Copy Icon"
                   className="w-[20px]"
                 />
@@ -342,7 +342,7 @@ export const VideoTabItem = ({ videoData }) => {
             <Menu.Item
               leftSection={
                 <img
-                  src="../../assets/icons/share-icon.svg"
+                  src="../../assets/icons/share-icon.png"
                   alt="Copy Icon"
                   className="w-[20px]"
                 />
@@ -357,7 +357,7 @@ export const VideoTabItem = ({ videoData }) => {
             <Menu.Item
               leftSection={
                 <img
-                  src="../../assets/icons/edit-icon.svg"
+                  src="../../assets/icons/edit-icon.png"
                   alt="Copy Icon"
                   className="w-[20px]"
                 />
@@ -373,7 +373,7 @@ export const VideoTabItem = ({ videoData }) => {
               color="red"
               leftSection={
                 <img
-                  src="../../assets/icons/delete-icon.svg"
+                  src="../../assets/icons/delete-icon.png"
                   alt="Copy Icon"
                   className="w-[20px]"
                 />

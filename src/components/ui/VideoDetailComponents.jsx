@@ -13,7 +13,7 @@ export const VideoDetailRoot = ({ children }) => {
         to="/"
         className="flex items-center gap-[8px] text-[16px] font-medium text-primary"
       >
-        <img src="../../assets/icons/goBack.svg" alt="Go Back" />
+        <img src="../../assets/icons/goBack.png" alt="Go Back" />
         Go back to Library
       </Link>
       <div className="flex flex-col gap-[24px]">{children}</div>
