@@ -38,7 +38,6 @@ function quillGetHTML(inputDelta) {
 }
 const ModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
   const pagePath = window.location.pathname.split("/")[1];
-
   console.log("Page Path: ", pagePath);
 
   return (
@@ -396,6 +395,7 @@ export const EditVideoModal = () => {
 // Modal to share the video
 export const ShareVideoModal = () => {
   const pagePath = window.location.pathname.split("/")[1];
+  console.log("Page Path: ", pagePath);
   const selectedContacts = useGlobalModals((state) => state.selectedContacts);
   const setSelectedContacts = useGlobalModals(
     (state) => state.setSelectedContacts
