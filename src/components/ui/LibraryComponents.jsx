@@ -7,8 +7,8 @@ import Quill from "quill";
 import { createInstance } from "@loomhq/record-sdk";
 import { isSupported } from "@loomhq/record-sdk/is-supported";
 import { saveRecordedVideo } from "../../api/libraryAPIs";
-import axios from "axios";
 import { useUserStore } from "../../store/userStore";
+import { setupLoomSDK } from "../../api/loomSDK";
 
 export const LibraryRoot = ({ children }) => {
   return (
@@ -111,11 +111,12 @@ export const StartRecordingBtn = ({
     async function setupLoom() {
       try {
         // Fetch the signed JWT from the server
-        const response = await axios.get(
-          "https://recording-app-backend.vercel.app/setup"
-        );
+        const response = await setupLoomSDK();
 
-        if (response.status !== 200) throw new Error("Failed to fetch token");
+        if (!response.success) {
+          throw new Error("Failed to fetch token");
+        }
+
         const { token: serverJws } = response.data;
 
         const { supported, error } = isSupported();
