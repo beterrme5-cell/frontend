@@ -1,10 +1,4 @@
 import CustomButton from "./CustomButton";
-import ShareVideoIcon from "../../assets/icons/shareVideoIcon.png";
-import VideoOptionsIcon from "../../assets/icons/VideoOptionsIcon.png";
-import CopyIcon from "../../assets/icons/copy-icon.png";
-import ShareIcon from "../../assets/icons/share-icon.png";
-import EditIcon from "../../assets/icons/edit-icon.png";
-import DeleteIcon from "../../assets/icons/delete-icon.png";
 import { Menu, Tabs, Table } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
 import { Link, useLocation } from "react-router-dom";
@@ -14,7 +8,6 @@ import { createInstance } from "@loomhq/record-sdk";
 import { isSupported } from "@loomhq/record-sdk/is-supported";
 import { saveRecordedVideo } from "../../api/libraryAPIs";
 import axios from "axios";
-import imagePlaceholder from "../../assets/imagePlaceholder.jpeg";
 import { useUserStore } from "../../store/userStore";
 
 export const LibraryRoot = ({ children }) => {
@@ -280,13 +273,13 @@ export const VideoTabItem = ({ videoData }) => {
         )}
         {!videoData?.embeddedLink && (
           <img
-            src={imagePlaceholder}
+            src="./imagePlaceholder.jpeg"
             alt="Video Thumbnail"
             className="w-full h-full object-cover"
           />
         )}
         <img
-          src={ShareVideoIcon}
+          src="./shareVideoIcon.png"
           alt="Share Video Icon"
           className={`absolute top-[8px] right-[8px] cursor-pointer`}
           onClick={() => {
@@ -321,20 +314,28 @@ export const VideoTabItem = ({ videoData }) => {
         >
           <Menu.Target>
             <div className="w-[24px] h-[24px] flex justify-center items-center">
-              <img src={VideoOptionsIcon} alt="Video Options Icon" />
+              <img src="./VideoOptionsIcon.png" alt="Video Options Icon" />
             </div>
           </Menu.Target>
           <Menu.Dropdown>
             <Menu.Item
               leftSection={
-                <img src={CopyIcon} alt="Copy Icon" className="w-[20px]" />
+                <img
+                  src="./copy-icon.png"
+                  alt="Copy Icon"
+                  className="w-[20px]"
+                />
               }
             >
               Copy Link
             </Menu.Item>
             <Menu.Item
               leftSection={
-                <img src={ShareIcon} alt="Copy Icon" className="w-[20px]" />
+                <img
+                  src="./share-icon.png"
+                  alt="Copy Icon"
+                  className="w-[20px]"
+                />
               }
               onClick={() => {
                 setVideoToBeShared(videoData);
@@ -345,7 +346,11 @@ export const VideoTabItem = ({ videoData }) => {
             </Menu.Item>
             <Menu.Item
               leftSection={
-                <img src={EditIcon} alt="Copy Icon" className="w-[20px]" />
+                <img
+                  src="./edit-icon.png"
+                  alt="Copy Icon"
+                  className="w-[20px]"
+                />
               }
               onClick={() => {
                 setVideoToBeEdited(videoData);
@@ -357,7 +362,11 @@ export const VideoTabItem = ({ videoData }) => {
             <Menu.Item
               color="red"
               leftSection={
-                <img src={DeleteIcon} alt="Copy Icon" className="w-[20px]" />
+                <img
+                  src="./delete-icon.png"
+                  alt="Copy Icon"
+                  className="w-[20px]"
+                />
               }
               onClick={() => {
                 setVideoToBeDeleted(videoData);
