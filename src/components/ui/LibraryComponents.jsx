@@ -10,6 +10,13 @@ import { saveRecordedVideo } from "../../api/libraryAPIs";
 import { useUserStore } from "../../store/userStore";
 import { setupLoomSDK } from "../../api/loomSDK";
 
+import PlaceHolderImage from "../../assets/imagePlaceholder.jpeg";
+import ShareVideoIcon from "../../assets/icons/share-icon.svg";
+import VideoOptionsIcon from "../../assets/icons/VideoOptionsIcon.svg";
+import CopyIcon from "../../assets/icons/copy-icon.svg";
+import EditIcon from "../../assets/icons/edit-icon.svg";
+import DeleteIcon from "../../assets/icons/delete-icon.svg";
+
 export const LibraryRoot = ({ children }) => {
   return (
     <section className="bg-white p-[32px] rounded-[12px]">{children}</section>
@@ -243,6 +250,8 @@ export const VideoTabItemsList = ({ children }) => {
 };
 
 export const VideoTabItem = ({ videoData }) => {
+  const pagePath = window.location.pathname.split("/")[1];
+
   const setIsDeleteVideoModalOpen = useGlobalModals(
     (state) => state.setIsDeleteVideoModalOpen
   );
@@ -276,15 +285,21 @@ export const VideoTabItem = ({ videoData }) => {
         )}
         {!videoData?.embeddedLink && (
           <img
-            src="./imagePlaceholder.jpeg"
+            src={
+              pagePath === "recordings"
+                ? PlaceHolderImage
+                : "./imagePlaceholder.jpeg"
+            }
             alt="Video Thumbnail"
             className="w-full h-full object-cover"
           />
         )}
         <img
-          src="./shareVideoIcon.png"
+          src={
+            pagePath === "recordings" ? ShareVideoIcon : "./shareVideoIcon.png"
+          }
           alt="Share Video Icon"
-          className={`absolute top-[8px] right-[8px] cursor-pointer`}
+          className={`absolute top-[8px] right-[8px] cursor-pointer bg-white p-[2px] rounded-full`}
           onClick={() => {
             setVideoToBeShared(videoData);
             setIsShareVideoModalOpen(true);
@@ -317,14 +332,21 @@ export const VideoTabItem = ({ videoData }) => {
         >
           <Menu.Target>
             <div className="w-[24px] h-[24px] flex justify-center items-center">
-              <img src="./VideoOptionsIcon.png" alt="Video Options Icon" />
+              <img
+                src={
+                  pagePath === "recordings"
+                    ? VideoOptionsIcon
+                    : "./VideoOptionsIcon.png"
+                }
+                alt="Video Options Icon"
+              />
             </div>
           </Menu.Target>
           <Menu.Dropdown>
             <Menu.Item
               leftSection={
                 <img
-                  src="./copy-icon.png"
+                  src={pagePath === "recordings" ? CopyIcon : "./copy-icon.png"}
                   alt="Copy Icon"
                   className="w-[20px]"
                 />
@@ -350,7 +372,7 @@ export const VideoTabItem = ({ videoData }) => {
             <Menu.Item
               leftSection={
                 <img
-                  src="./edit-icon.png"
+                  src={pagePath === "recordings" ? EditIcon : "./edit-icon.png"}
                   alt="Copy Icon"
                   className="w-[20px]"
                 />
@@ -366,7 +388,9 @@ export const VideoTabItem = ({ videoData }) => {
               color="red"
               leftSection={
                 <img
-                  src="./delete-icon.png"
+                  src={
+                    pagePath === "recordings" ? DeleteIcon : "./delete-icon.png"
+                  }
                   alt="Copy Icon"
                   className="w-[20px]"
                 />

@@ -30,8 +30,6 @@ function App() {
         });
       });
 
-      console.log("Key: ", key);
-
       // Send Data to the Backend API to Decrypt the code
       const response = await getDecryptedUserData({ tokenKey: key });
 
