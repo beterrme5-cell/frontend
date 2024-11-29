@@ -5,7 +5,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 // API to setup loom SDK
 export const setupLoomSDK = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}/api/loom/setup`);
+    const response = await axios.get(`${BASE_URL}/setup`);
     return {
       success: true,
       data: response.data,
