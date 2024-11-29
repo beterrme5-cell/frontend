@@ -29,6 +29,9 @@ export const loginUser = async (params) => {
 
 // API to get the UserData from the Backend
 export const getDecryptedUserData = async (params) => {
+  console.log("params - Decryp User Data", params);
+  console.log("BASE_URL - Decryp User Data", BASE_URL);
+
   try {
     const response = await axios.post(`${BASE_URL}/user/decryptUserToken`, {
       token: params.tokenKey,
