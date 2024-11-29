@@ -111,7 +111,9 @@ export const StartRecordingBtn = ({
     async function setupLoom() {
       try {
         // Fetch the signed JWT from the server
-        const response = await axios.get("http://localhost:8000/setup");
+        const response = await axios.get(
+          "https://recording-app-backend.vercel.app/setup"
+        );
 
         if (response.status !== 200) throw new Error("Failed to fetch token");
         const { token: serverJws } = response.data;
