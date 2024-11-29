@@ -10,12 +10,12 @@ import { saveRecordedVideo } from "../../api/libraryAPIs";
 import { useUserStore } from "../../store/userStore";
 import { setupLoomSDK } from "../../api/loomSDK";
 
-import PlaceHolderImage from "../../assets/imagePlaceholder.jpeg";
-import ShareVideoIcon from "../../assets/icons/share-icon.svg";
-import VideoOptionsIcon from "../../assets/icons/VideoOptionsIcon.svg";
-import CopyIcon from "../../assets/icons/copy-icon.svg";
-import EditIcon from "../../assets/icons/edit-icon.svg";
-import DeleteIcon from "../../assets/icons/delete-icon.svg";
+// import PlaceHolderImage from "../../assets/imagePlaceholder.jpeg";
+// import ShareVideoIcon from "../../assets/icons/share-icon.svg";
+// import VideoOptionsIcon from "../../assets/icons/VideoOptionsIcon.svg";
+// import CopyIcon from "../../assets/icons/copy-icon.svg";
+// import EditIcon from "../../assets/icons/edit-icon.svg";
+// import DeleteIcon from "../../assets/icons/delete-icon.svg";
 
 export const LibraryRoot = ({ children }) => {
   return (
@@ -250,7 +250,7 @@ export const VideoTabItemsList = ({ children }) => {
 };
 
 export const VideoTabItem = ({ videoData }) => {
-  const pagePath = window.location.pathname.split("/")[1];
+  // const pagePath = window.location.pathname.split("/")[1];
 
   const setIsDeleteVideoModalOpen = useGlobalModals(
     (state) => state.setIsDeleteVideoModalOpen
@@ -285,19 +285,21 @@ export const VideoTabItem = ({ videoData }) => {
         )}
         {!videoData?.embeddedLink && (
           <img
-            src={
-              pagePath === "recordings"
-                ? PlaceHolderImage
-                : "./imagePlaceholder.jpeg"
-            }
+            src="./imagePlaceholder.jpeg"
+            // src={
+            //   pagePath === "recordings"
+            //     ? PlaceHolderImage
+            //     : "./imagePlaceholder.jpeg"
+            // }
             alt="Video Thumbnail"
             className="w-full h-full object-cover"
           />
         )}
         <img
-          src={
-            pagePath === "recordings" ? ShareVideoIcon : "./shareVideoIcon.png"
-          }
+          // src={
+          //   pagePath === "recordings" ? ShareVideoIcon : "./shareVideoIcon.png"
+          // }
+          src="./shareVideoIcon.png"
           alt="Share Video Icon"
           className={`absolute top-[8px] right-[8px] cursor-pointer bg-white p-[2px] rounded-full`}
           onClick={() => {
@@ -333,11 +335,12 @@ export const VideoTabItem = ({ videoData }) => {
           <Menu.Target>
             <div className="w-[24px] h-[24px] flex justify-center items-center">
               <img
-                src={
-                  pagePath === "recordings"
-                    ? VideoOptionsIcon
-                    : "./VideoOptionsIcon.png"
-                }
+                // src={
+                //   pagePath === "recordings"
+                //     ? VideoOptionsIcon
+                //     : "./VideoOptionsIcon.png"
+                // }
+                src="./VideoOptionsIcon.png"
                 alt="Video Options Icon"
               />
             </div>
@@ -346,7 +349,8 @@ export const VideoTabItem = ({ videoData }) => {
             <Menu.Item
               leftSection={
                 <img
-                  src={pagePath === "recordings" ? CopyIcon : "./copy-icon.png"}
+                  src="./copy-icon.png"
+                  // src={pagePath === "recordings" ? CopyIcon : "./copy-icon.png"}
                   alt="Copy Icon"
                   className="w-[20px]"
                 />
@@ -372,7 +376,8 @@ export const VideoTabItem = ({ videoData }) => {
             <Menu.Item
               leftSection={
                 <img
-                  src={pagePath === "recordings" ? EditIcon : "./edit-icon.png"}
+                  src="./edit-icon.png"
+                  // src={pagePath === "recordings" ? EditIcon : "./edit-icon.png"}
                   alt="Copy Icon"
                   className="w-[20px]"
                 />
@@ -388,9 +393,10 @@ export const VideoTabItem = ({ videoData }) => {
               color="red"
               leftSection={
                 <img
-                  src={
-                    pagePath === "recordings" ? DeleteIcon : "./delete-icon.png"
-                  }
+                  src="./delete-icon.png"
+                  // src={
+                  //   pagePath === "recordings" ? DeleteIcon : "./delete-icon.png"
+                  // }
                   alt="Copy Icon"
                   className="w-[20px]"
                 />
