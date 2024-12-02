@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import {
   DELETE_ICON,
   EDIT_ICON,
+  GO_BACK,
   SHARE_ICON,
 } from "../../assets/icons/DynamicIcons.jsx";
 
@@ -16,11 +17,12 @@ export const VideoDetailRoot = ({ children }) => {
         to="/"
         className="flex items-center gap-[8px] text-[16px] font-medium text-primary"
       >
-        <img
+        {/* <img
           src="./goBack.png"
           // src={`${pagePath === "recordings" ? goBackIcon : "./goBack.png"}`}
           alt="Go Back"
-        />
+        /> */}
+        <GO_BACK />
         Go back to Library
       </Link>
       <div className="flex flex-col gap-[24px]">{children}</div>
