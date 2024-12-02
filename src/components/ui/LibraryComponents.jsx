@@ -9,6 +9,13 @@ import { isSupported } from "@loomhq/record-sdk/is-supported";
 import { saveRecordedVideo } from "../../api/libraryAPIs";
 import { useUserStore } from "../../store/userStore";
 import { setupLoomSDK } from "../../api/loomSDK";
+import {
+  COPY_ICON,
+  DELETE_ICON,
+  EDIT_ICON,
+  SHARE_ICON,
+  VIDEO_OPTIONS_ICON,
+} from "../../assets/icons/DynamicIcons";
 
 // import PlaceHolderImage from "../../assets/imagePlaceholder.jpeg";
 // import ShareVideoIcon from "../../assets/icons/share-icon.svg";
@@ -334,7 +341,7 @@ export const VideoTabItem = ({ videoData }) => {
         >
           <Menu.Target>
             <div className="w-[24px] h-[24px] flex justify-center items-center">
-              <img
+              {/* <img
                 // src={
                 //   pagePath === "recordings"
                 //     ? VideoOptionsIcon
@@ -342,29 +349,32 @@ export const VideoTabItem = ({ videoData }) => {
                 // }
                 src="./VideoOptionsIcon.png"
                 alt="Video Options Icon"
-              />
+              /> */}
+              <VIDEO_OPTIONS_ICON />
             </div>
           </Menu.Target>
           <Menu.Dropdown>
             <Menu.Item
               leftSection={
-                <img
-                  src="./copy-icon.png"
-                  // src={pagePath === "recordings" ? CopyIcon : "./copy-icon.png"}
-                  alt="Copy Icon"
-                  className="w-[20px]"
-                />
+                // <img
+                //   src="./copy-icon.png"
+                //   // src={pagePath === "recordings" ? CopyIcon : "./copy-icon.png"}
+                //   alt="Copy Icon"
+                //   className="w-[20px]"
+                // />
+                <COPY_ICON className="text-black" />
               }
             >
               Copy Link
             </Menu.Item>
             <Menu.Item
               leftSection={
-                <img
-                  src="./share-icon.png"
-                  alt="Copy Icon"
-                  className="w-[20px]"
-                />
+                // <img
+                //   src="./share-icon.png"
+                //   alt="Copy Icon"
+                //   className="w-[20px]"
+                // />
+                <SHARE_ICON className="text-black" />
               }
               onClick={() => {
                 setVideoToBeShared(videoData);
@@ -375,12 +385,14 @@ export const VideoTabItem = ({ videoData }) => {
             </Menu.Item>
             <Menu.Item
               leftSection={
-                <img
-                  src="./edit-icon.png"
-                  // src={pagePath === "recordings" ? EditIcon : "./edit-icon.png"}
-                  alt="Copy Icon"
-                  className="w-[20px]"
-                />
+                // <img
+                //   src="./edit-icon.png"
+                //   // src={pagePath === "recordings" ? EditIcon : "./edit-icon.png"}
+                //   alt="Copy Icon"
+                //   className="w-[20px]"
+                // />
+
+                <EDIT_ICON className="text-black" />
               }
               onClick={() => {
                 setVideoToBeEdited(videoData);
@@ -392,14 +404,15 @@ export const VideoTabItem = ({ videoData }) => {
             <Menu.Item
               color="red"
               leftSection={
-                <img
-                  src="./delete-icon.png"
-                  // src={
-                  //   pagePath === "recordings" ? DeleteIcon : "./delete-icon.png"
-                  // }
-                  alt="Copy Icon"
-                  className="w-[20px]"
-                />
+                // <img
+                //   src="./delete-icon.png"
+                //   // src={
+                //   //   pagePath === "recordings" ? DeleteIcon : "./delete-icon.png"
+                //   // }
+                //   alt="Copy Icon"
+                //   className="w-[20px]"
+                // />
+                <DELETE_ICON className="text-[#FF0000]" />
               }
               onClick={() => {
                 setVideoToBeDeleted(videoData);

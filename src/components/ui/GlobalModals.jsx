@@ -17,6 +17,8 @@ import CustomButton from "./CustomButton";
 import { useEffect, useRef, useState } from "react";
 import Quill from "quill";
 import {
+  ARROW_RIGHT,
+  CANCAL_ICON,
   COPY_TEXT_ICON,
   EMAIL_ICON,
   EMBED_ICON,
@@ -54,7 +56,7 @@ const ModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
         overlayProps={{ radius: "sm", blur: 2 }}
       />
       <button className="absolute top-[16px] right-[16px]" onClick={onClose}>
-        <img src="./cancel-icon.png" alt="close icon" />
+        <CANCAL_ICON />
       </button>
       {children}
     </Modal>
@@ -604,7 +606,7 @@ export const ShareVideoModal = () => {
                     }}
                   >
                     <p>Select Contacts</p>
-                    <img src="./ArrowRight.png" alt="Arrow Right Icon" />
+                    <ARROW_RIGHT />
                   </button>
                 </Tabs.Panel>
 
@@ -682,7 +684,7 @@ export const ShareVideoModal = () => {
                     }}
                   >
                     <p>Select Contacts</p>
-                    <img src="./ArrowRight.png" alt="Arrow Right Icon" />
+                    <ARROW_RIGHT />
                   </button>
                 </Tabs.Panel>
 
