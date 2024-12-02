@@ -10,7 +10,6 @@ import {
 } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
 import { LoadingOverlay, MultiSelect } from "@mantine/core";
-// import closeIcon from "../../assets/icons/cancel-icon.svg";
 import { useForm } from "@mantine/form";
 import CustomVideoInput from "./CustomVideoInput";
 import CustomButton from "./CustomButton";
@@ -27,7 +26,6 @@ import {
 import { StartRecordingBtn, TextEditor } from "./LibraryComponents";
 import { deleteVideo, getContacts, updateVideo } from "../../api/libraryAPIs";
 import { useUserStore } from "../../store/userStore";
-// import ArrowRightIcon from "../../assets/icons/ArrowRight.svg";
 import {
   sendEmailToSelectedContacts,
   sendSMSToSelectedContacts,
@@ -748,15 +746,27 @@ export const ShareVideoModal = () => {
                 <p className="text-[14px] mb-[8px]">Embed Link</p>
                 <div className="relative rounded-[12px] w-full h-[350px] bg-[#F7F7F8] border border-[#D7D5DD] overflow-hidden">
                   <CopyButton
-                    value={`<div style="position: relative; padding-bottom: 56.25%; height: 0;"><iframe 
-      src="https://www.loom.com/embed/6a7bcbcd29264a68bcee20242ce7a1f7?sid=c906d7a2-87c5-40b8-8ac3-8c6fd5bac5a9" 
-      frameborder="0" 
-      webkitallowfullscreen 
-      mozallowfullscreen 
-      allowfullscreen 
-      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
-    </iframe>
-  </div>`}
+                    value={`<div
+                              style={{
+                              position: "relative",
+                              paddingBottom: "56.25%",
+                              height: "0",
+                            }}  
+                          >
+                            <iframe
+                              src={videoToBeShared?.embeddedLink}
+                              frameBorder="0"
+                              webkitallowfullscreen
+                              mozallowfullscreen
+                              allowfullscreen
+                              style={{
+                                position: "absolute",
+                                top: "0",
+                                left: "0",
+                                width: "100%",
+                                height: "100%",
+                              }}
+                            ></iframe></div>`}
                   >
                     {({ copied, copy }) => (
                       <ActionIcon
@@ -782,16 +792,30 @@ export const ShareVideoModal = () => {
                       </ActionIcon>
                     )}
                   </CopyButton>
-                  <p className="px-[16px] py-[24px] w-[80%]">{`<div style="position: relative; padding-bottom: 56.25%; height: 0;">
-    <iframe 
-      src="https://www.loom.com/embed/6a7bcbcd29264a68bcee20242ce7a1f7?sid=c906d7a2-87c5-40b8-8ac3-8c6fd5bac5a9" 
-      frameborder="0" 
-      webkitallowfullscreen 
-      mozallowfullscreen 
-      allowfullscreen 
-      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
-    </iframe>
-  </div>`}</p>
+                  <p className="px-[16px] py-[24px] w-[80%]">{`
+                  <div
+                    style={{
+                      position: "relative",
+                      paddingBottom: "56.25%",
+                      height: "0",
+                    }}
+                  >
+                    <iframe
+                      src={videoToBeShared?.embeddedLink}
+                      frameBorder="0"
+                      webkitallowfullscreen
+                      mozallowfullscreen
+                      allowfullscreen
+                      style={{
+                        position: "absolute",
+                        top: "0",
+                        left: "0",
+                        width: "100%",
+                        height: "100%",
+                      }}
+                    ></iframe>
+                  </div>
+                  `}</p>
                 </div>
               </div>
               <CopyButton value={videoToBeShared.videoLink}>
