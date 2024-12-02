@@ -16,6 +16,7 @@ import { useLoadingBackdrop } from "../../store/loadingBackdrop";
 import { useUserStore } from "../../store/userStore";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import { getHistoryOfMessages } from "../../api/commsAPIs";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -66,14 +67,14 @@ const RecordVideo = () => {
         // Fetch all data in parallel
         const [videosResponse, historyResponse] = await Promise.all([
           getAllVideos(),
-          getAllVideos(),
+          getHistoryOfMessages(),
         ]);
 
         // Check responses and set state only after all are resolved
         if (videosResponse.success && historyResponse.success) {
           // Update states
           setVideosData(videosResponse.data.videos);
-          setHistoryData(historyResponse.data.videos);
+          setHistoryData(historyResponse.data.histories);
         } else {
           console.error("Error fetching data");
           if (!videosResponse.success) {
