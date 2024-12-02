@@ -316,13 +316,15 @@ export const VideoTabItem = ({ videoData }) => {
           }}
         /> */}
 
-        <SHAREVIDEO_ICON
-          className="absolute top-[8px] right-[8px] cursor-pointer bg-white p-[2px] rounded-full"
+        <button
+          className="absolute top-[8px] right-[8px] cursor-pointer"
           onClick={() => {
             setVideoToBeShared(videoData);
             setIsShareVideoModalOpen(true);
           }}
-        />
+        >
+          <SHAREVIDEO_ICON />
+        </button>
       </div>
       <div className="flex-grow px-[16px] py-[12px] flex items-center justify-between gap-[10px] border-t border-t-[#CFCED4]">
         <Link
