@@ -1,5 +1,5 @@
 import CustomButton from "./CustomButton";
-import { Menu, Tabs, Table } from "@mantine/core";
+import { Menu, Tabs, Table, CopyButton } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
 import { Link, useLocation } from "react-router-dom";
 import { forwardRef, useEffect, useLayoutEffect, useRef } from "react";
@@ -17,13 +17,6 @@ import {
   SHAREVIDEO_ICON,
   VIDEO_OPTIONS_ICON,
 } from "../../assets/icons/DynamicIcons";
-
-// import PlaceHolderImage from "../../assets/imagePlaceholder.jpeg";
-// import ShareVideoIcon from "../../assets/icons/share-icon.svg";
-// import VideoOptionsIcon from "../../assets/icons/VideoOptionsIcon.svg";
-// import CopyIcon from "../../assets/icons/copy-icon.svg";
-// import EditIcon from "../../assets/icons/edit-icon.svg";
-// import DeleteIcon from "../../assets/icons/delete-icon.svg";
 
 export const LibraryRoot = ({ children }) => {
   return (
@@ -303,18 +296,6 @@ export const VideoTabItem = ({ videoData }) => {
             className="w-full h-full object-cover"
           />
         )}
-        {/* <img
-          // src={
-          //   pagePath === "recordings" ? ShareVideoIcon : "./shareVideoIcon.png"
-          // }
-          src="./shareVideoIcon.png"
-          alt="Share Video Icon"
-          className={`absolute top-[8px] right-[8px] cursor-pointer bg-white p-[2px] rounded-full`}
-          onClick={() => {
-            setVideoToBeShared(videoData);
-            setIsShareVideoModalOpen(true);
-          }}
-        /> */}
 
         <button
           className="absolute top-[8px] right-[8px] cursor-pointer"
@@ -352,41 +333,25 @@ export const VideoTabItem = ({ videoData }) => {
         >
           <Menu.Target>
             <div className="w-[24px] h-[24px] flex justify-center items-center">
-              {/* <img
-                // src={
-                //   pagePath === "recordings"
-                //     ? VideoOptionsIcon
-                //     : "./VideoOptionsIcon.png"
-                // }
-                src="./VideoOptionsIcon.png"
-                alt="Video Options Icon"
-              /> */}
               <VIDEO_OPTIONS_ICON />
             </div>
           </Menu.Target>
           <Menu.Dropdown>
-            <Menu.Item
-              leftSection={
-                // <img
-                //   src="./copy-icon.png"
-                //   // src={pagePath === "recordings" ? CopyIcon : "./copy-icon.png"}
-                //   alt="Copy Icon"
-                //   className="w-[20px]"
-                // />
-                <COPY_ICON className="text-black" />
-              }
-            >
-              Copy Link
+            <Menu.Item>
+              <CopyButton value={videoData?.shareableLink}>
+                {({ copy }) => (
+                  <buttton
+                    onClick={copy}
+                    className="flex items-center gap-[8px]"
+                  >
+                    <COPY_ICON className="text-black" />
+                    <p className="text-[14px] font-medium">Copy Link</p>
+                  </buttton>
+                )}
+              </CopyButton>
             </Menu.Item>
             <Menu.Item
-              leftSection={
-                // <img
-                //   src="./share-icon.png"
-                //   alt="Copy Icon"
-                //   className="w-[20px]"
-                // />
-                <SHARE_ICON className="text-black" />
-              }
+              leftSection={<SHARE_ICON className="text-black" />}
               onClick={() => {
                 setVideoToBeShared(videoData);
                 setIsShareVideoModalOpen(true);
@@ -395,16 +360,7 @@ export const VideoTabItem = ({ videoData }) => {
               Share
             </Menu.Item>
             <Menu.Item
-              leftSection={
-                // <img
-                //   src="./edit-icon.png"
-                //   // src={pagePath === "recordings" ? EditIcon : "./edit-icon.png"}
-                //   alt="Copy Icon"
-                //   className="w-[20px]"
-                // />
-
-                <EDIT_ICON className="text-black" />
-              }
+              leftSection={<EDIT_ICON className="text-black" />}
               onClick={() => {
                 setVideoToBeEdited(videoData);
                 setIsEditVideoModalOpen(true);
@@ -414,17 +370,7 @@ export const VideoTabItem = ({ videoData }) => {
             </Menu.Item>
             <Menu.Item
               color="red"
-              leftSection={
-                // <img
-                //   src="./delete-icon.png"
-                //   // src={
-                //   //   pagePath === "recordings" ? DeleteIcon : "./delete-icon.png"
-                //   // }
-                //   alt="Copy Icon"
-                //   className="w-[20px]"
-                // />
-                <DELETE_ICON className="text-[#FF0000]" />
-              }
+              leftSection={<DELETE_ICON className="text-[#FF0000]" />}
               onClick={() => {
                 setVideoToBeDeleted(videoData);
                 setIsDeleteVideoModalOpen(true);
