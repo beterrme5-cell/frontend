@@ -14,6 +14,7 @@ import {
   DELETE_ICON,
   EDIT_ICON,
   SHARE_ICON,
+  SHAREVIDEO_ICON,
   VIDEO_OPTIONS_ICON,
 } from "../../assets/icons/DynamicIcons";
 
@@ -302,13 +303,21 @@ export const VideoTabItem = ({ videoData }) => {
             className="w-full h-full object-cover"
           />
         )}
-        <img
+        {/* <img
           // src={
           //   pagePath === "recordings" ? ShareVideoIcon : "./shareVideoIcon.png"
           // }
           src="./shareVideoIcon.png"
           alt="Share Video Icon"
           className={`absolute top-[8px] right-[8px] cursor-pointer bg-white p-[2px] rounded-full`}
+          onClick={() => {
+            setVideoToBeShared(videoData);
+            setIsShareVideoModalOpen(true);
+          }}
+        /> */}
+
+        <SHAREVIDEO_ICON
+          className="absolute top-[8px] right-[8px] cursor-pointer bg-white p-[2px] rounded-full"
           onClick={() => {
             setVideoToBeShared(videoData);
             setIsShareVideoModalOpen(true);
