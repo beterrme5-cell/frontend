@@ -754,7 +754,7 @@ export const ShareVideoModal = () => {
                             }}  
                           >
                             <iframe
-                              src={videoToBeShared?.embeddedLink}
+                              src="${videoToBeShared?.embeddedLink}"
                               frameBorder="0"
                               webkitallowfullscreen
                               mozallowfullscreen
@@ -801,7 +801,7 @@ export const ShareVideoModal = () => {
                     }}
                   >
                     <iframe
-                      src={videoToBeShared?.embeddedLink}
+                      src="${videoToBeShared?.embeddedLink}"
                       frameBorder="0"
                       webkitallowfullscreen
                       mozallowfullscreen
