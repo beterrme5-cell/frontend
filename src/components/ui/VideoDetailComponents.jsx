@@ -9,19 +9,20 @@ import {
 // import goBackIcon from "../../assets/icons/goBack.svg";
 
 export const VideoDetailRoot = ({ children }) => {
-  // const pagePath = window.location.pathname.split("/")[1];
+  const recodingsPagePath = window.location.pathname.split("/")[1];
+
+  const accessToken = localStorage.getItem("accessToken");
 
   return (
     <section className="bg-white p-[32px] rounded-[12px] flex flex-col gap-[12px]">
       <Link
-        to="/"
+        to={
+          recodingsPagePath === "recordings"
+            ? `/recordings/${accessToken}`
+            : "/"
+        }
         className="flex items-center gap-[8px] text-[16px] font-medium text-primary"
       >
-        {/* <img
-          src="./goBack.png"
-          // src={`${pagePath === "recordings" ? goBackIcon : "./goBack.png"}`}
-          alt="Go Back"
-        /> */}
         <GO_BACK />
         Go back to Library
       </Link>
