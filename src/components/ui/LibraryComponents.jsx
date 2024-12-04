@@ -157,6 +157,8 @@ export const StartRecordingBtn = ({
         });
 
         sdkButton.on("insert-click", async (LoomVideo) => {
+          console.log("Recording Completed: ", LoomVideo);
+
           const videoData = {
             title: newvideoFormData.recordingName || LoomVideo.title,
             embeddedLink: LoomVideo.embedUrl || "",
