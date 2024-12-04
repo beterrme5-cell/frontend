@@ -14,11 +14,15 @@ export const router = createBrowserRouter([
         element: <Dashboard />,
       },
       {
-        path: "/recordings/:accessToken",
+        path: "recordings/:accessToken",
         element: <RecordVideo />,
       },
       {
         path: "video-detail/:videoId",
+        element: <VideoDetail />,
+      },
+      {
+        path: "recordings/:accessToken/video-detail/:videoId",
         element: <VideoDetail />,
       },
       {
