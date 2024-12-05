@@ -122,24 +122,41 @@ export const StartRecordingBtn = ({
 
   const [loomJWS, setLoomJWS] = useState("");
 
+  async function setupLoomInitial() {
+    try {
+      // Fetch the signed JWT from the server
+      const response = await setupLoomSDK();
+
+      if (!response.success) {
+        throw new Error("Failed to fetch token");
+      }
+
+      const { token: serverJws } = response.data;
+
+      setLoomJWS(serverJws);
+
+      const { supported, error } = isSupported();
+
+      if (!supported) {
+        console.warn(`Error setting up Loom: ${error}`);
+        return;
+      }
+    } catch (error) {
+      console.error("Error setting up Loom SDK:", error);
+    }
+  }
+
+  // Initial Loom SDK Setup
+  useEffect(() => {
+    setupLoomInitial();
+  }, []);
+
   // Loom SDK Setup
   useEffect(() => {
     async function setupLoom() {
       try {
-        const response = await setupLoomSDK();
-
-        if (!response.success) {
-          throw new Error("Failed to fetch token");
-        }
-
-        const { token: serverJws } = response.data;
-
-        setLoomJWS(serverJws);
-
-        const { supported, error } = isSupported();
-
-        if (!supported) {
-          console.warn(`Error setting up Loom: ${error}`);
+        if (!loomJWS) {
+          console.log("Loom JWS not found");
           return;
         }
         // Initialize Loom SDK with the JWT and Public App ID
@@ -205,7 +222,7 @@ export const StartRecordingBtn = ({
           onStartRecording();
         });
       } catch (error) {
-        console.error("Error setting up Loom SDK:", error);
+        console.error("Error Configuring the Btn:", error);
       }
     }
 
