@@ -2,7 +2,13 @@ import CustomButton from "./CustomButton";
 import { Menu, Tabs, Table, CopyButton } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
 import { Link, useLocation } from "react-router-dom";
-import { forwardRef, useEffect, useLayoutEffect, useRef } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import Quill from "quill";
 import { createInstance } from "@loomhq/record-sdk";
 import { isSupported } from "@loomhq/record-sdk/is-supported";
@@ -106,7 +112,7 @@ export const RecordLoomVideoBtn = () => {
 export const StartRecordingBtn = ({
   onStartRecording,
   afterRecordingStart,
-  newvideoFormData,
+  recordingName,
   disabled,
 }) => {
   const BUTTON_ID = "start-recording-button";
@@ -114,11 +120,12 @@ export const StartRecordingBtn = ({
   const setVideosData = useUserStore((state) => state.setVideosData);
   const LOOM_APP_ID = "a0b41709-338e-4393-8090-cb7ed475e127";
 
+  const [loomJWS, setLoomJWS] = useState("");
+
   // Loom SDK Setup
   useEffect(() => {
     async function setupLoom() {
       try {
-        // Fetch the signed JWT from the server
         const response = await setupLoomSDK();
 
         if (!response.success) {
@@ -127,17 +134,18 @@ export const StartRecordingBtn = ({
 
         const { token: serverJws } = response.data;
 
+        setLoomJWS(serverJws);
+
         const { supported, error } = isSupported();
 
         if (!supported) {
           console.warn(`Error setting up Loom: ${error}`);
           return;
         }
-
         // Initialize Loom SDK with the JWT and Public App ID
         const { configureButton } = await createInstance({
           mode: "custom",
-          jws: serverJws,
+          jws: loomJWS,
           publicAppId: LOOM_APP_ID,
           config: {
             disablePreviewModal: true,
@@ -157,10 +165,8 @@ export const StartRecordingBtn = ({
         });
 
         sdkButton.on("insert-click", async (LoomVideo) => {
-          console.log("Recording Completed: ", LoomVideo);
-
           const videoData = {
-            title: newvideoFormData.recordingName || LoomVideo.title,
+            title: recordingName || LoomVideo.title,
             embeddedLink: LoomVideo.embedUrl || "",
             shareableLink: LoomVideo.sharedUrl || "",
           };
@@ -205,7 +211,7 @@ export const StartRecordingBtn = ({
 
     setupLoom();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setVideosData, videosData]);
+  }, [setVideosData, recordingName]);
 
   return (
     <button
@@ -523,7 +529,25 @@ export const TextEditor = forwardRef(({ onTextChange }, ref) => {
     pasteThumbnailButton.innerHTML = "Paste Thumbnail";
     pasteThumbnailButton.setAttribute("type", "button");
     pasteThumbnailButton.onclick = () => {
-      console.log("Paste Thumbnail clicked", videoToBeShared);
+      // Set the width and height
+      const width = "300px"; // You can modify this to any value or make it dynamic
+      const height = "200px"; // Modify this as well
+
+      // Create the image tag with width and height
+      const imageTag = `<img src="${videoToBeShared.thumbnailURL}" width="${width}" height="${height}" />`;
+
+      const range = quill.getSelection();
+      if (range === null) {
+        // Insert the image at the current cursor position
+        quill.clipboard.dangerouslyPasteHTML(0, imageTag);
+        // Move the cursor to the end of the inserted image
+        quill.setSelection(0 + imageTag.length);
+      }
+
+      // Insert the image at the current cursor position
+      quill.clipboard.dangerouslyPasteHTML(range.index, imageTag);
+      // Move the cursor to the end of the inserted image
+      quill.setSelection(range.index + imageTag.length);
     };
 
     // embedButton.classList.add("ql-formats");
