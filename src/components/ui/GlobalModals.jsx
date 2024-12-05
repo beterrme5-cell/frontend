@@ -74,12 +74,7 @@ export const PreRecordingDataInputModal = () => {
     (state) => state.setIsNewRecordingModalOpen
   );
 
-  const form = useForm({
-    initialValues: {
-      recordingName: "",
-      recordingDescription: "",
-    },
-  });
+  const [recordingName, setRecordingName] = useState("");
 
   return (
     <ModalRoot
@@ -95,19 +90,19 @@ export const PreRecordingDataInputModal = () => {
           <TextInput
             label="Recording Name"
             placeholder="Enter Recording Name"
-            {...form.getInputProps("recordingName")}
+            value={recordingName}
+            onChange={(e) => setRecordingName(e.target.value)}
             withAsterisk
             description="Name must be at least 3 characters long"
             id="recordingNameModalInput"
             className="w-[350px]"
-            error={form.errors.recordingName}
           />
 
           <StartRecordingBtn
             onStartRecording={() => setIsNewRecordingModalOpen(false)}
-            afterRecordingStart={() => form.reset()}
-            newvideoFormData={form.values}
-            disabled={form.values.recordingName.length < 3}
+            afterRecordingStart={() => setRecordingName("")}
+            recordingName={recordingName}
+            disabled={recordingName.length < 3}
           />
         </form>
       </div>
