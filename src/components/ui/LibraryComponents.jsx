@@ -23,6 +23,7 @@ import {
   SHAREVIDEO_ICON,
   VIDEO_OPTIONS_ICON,
 } from "../../assets/icons/DynamicIcons";
+import { useLoadingBackdrop } from "./../../store/loadingBackdrop";
 
 export const LibraryRoot = ({ children }) => {
   return (
@@ -120,6 +121,8 @@ export const StartRecordingBtn = ({
   const setVideosData = useUserStore((state) => state.setVideosData);
   const LOOM_APP_ID = "a0b41709-338e-4393-8090-cb7ed475e127";
 
+  const setLoading = useLoadingBackdrop((state) => state.setLoading);
+
   const [loomJWS, setLoomJWS] = useState("");
 
   async function setupLoomInitial() {
@@ -182,6 +185,8 @@ export const StartRecordingBtn = ({
         });
 
         sdkButton.on("insert-click", async (LoomVideo) => {
+          setLoading(true);
+
           const videoData = {
             title: recordingName || LoomVideo.title,
             embeddedLink: LoomVideo.embedUrl || "",
@@ -200,11 +205,13 @@ export const StartRecordingBtn = ({
                 response.error || "Unknown error"
               );
             }
+            setLoading(false);
           } catch (error) {
             console.error(
               "Error saving video:",
               error.response || error.message || error
             );
+            setLoading(false);
           }
         });
 
