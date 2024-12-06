@@ -11,7 +11,7 @@ import {
   VideoTabSection,
 } from "../../components/ui/LibraryComponents";
 import { useGlobalModals } from "../../store/globalModals";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useLoadingBackdrop } from "../../store/loadingBackdrop";
 import { useUserStore } from "../../store/userStore";
 import { useParams } from "react-router-dom";
@@ -23,7 +23,8 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 const RecordVideo = () => {
   const videosData = useUserStore((state) => state.videosData);
   const setVideosData = useUserStore((state) => state.setVideosData);
-  const [historyData, setHistoryData] = useState([]);
+  const historyData = useUserStore((state) => state.historyData);
+  const setHistoryData = useUserStore((state) => state.setHistoryData);
 
   const { accessToken } = useParams();
 
@@ -72,6 +73,7 @@ const RecordVideo = () => {
 
         // Check responses and set state only after all are resolved
         if (videosResponse.success && historyResponse.success) {
+          console.log("historyResponse", historyResponse.data);
           // Update states
           setVideosData(videosResponse.data.videos);
           setHistoryData(historyResponse.data.histories);

@@ -418,10 +418,19 @@ export const VideoTabItem = ({ videoData }) => {
 };
 
 export const HistoryTabSection = ({ children }) => {
-  return <div className="mt-[32px]">{children}</div>;
+  return (
+    <div
+      className="mt-[32px] !max-h-[calc(100vh-264px)] overflow-auto"
+      id="historyTabSection"
+    >
+      {children}
+    </div>
+  );
 };
 
-export const HistoryTableList = ({ historyData }) => {
+export const HistoryTableList = () => {
+  const historyData = useUserStore((state) => state.historyData);
+
   const rows = historyData.map((element) => (
     <Table.Tr key={element._id}>
       <Table.Td className=" text-[14px] font-medium">

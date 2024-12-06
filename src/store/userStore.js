@@ -24,4 +24,10 @@ export const useUserStore = create((set) => ({
   // --------------------------------------------------
   userContactsData: {},
   setUserContactsData: (contacts) => set({ userContactsData: contacts }),
+
+  // --------------------------------------------------
+  // Sharing History
+  // --------------------------------------------------
+  historyData: [],
+  setHistoryData: (historyData) => set({ historyData }),
 }));
