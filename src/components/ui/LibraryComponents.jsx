@@ -115,6 +115,10 @@ export const StartRecordingBtn = ({
   afterRecordingStart,
   recordingName,
   disabled,
+  showStartRecordingBtn,
+  setShowStartRecordingBtn,
+  settingLoom,
+  setSettingLoom,
 }) => {
   const BUTTON_ID = "start-recording-button";
   const videosData = useUserStore((state) => state.videosData);
@@ -125,131 +129,138 @@ export const StartRecordingBtn = ({
 
   const [loomJWS, setLoomJWS] = useState("");
 
-  async function setupLoomInitial() {
-    try {
-      // Fetch the signed JWT from the server
-      const response = await setupLoomSDK();
-
-      if (!response.success) {
-        throw new Error("Failed to fetch token");
-      }
-
-      const { token: serverJws } = response.data;
-
-      setLoomJWS(serverJws);
-
-      const { supported, error } = isSupported();
-
-      if (!supported) {
-        console.warn(`Error setting up Loom: ${error}`);
-        return;
-      }
-    } catch (error) {
-      console.error("Error setting up Loom SDK:", error);
-    }
-  }
-
   // Initial Loom SDK Setup
   useEffect(() => {
+    async function setupLoomInitial() {
+      try {
+        // Fetch the signed JWT from the server
+        const response = await setupLoomSDK();
+
+        if (!response.success) {
+          throw new Error("Failed to fetch token");
+        }
+
+        const { token: serverJws } = response.data;
+
+        setLoomJWS(serverJws);
+
+        const { supported, error } = isSupported();
+
+        if (!supported) {
+          console.warn(`Error setting up Loom: ${error}`);
+          return;
+        }
+      } catch (error) {
+        console.error("Error setting up Loom SDK:", error);
+      }
+    }
     setupLoomInitial();
   }, []);
 
-  // Loom SDK Setup
-  useEffect(() => {
-    async function setupLoom() {
-      try {
-        if (!loomJWS) {
-          console.log("Loom JWS not found");
-          return;
-        }
-        // Initialize Loom SDK with the JWT and Public App ID
-        const { configureButton } = await createInstance({
-          mode: "custom",
-          jws: loomJWS,
-          publicAppId: LOOM_APP_ID,
-          config: {
-            disablePreviewModal: true,
-            insertButtonText: "Save Video to Library",
-          },
-        });
+  const handleSDKSetup = async () => {
+    try {
+      setSettingLoom(true);
+      let configureSDK = {};
 
-        const button = document.getElementById(BUTTON_ID);
+      // Initialize Loom SDK with the JWT and Public App ID
+      configureSDK = await createInstance({
+        mode: "custom",
+        jws: loomJWS,
+        publicAppId: LOOM_APP_ID,
+        config: {
+          disablePreviewModal: true,
+          insertButtonText: "Save Video to Library",
+        },
+      });
 
-        if (!button) {
-          console.error(`Button with ID ${BUTTON_ID} not found`);
-          return;
-        }
-
-        const sdkButton = configureButton({
-          element: button,
-        });
-
-        sdkButton.on("insert-click", async (LoomVideo) => {
-          setLoading(true);
-
-          const videoData = {
-            title: recordingName || LoomVideo.title,
-            embeddedLink: LoomVideo.embedUrl || "",
-            shareableLink: LoomVideo.sharedUrl || "",
-          };
-
-          try {
-            const response = await saveRecordedVideo(videoData);
-
-            if (response.success) {
-              const updatedVideosData = [...videosData, response.data.video];
-              setVideosData(updatedVideosData);
-            } else {
-              console.error(
-                "Error saving video to Database:",
-                response.error || "Unknown error"
-              );
-            }
-            setLoading(false);
-          } catch (error) {
-            console.error(
-              "Error saving video:",
-              error.response || error.message || error
-            );
-            setLoading(false);
-          }
-        });
-
-        // Event emitted when video capture has begun (after 3..2..1 countdown)
-        sdkButton.on("recording-start", () => {
-          afterRecordingStart();
-        });
-
-        // sdkButton.on("recording-complete", async (LoomVideo) => {
-        //   console.log("Recording Completed", LoomVideo);
-        // });
-
-        // Event emitted when user has selected start recording
-        sdkButton.on("start", () => {
-          onStartRecording();
-        });
-      } catch (error) {
-        console.error("Error Configuring the Btn:", error);
+      if (!configureSDK) {
+        alert("Error setting up Loom SDK");
+        return;
       }
-    }
 
-    setupLoom();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setVideosData, recordingName]);
+      setSettingLoom(false);
+      setShowStartRecordingBtn(true);
+
+      const button = document.getElementById(BUTTON_ID);
+
+      if (!button) {
+        console.error(`Button with ID ${BUTTON_ID} not found`);
+        return;
+      }
+      const sdkButton = configureSDK.configureButton({
+        element: button,
+      });
+
+      sdkButton.on("insert-click", async (LoomVideo) => {
+        setLoading(true);
+        const videoData = {
+          title: recordingName || LoomVideo.title,
+          embeddedLink: LoomVideo.embedUrl || "",
+          shareableLink: LoomVideo.sharedUrl || "",
+        };
+        try {
+          const response = await saveRecordedVideo(videoData);
+          if (response.success) {
+            const updatedVideosData = [...videosData, response.data.video];
+            setVideosData(updatedVideosData);
+          } else {
+            console.error(
+              "Error saving video to Database:",
+              response.error || "Unknown error"
+            );
+          }
+          setLoading(false);
+        } catch (error) {
+          console.error(
+            "Error saving video:",
+            error.response || error.message || error
+          );
+          setLoading(false);
+        }
+      });
+      // Event emitted when video capture has begun (after 3..2..1 countdown)
+      sdkButton.on("recording-start", () => {
+        afterRecordingStart();
+      });
+      // sdkButton.on("recording-complete", async (LoomVideo) => {
+      //   console.log("Recording Completed", LoomVideo);
+      // });
+      // Event emitted when user has selected start recording
+      sdkButton.on("start", () => {
+        onStartRecording();
+      });
+    } catch (error) {
+      console.error("Error Configuring the Btn:", error);
+    }
+  };
 
   return (
-    <button
-      id="start-recording-button"
-      className={`${
-        disabled
-          ? "bg-[#CBCBCB] hover:cursor-not-allowed"
-          : "bg-primary hover:cursor-pointer"
-      } text-white border-none p-[8px_16px] text-[14px] font-medium rounded-[8px]`}
-      type="button"
-      disabled={disabled}
-    >
-      Start Recording
-    </button>
+    <>
+      <button
+        className={`${
+          disabled || settingLoom
+            ? "bg-[#CBCBCB] hover:cursor-not-allowed"
+            : "bg-primary hover:cursor-pointer"
+        } text-white border-none p-[8px_16px] text-[16px] font-medium rounded-[8px] ${
+          showStartRecordingBtn ? "hidden" : "block"
+        }`}
+        type="button"
+        disabled={disabled || settingLoom}
+        onClick={handleSDKSetup}
+      >
+        {settingLoom ? "Saving Name..." : "Next"}
+      </button>
+      <button
+        id="start-recording-button"
+        className={`bg-primary hover:cursor-pointer text-white border-none p-[8px_16px] text-[16px] font-medium rounded-[8px] ${
+          showStartRecordingBtn ? "block" : "hidden"
+        }`}
+        type="button"
+        onClick={handleSDKSetup}
+      >
+        Start Recording
+      </button>
+    </>
   );
 };
 

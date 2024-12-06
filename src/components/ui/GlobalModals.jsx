@@ -75,6 +75,8 @@ export const PreRecordingDataInputModal = () => {
   );
 
   const [recordingName, setRecordingName] = useState("");
+  const [settingLoom, setSettingLoom] = useState(false);
+  const [showStartRecordingBtn, setShowStartRecordingBtn] = useState(false);
 
   return (
     <ModalRoot
@@ -82,27 +84,54 @@ export const PreRecordingDataInputModal = () => {
       showModal={isNewRecordingModalOpen}
       onClose={() => {
         setIsNewRecordingModalOpen(false);
+        setRecordingName("");
+        setShowStartRecordingBtn(false);
+        setSettingLoom(false);
       }}
     >
       <div className="flex flex-col gap-[24px] w-[738px]">
+        {showStartRecordingBtn && (
+          <button
+            className="w-fit flex items-center gap-[8px] font-medium text-primary"
+            type="button"
+            onClick={() => setShowStartRecordingBtn(false)}
+          >
+            <ARROW_RIGHT className="text-primary rotate-180" />
+            <p>Go Back</p>
+          </button>
+        )}
         <h3 className="text-[24px] font-medium">New Video Record</h3>
+        {showStartRecordingBtn && (
+          <div className="flex flex-col gap-[8px]">
+            <p className="text-[16px] font-medium">Recording Name</p>
+            <div className="p-[12px_16px] rounded-[8px] bg-[#EEEEEE] border border-[#DEDEDE] text-[#777B8B] hover:cursor-not-allowed">
+              {recordingName}
+            </div>
+          </div>
+        )}
         <form className="flex flex-col gap-[24px]">
-          <TextInput
-            label="Recording Name"
-            placeholder="Enter Recording Name"
-            value={recordingName}
-            onChange={(e) => setRecordingName(e.target.value)}
-            withAsterisk
-            description="Name must be at least 3 characters long"
-            id="recordingNameModalInput"
-            className="w-[350px]"
-          />
+          {!showStartRecordingBtn && (
+            <TextInput
+              label="Recording Name"
+              placeholder="Enter Recording Name"
+              value={recordingName}
+              onChange={(e) => setRecordingName(e.target.value)}
+              withAsterisk
+              description="Name must be at least 3 characters long"
+              id="recordingNameModalInput"
+              className="w-[350px]"
+            />
+          )}
 
           <StartRecordingBtn
             onStartRecording={() => setIsNewRecordingModalOpen(false)}
             afterRecordingStart={() => setRecordingName("")}
             recordingName={recordingName}
             disabled={recordingName.length < 3}
+            settingLoom={settingLoom}
+            setSettingLoom={setSettingLoom}
+            showStartRecordingBtn={showStartRecordingBtn}
+            setShowStartRecordingBtn={setShowStartRecordingBtn}
           />
         </form>
       </div>
