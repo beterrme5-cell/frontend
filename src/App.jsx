@@ -33,8 +33,6 @@ function App() {
       // Send Data to the Backend API to Decrypt the code
       const response = await getDecryptedUserData({ tokenKey: key });
 
-      console.log("Response: ", response);
-
       // Save the accountId and userLocationId in the Local Storage
       localStorage.setItem("accessToken", response?.data?.accessToken);
 

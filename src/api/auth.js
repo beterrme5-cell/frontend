@@ -34,8 +34,6 @@ export const getDecryptedUserData = async (params) => {
       token: params.tokenKey,
     });
 
-    console.log("getDecryptedUserData", response);
-
     return {
       success: true,
       data: response.data,
