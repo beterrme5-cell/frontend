@@ -420,6 +420,9 @@ export const ShareVideoModal = () => {
     (state) => state.setSendToAllContacts
   );
 
+  const historyData = useUserStore((state) => state.historyData);
+  const setHistoryData = useUserStore((state) => state.setHistoryData);
+
   const sendToAllContacts = useGlobalModals((state) => state.sendToAllContacts);
 
   const videoToBeShared = useGlobalModals((state) => state.videoToBeShared);
@@ -448,7 +451,20 @@ export const ShareVideoModal = () => {
     });
 
     if (response.success) {
-      console.log("Email Sent Successfully", response.data);
+      const rawHistoryData = response.data.data;
+
+      const newHistoryData = rawHistoryData.map((history) => {
+        return {
+          videoTitle: history.videoName,
+          contactName: history.data.contactName,
+          contactAddress: history.data.contactAddress,
+          sendType: history.data.sendType,
+          subject: history.data.subject,
+          status: history.data.status,
+        };
+      });
+
+      setHistoryData([...historyData, ...newHistoryData]);
 
       // Clear the selected contacts
       setSelectedContacts([]);
@@ -477,7 +493,20 @@ export const ShareVideoModal = () => {
     });
 
     if (response.success) {
-      console.log("SMS Sent Successfully", response.data);
+      const rawHistoryData = response.data.data;
+
+      const newHistoryData = rawHistoryData.map((history) => {
+        return {
+          videoTitle: history.videoName,
+          contactName: history.data.contactName,
+          contactAddress: history.data.contactAddress,
+          sendType: history.data.sendType,
+          subject: history.data.subject,
+          status: history.data.status,
+        };
+      });
+
+      setHistoryData([...historyData, ...newHistoryData]);
 
       // Clear the selected contacts
       setSelectedSMSContacts([]);

@@ -11,7 +11,7 @@ import {
   VideoTabSection,
 } from "../../components/ui/LibraryComponents";
 import { useGlobalModals } from "../../store/globalModals";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { getAllVideos } from "../../api/libraryAPIs";
 import { useLoadingBackdrop } from "../../store/loadingBackdrop";
 import { useUserStore } from "../../store/userStore";
@@ -20,7 +20,8 @@ import { getHistoryOfMessages } from "../../api/commsAPIs";
 const Dashboard = () => {
   const videosData = useUserStore((state) => state.videosData);
   const setVideosData = useUserStore((state) => state.setVideosData);
-  const [historyData, setHistoryData] = useState([]);
+  const historyData = useUserStore((state) => state.historyData);
+  const setHistoryData = useUserStore((state) => state.setHistoryData);
 
   const setIsUploadVideoModalOpen = useGlobalModals(
     (state) => state.setIsUploadVideoModalOpen
@@ -63,6 +64,7 @@ const Dashboard = () => {
     };
 
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setLoading, setVideosData, fetchVideosData]);
 
   return (
@@ -102,7 +104,7 @@ const Dashboard = () => {
           <Tabs.Panel value="history">
             <HistoryTabSection>
               {historyData && historyData.length > 0 ? (
-                <HistoryTableList historyData={historyData} />
+                <HistoryTableList />
               ) : (
                 <p className="text-center text-gray-500 text-[16px]">
                   No History Found!
