@@ -217,6 +217,9 @@ export const StartRecordingBtn = ({
           );
           setLoading(false);
         }
+
+        setShowStartRecordingBtn(false);
+        setSettingLoom(false);
       });
       // Event emitted when video capture has begun (after 3..2..1 countdown)
       sdkButton.on("recording-start", () => {
