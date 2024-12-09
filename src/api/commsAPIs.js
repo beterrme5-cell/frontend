@@ -84,3 +84,25 @@ export const getHistoryOfMessages = async () => {
     };
   }
 };
+
+// API to get the Tags of the Contacts of the user
+export const getContactTags = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/user/getUserTags`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    console.error("Error while getting Contact Tags: ", error);
+    return {
+      success: false,
+      error: error.response?.data?.message || "An unexpected error occurred",
+    };
+  }
+};
