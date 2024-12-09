@@ -5,6 +5,7 @@ import {
   GO_BACK,
   SHARE_ICON,
 } from "../../assets/icons/DynamicIcons.jsx";
+import { Spoiler } from "@mantine/core";
 
 // import goBackIcon from "../../assets/icons/goBack.svg";
 
@@ -33,9 +34,16 @@ export const VideoDetailRoot = ({ children }) => {
 
 export const VideoDetailHeader = ({ title, description }) => {
   return (
-    <div className="flex flex-col gap-[4px]">
+    <div className="flex flex-col gap-[4px] max-w-[711px]">
       <h1 className="text-[24px] font-medium text-darkBlue">{title}</h1>
-      <p className="text-[16px] text-gray-dark">{description}</p>
+      <Spoiler
+        maxHeight={50}
+        showLabel="Show more"
+        hideLabel="Hide"
+        className="text-[16px] text-gray-dark"
+      >
+        {description}
+      </Spoiler>
     </div>
   );
 };
