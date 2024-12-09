@@ -1127,25 +1127,13 @@ export const ContactsSelectionModalEmail = () => {
           <Table>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Contact ID</Table.Th>
                 <Table.Th>Contact Name</Table.Th>
-                <Table.Th>Date Added</Table.Th>
+                <Table.Th>Email Address</Table.Th>
                 <Table.Th></Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
               {filteredContacts?.map((contact) => {
-                const date = new Date(contact.dateAdded);
-
-                // Format the date as MM/DD/YYYY
-                const formattedDate = `${String(date.getMonth() + 1).padStart(
-                  2,
-                  "0"
-                )}/${String(date.getDate()).padStart(
-                  2,
-                  "0"
-                )}/${date.getFullYear()}`;
-
                 const isChecked = selectedContacts?.some(
                   (selectedContact) =>
                     selectedContact?.id === contact?.id &&
@@ -1154,13 +1142,12 @@ export const ContactsSelectionModalEmail = () => {
 
                 return (
                   <Table.Tr key={contact.id}>
-                    <Table.Td>{contact.id}</Table.Td>
                     <Table.Td className="capitalize">
                       {contact?.firstNameLowerCase +
                         " " +
                         contact?.lastNameLowerCase}
                     </Table.Td>
-                    <Table.Td>{formattedDate}</Table.Td>
+                    <Table.Td>{contact.email}</Table.Td>
                     <Table.Td>
                       <Checkbox
                         checked={isChecked}
@@ -1354,25 +1341,13 @@ export const ContactsSelectionModalSMS = () => {
           <Table>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Contact ID</Table.Th>
                 <Table.Th>Contact Name</Table.Th>
-                <Table.Th>Date Added</Table.Th>
+                <Table.Th>Phone Number</Table.Th>
                 <Table.Th></Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
               {filteredContacts?.map((contact) => {
-                const date = new Date(contact.dateAdded);
-
-                // Format the date as MM/DD/YYYY
-                const formattedDate = `${String(date.getMonth() + 1).padStart(
-                  2,
-                  "0"
-                )}/${String(date.getDate()).padStart(
-                  2,
-                  "0"
-                )}/${date.getFullYear()}`;
-
                 const isChecked = selectedSMSContacts?.some(
                   (selectedContact) =>
                     selectedContact?.id === contact?.id &&
@@ -1381,13 +1356,12 @@ export const ContactsSelectionModalSMS = () => {
 
                 return (
                   <Table.Tr key={contact.id}>
-                    <Table.Td>{contact.id}</Table.Td>
                     <Table.Td className="capitalize">
                       {contact?.firstNameLowerCase +
                         " " +
                         contact?.lastNameLowerCase}
                     </Table.Td>
-                    <Table.Td>{formattedDate}</Table.Td>
+                    <Table.Td>{contact.phone}</Table.Td>
                     <Table.Td>
                       <Checkbox
                         checked={isChecked}
