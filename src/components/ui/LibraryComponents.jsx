@@ -344,12 +344,13 @@ export const VideoTabItem = ({ videoData }) => {
         )}
 
         <button
-          className="absolute top-[8px] right-[8px] cursor-pointer"
+          className="absolute top-[8px] right-[8px] cursor-pointer bg-primary rounded-full p-[4px_8px] hover:cursor-pointer flex gap-[4px] items-center text-white"
           onClick={() => {
             setVideoToBeShared(videoData);
             setIsShareVideoModalOpen(true);
           }}
         >
+          <p className="text-[14px] font-medium">Share</p>
           <SHAREVIDEO_ICON />
         </button>
       </div>
