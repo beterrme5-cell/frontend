@@ -462,6 +462,9 @@ export const ShareVideoModal = () => {
   // State to store the content of Input Field of SMS
   const [smsContent, setSmsContent] = useState("");
 
+  // State for Email Subject
+  const [emailSubject, setEmailSubject] = useState("");
+
   // Use a ref to access the quill instance directly
   const quillRef = useRef();
 
@@ -671,6 +674,14 @@ export const ShareVideoModal = () => {
                   />
                 </Tabs.Panel>
               </Tabs>
+              <TextInput
+                label="Email Subject"
+                placeholder="Email Subject"
+                className="w-full max-w-[350px]"
+                id="emailSubject"
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+              />
               <TextEditor ref={quillRef} />
               <div className="flex items-center gap-[16px]">
                 <CustomButton
@@ -764,6 +775,7 @@ export const ShareVideoModal = () => {
                     Paste Video Link
                   </button>
                   <textarea
+                    id="smsContent-container"
                     placeholder="SMS Content"
                     value={smsContent}
                     onChange={(e) => setSmsContent(e.target.value)}

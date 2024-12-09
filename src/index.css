@@ -107,6 +107,26 @@ body {
 #text-editor-container {
   background-color: #f7f7f8 !important;
   border-radius: 0px 0px 8px 8px !important;
+  max-height: 202px;
+}
+
+#text-editor-container div.ql-editor::-webkit-scrollbar {
+  width: 10px !important;
+  border-radius: 5px !important;
+  background-color: #a5a5a532 !important;
+}
+#text-editor-container div.ql-editor::-webkit-scrollbar-thumb {
+  background-color: #2a85ff;
+  border-radius: 6px !important;
+}
+#smsContent-container::-webkit-scrollbar {
+  width: 10px !important;
+  border-radius: 5px !important;
+  background-color: #a5a5a532 !important;
+}
+#smsContent-container::-webkit-scrollbar-thumb {
+  background-color: #2a85ff;
+  border-radius: 6px !important;
 }
 
 #custom-buttons-wrapper button {
