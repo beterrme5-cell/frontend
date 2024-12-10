@@ -11,6 +11,7 @@ export const sendSMSToSelectedContacts = async (params) => {
       `${BASE_URL}/comms/sendSMS`,
       {
         contactIds: params.contactIds,
+        tags: params.tags,
         message: params.message,
         sendToAll: params.sendToAll,
         videoId: params.videoId,
@@ -44,6 +45,8 @@ export const sendEmailToSelectedContacts = async (params) => {
         message: params.message,
         sendToAll: params.sendToAll,
         videoId: params.videoId,
+        tags: params.tags,
+        subject: params.subject,
       },
       {
         headers: {
@@ -78,6 +81,28 @@ export const getHistoryOfMessages = async () => {
     };
   } catch (error) {
     console.error("Error while getting History of Messages: ", error);
+    return {
+      success: false,
+      error: error.response?.data?.message || "An unexpected error occurred",
+    };
+  }
+};
+
+// API to get the Tags of the Contacts of the user
+export const getContactTags = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/user/getUserTags`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    console.error("Error while getting Contact Tags: ", error);
     return {
       success: false,
       error: error.response?.data?.message || "An unexpected error occurred",

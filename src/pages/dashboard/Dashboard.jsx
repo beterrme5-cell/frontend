@@ -10,12 +10,13 @@ import {
   VideoTabItemsList,
   VideoTabSection,
 } from "../../components/ui/LibraryComponents";
-import { useGlobalModals } from "../../store/globalModals";
 import { useEffect } from "react";
 import { getAllVideos } from "../../api/libraryAPIs";
 import { useLoadingBackdrop } from "../../store/loadingBackdrop";
 import { useUserStore } from "../../store/userStore";
 import { getHistoryOfMessages } from "../../api/commsAPIs";
+import { toast } from "react-toastify";
+import { getUserLocationId } from "../../api/auth";
 
 const Dashboard = () => {
   const videosData = useUserStore((state) => state.videosData);
@@ -23,13 +24,32 @@ const Dashboard = () => {
   const historyData = useUserStore((state) => state.historyData);
   const setHistoryData = useUserStore((state) => state.setHistoryData);
 
-  const setIsUploadVideoModalOpen = useGlobalModals(
-    (state) => state.setIsUploadVideoModalOpen
-  );
-
   const setLoading = useLoadingBackdrop((state) => state.setLoading);
 
   const fetchVideosData = useUserStore((state) => state.fetchVideosData);
+
+  // Function to Get the Location Id of the User and Redirect to the GHL Media Storage Page
+  const handleUploadVideoBtnClick = async () => {
+    setLoading(true);
+
+    const response = await getUserLocationId();
+
+    if (response.success) {
+      window.location.href = `https://app.gohighlevel.com/v2/location/${response.data.userLocationId}/media-storage`;
+      setLoading(false);
+    } else {
+      setLoading(false);
+      toast.error("Unknown error occurred!", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -71,9 +91,7 @@ const Dashboard = () => {
     <LibraryRoot>
       <LibraryHeader
         title="My Library"
-        onUploadVideoBtnClick={() => {
-          setIsUploadVideoModalOpen(true);
-        }}
+        onUploadVideoBtnClick={handleUploadVideoBtnClick}
       />
       <LibraryBody>
         <BodyTabsRoot>

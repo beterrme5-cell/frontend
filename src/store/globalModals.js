@@ -59,6 +59,8 @@ export const useGlobalModals = create((set) => ({
   // send to all the contacts in contact list
   sendToAllContacts: false,
   setSendToAllContacts: (sendToAll) => set({ sendToAllContacts: sendToAll }),
+  contactTagsData: [],
+  setContactTagsData: (data) => set({ contactTagsData: data }),
 
   // --------------------------------------------------
   // Contacts Selection Modal - SMS
@@ -68,4 +70,11 @@ export const useGlobalModals = create((set) => ({
     set({ isSMSContactsSelectionModalOpen: isOpen }),
   selectedSMSContacts: [],
   setSelectedSMSContacts: (contacts) => set({ selectedSMSContacts: contacts }),
+
+  // --------------------------------------------------
+  // Video Link Not Attched - Warning Modal
+  // --------------------------------------------------
+  isVideoLinkNotAttachedModalOpen: false,
+  setIsVideoLinkNotAttachedModalOpen: (isOpen) =>
+    set({ isVideoLinkNotAttachedModalOpen: isOpen }),
 }));

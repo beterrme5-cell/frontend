@@ -333,23 +333,19 @@ export const VideoTabItem = ({ videoData }) => {
         {!videoData?.embeddedLink && (
           <img
             src="./imagePlaceholder.jpeg"
-            // src={
-            //   pagePath === "recordings"
-            //     ? PlaceHolderImage
-            //     : "./imagePlaceholder.jpeg"
-            // }
             alt="Video Thumbnail"
             className="w-full h-full object-cover"
           />
         )}
 
         <button
-          className="absolute top-[8px] right-[8px] cursor-pointer"
+          className="absolute top-[8px] right-[8px] cursor-pointer bg-primary rounded-full p-[4px_8px] hover:cursor-pointer flex gap-[4px] items-center text-white"
           onClick={() => {
             setVideoToBeShared(videoData);
             setIsShareVideoModalOpen(true);
           }}
         >
+          <p className="text-[14px] font-medium">Share</p>
           <SHAREVIDEO_ICON />
         </button>
       </div>
@@ -623,10 +619,10 @@ export const TextEditor = forwardRef(({ onTextChange }, ref) => {
   }, [ref]);
   return (
     <div className="flex flex-col gap-[8px]">
-      <p className="text-[14px] font-medium">Content</p>
+      <p className="text-[14px] font-medium">Email Content</p>
       <div
         ref={containerRef}
-        className="h-[350px] overflow-hidden flex flex-col"
+        className="h-[246px] overflow-hidden flex flex-col"
         id="text-editor-mainContainer"
       ></div>
     </div>

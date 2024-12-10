@@ -6,6 +6,10 @@ import "./index.css";
 import { router } from "./Router.jsx";
 import { RouterProvider } from "react-router-dom";
 
+//react toastify
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
+
 // Mantine Dev Styles
 import "@mantine/core/styles.css";
 import {
@@ -14,7 +18,7 @@ import {
   PreRecordingDataInputModal,
   ShareVideoModal,
   StartRecordingWarningModal,
-  UploadVideoModal,
+  // UploadVideoModal,
 } from "./components/ui/GlobalModals.jsx";
 import LoadingBackdrop from "./components/ui/LoadingBackdrop.jsx";
 
@@ -26,13 +30,15 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <MantineProvider theme={theme}>
     {/* Modals */}
     <DeleteVideoConfirmationModal />
-    <UploadVideoModal />
+    {/* <UploadVideoModal /> */}
     <EditVideoModal />
     <ShareVideoModal />
     <PreRecordingDataInputModal />
     <StartRecordingWarningModal />
     {/* Modals */}
     <LoadingBackdrop />
+    {/* REACT TOASTIFY - CONTAINER */}
+    <ToastContainer />
     <RouterProvider router={router} />
   </MantineProvider>
 );

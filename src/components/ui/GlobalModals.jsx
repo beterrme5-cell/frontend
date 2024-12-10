@@ -27,9 +27,11 @@ import { StartRecordingBtn, TextEditor } from "./LibraryComponents";
 import { deleteVideo, getContacts, updateVideo } from "../../api/libraryAPIs";
 import { useUserStore } from "../../store/userStore";
 import {
+  getContactTags,
   sendEmailToSelectedContacts,
   sendSMSToSelectedContacts,
 } from "../../api/commsAPIs";
+import { toast } from "react-toastify";
 
 function quillGetHTML(inputDelta) {
   var tempCont = document.createElement("div");
@@ -41,7 +43,7 @@ const ModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
     <Modal
       id="global-modal"
       opened={showModal}
-      onClose={onClose}
+      // onClose={onClose}
       centered
       size="auto"
       withCloseButton={false}
@@ -330,9 +332,23 @@ export const EditVideoModal = () => {
     });
 
     if (response.success) {
-      console.log("Video Updated Successfully", response.data);
+      toast.success("Video Updated Successfully", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     } else {
-      console.log("Error while updating video: ", response.error);
+      toast.error(response.error || "Error while updating video", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
 
     // Find the Video in the Videos Data and update it
@@ -456,34 +472,139 @@ export const ShareVideoModal = () => {
 
   const videoToBeShared = useGlobalModals((state) => state.videoToBeShared);
 
+  const contactTagsData = useGlobalModals((state) => state.contactTagsData);
+
+  const setContactTagsData = useGlobalModals(
+    (state) => state.setContactTagsData
+  );
+
+  const setIsVideoLinkNotAttachedModalOpen = useGlobalModals(
+    (state) => state.setIsVideoLinkNotAttachedModalOpen
+  );
+
   const [activeTab, setActiveTab] = useState("email");
   const [activeSubTab, setActiveSubTab] = useState("contacts");
 
   // State to store the content of Input Field of SMS
   const [smsContent, setSmsContent] = useState("");
 
+  // State for Email Subject
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailContent, setEmailContent] = useState("");
+  const [selectedContactTags, setSelectedContactTags] = useState([]);
+  const [noSelectedContactsError, setNoSelectedContactsError] = useState("");
+  const [noSMSContentError, setNoSMSContentError] = useState("");
+  const [noEmailSubjectError, setNoEmailSubjectError] = useState("");
+  const [noEmailContentError, setNoEmailContentError] = useState("");
+
   // Use a ref to access the quill instance directly
   const quillRef = useRef();
 
-  const handleSubmitEmail = async () => {
-    // Get the Delta of the Quill Editor
+  // Function to handle Initail Email Send
+  const ValidateEmailSend = () => {
     let delta = quillRef.current.getContents();
+    const quillHTML = quillGetHTML(delta);
 
+    setEmailContent(quillHTML);
+
+    // Validation Checks
+    if (
+      selectedContactTags.length === 0 &&
+      selectedContacts.length === 0 &&
+      !sendToAllContacts
+    ) {
+      setNoSelectedContactsError(
+        "Please select the contacts or tags to send the SMS!"
+      );
+      return;
+    }
+
+    if (emailSubject === "") {
+      setNoEmailSubjectError("Please enter the Email Subject!");
+      return;
+    }
+
+    if (quillHTML === "<p><br></p>") {
+      setNoEmailContentError("Please enter the Email Content!");
+      return;
+    }
+
+    if (quillHTML.includes(videoToBeShared?.shareableLink)) {
+      return handleSubmitEmail(quillHTML);
+    }
+
+    setIsVideoLinkNotAttachedModalOpen(true);
+    setIsShareVideoModalOpen(false);
+  };
+
+  const ValidateSMSSend = () => {
+    // Validation Checks
+    if (
+      selectedContactTags.length === 0 &&
+      selectedSMSContacts.length === 0 &&
+      !sendToAllContacts
+    ) {
+      setNoSelectedContactsError(
+        "Please select the contacts or tags to send the SMS!"
+      );
+      return;
+    }
+
+    if (smsContent === "") {
+      setNoSMSContentError("Please enter the SMS Content!");
+      return;
+    }
+
+    if (smsContent.includes(videoToBeShared?.shareableLink)) {
+      return handleSubmitEmail();
+    }
+
+    setIsVideoLinkNotAttachedModalOpen(true);
+    setIsShareVideoModalOpen(false);
+  };
+
+  const handleSubmitEmail = async (htmlContent) => {
     setModalLoadingOverlay(true);
+    let API_DATA;
+
+    if (selectedContacts.length > 0 || sendToAllContacts) {
+      API_DATA = {
+        contactIds: sendToAllContacts ? [] : selectedContacts,
+        tags: [],
+        message: emailContent || htmlContent, // added htmlContent here to take content from params if email content state is not set yet
+        subject: emailSubject,
+        sendToAll: sendToAllContacts,
+        videoId: videoToBeShared._id,
+      };
+    } else {
+      API_DATA = {
+        contactIds: [],
+        tags: selectedContactTags,
+        message: emailContent || htmlContent, // added htmlContent here to take content from params if email content state is not set yet
+        subject: emailSubject,
+        sendToAll: false,
+        videoId: videoToBeShared._id,
+      };
+    }
 
     // Send Email API
-    const response = await sendEmailToSelectedContacts({
-      contactIds: sendToAllContacts ? [] : selectedContacts,
-      message: quillGetHTML(delta),
-      sendToAll: sendToAllContacts,
-      videoId: videoToBeShared._id,
-    });
+    const response = await sendEmailToSelectedContacts(API_DATA);
 
     if (response.success) {
+      toast.success(response.data.message, {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+
       const rawHistoryData = response.data.data;
 
       const newHistoryData = rawHistoryData.map((history) => {
         return {
+          _id: history.data._id,
           videoTitle: history.videoName,
           contactName: history.data.contactName,
           contactAddress: history.data.contactAddress,
@@ -499,33 +620,75 @@ export const ShareVideoModal = () => {
       setSelectedContacts([]);
 
       // Clear the Quill Editor
-      quillRef.current.setContents("");
+      // quillRef.current.setContents("");
 
       // Close the Modal
+      setIsVideoLinkNotAttachedModalOpen(false);
+      setModalLoadingOverlay(false);
       setIsShareVideoModalOpen(false);
+      setSendToAllContacts(false);
+      setSelectedContactTags([]);
+      setEmailSubject("");
+      setNoEmailContentError("");
+      setNoEmailSubjectError("");
+      setEmailContent("");
+      setActiveTab("email");
+      setActiveSubTab("contacts");
     } else {
-      console.log("Error while sending email: ", response.error);
+      setModalLoadingOverlay(false);
+      toast.error(response.error || "Error while sending emails", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
-    setModalLoadingOverlay(false);
-    setSendToAllContacts(false);
   };
 
   const handleSubmitSMS = async () => {
     setModalLoadingOverlay(true);
 
+    let API_DATA;
+
+    if (selectedSMSContacts.length > 0 || sendToAllContacts) {
+      setSelectedContactTags([]);
+      API_DATA = {
+        contactIds: sendToAllContacts ? [] : selectedSMSContacts,
+        tags: [],
+        message: smsContent,
+        sendToAll: sendToAllContacts,
+        videoId: videoToBeShared._id,
+      };
+    } else {
+      setSelectedContacts([]);
+      setSendToAllContacts(false);
+      API_DATA = {
+        contactIds: [],
+        tags: selectedContactTags,
+        message: smsContent,
+        sendToAll: false,
+        videoId: videoToBeShared._id,
+      };
+    }
+
     // Send Email API
-    const response = await sendSMSToSelectedContacts({
-      contactIds: sendToAllContacts ? [] : selectedSMSContacts,
-      message: smsContent,
-      sendToAll: sendToAllContacts,
-      videoId: videoToBeShared._id,
-    });
-
+    const response = await sendSMSToSelectedContacts(API_DATA);
     if (response.success) {
-      const rawHistoryData = response.data.data;
+      toast.success(response.data.message, {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
 
+      const rawHistoryData = response.data.data;
       const newHistoryData = rawHistoryData.map((history) => {
         return {
+          _id: history.data._id,
           videoTitle: history.videoName,
           contactName: history.data.contactName,
           contactAddress: history.data.contactAddress,
@@ -534,270 +697,405 @@ export const ShareVideoModal = () => {
           status: history.data.status,
         };
       });
-
       setHistoryData([...historyData, ...newHistoryData]);
 
+      setIsVideoLinkNotAttachedModalOpen(false);
+      setModalLoadingOverlay(false);
+      setSendToAllContacts(false);
       // Clear the selected contacts
       setSelectedSMSContacts([]);
-
+      // Clear the Tags
+      setSelectedContactTags([]);
+      // Clear the SMS Content
+      setSmsContent("");
       // Close the Modal
       setIsShareVideoModalOpen(false);
+      setActiveTab("email");
+      setActiveSubTab("contacts");
+
+      setNoSMSContentError("");
     } else {
       console.log("Error while sending SMS: ", response.error);
+      toast.error(response.error || "Error while sending SMS", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      setModalLoadingOverlay(false);
     }
-    setModalLoadingOverlay(false);
-    setSendToAllContacts(false);
   };
 
+  useEffect(() => {
+    if (
+      sendToAllContacts ||
+      selectedContacts.length > 0 ||
+      selectedContactTags.length > 0
+    ) {
+      setNoSelectedContactsError("");
+    }
+
+    if (emailSubject !== "") {
+      setNoEmailSubjectError("");
+    }
+  }, [selectedContacts, sendToAllContacts, selectedContactTags, emailSubject]);
+
+  useEffect(() => {
+    if (
+      sendToAllContacts ||
+      selectedSMSContacts.length > 0 ||
+      selectedContactTags.length > 0
+    ) {
+      setNoSelectedContactsError("");
+    }
+
+    if (smsContent !== "") {
+      setNoSMSContentError("");
+    }
+  }, [selectedSMSContacts, sendToAllContacts, selectedContactTags, smsContent]);
+
+  useEffect(() => {
+    if (activeSubTab === "contacts") {
+      setSelectedContactTags([]);
+    } else {
+      setSelectedSMSContacts([]);
+      setSendToAllContacts(false);
+    }
+  }, [activeSubTab, setSelectedSMSContacts, setSendToAllContacts]);
+
+  useEffect(() => {
+    const fetchContactTags = async () => {
+      const response = await getContactTags();
+
+      if (response.success) {
+        const tagsData = response.data.userTags.map((tag) => {
+          return tag.name;
+        });
+        setContactTagsData(tagsData);
+      } else {
+        console.log("Error while fetching Contact Tags: ", response.error);
+      }
+    };
+
+    fetchContactTags();
+  }, [setContactTagsData]);
+
   return (
-    <ModalRoot
-      loadingOverlay={modalLoadingOverlay}
-      showModal={isShareVideoModalOpen}
-      onClose={() => {
-        setIsShareVideoModalOpen(false);
-      }}
-    >
-      <div className="flex flex-col gap-[24px] w-[70vw]">
-        <h3 className="text-[24px] font-medium">Share Video</h3>
-        <div className="flex flex-col gap-[24px]">
-          <Tabs color="#2A85FF" value={activeTab} onChange={setActiveTab}>
-            <Tabs.List>
-              <Tabs.Tab
+    <>
+      <VideoLinkNotAttachedModal
+        onSendAnyway={() => {
+          activeTab === "email" ? handleSubmitEmail() : handleSubmitSMS();
+        }}
+        onCancel={() => {
+          setIsShareVideoModalOpen(true);
+        }}
+      />
+
+      <ModalRoot
+        loadingOverlay={modalLoadingOverlay}
+        showModal={isShareVideoModalOpen}
+        onClose={() => {
+          setIsShareVideoModalOpen(false);
+          setActiveTab("email");
+          setActiveSubTab("contacts");
+        }}
+      >
+        <div className="flex flex-col gap-[24px] w-[70vw]">
+          <h3 className="text-[24px] font-medium">Share Video</h3>
+          <div className="flex flex-col gap-[24px]">
+            <Tabs color="#2A85FF" value={activeTab} onChange={setActiveTab}>
+              <Tabs.List>
+                <Tabs.Tab
+                  value="email"
+                  leftSection={
+                    <EMAIL_ICON
+                      className={`${
+                        activeTab === "email"
+                          ? "!text-darkBlue"
+                          : "!text-gray-dark"
+                      }`}
+                    />
+                  }
+                  className={`${
+                    activeTab === "email" ? "!text-darkBlue" : "!text-gray-dark"
+                  } font-medium`}
+                >
+                  Email
+                </Tabs.Tab>
+                <Tabs.Tab
+                  value="sms"
+                  leftSection={
+                    <SMS_ICON
+                      className={`${
+                        activeTab === "sms"
+                          ? "!text-darkBlue"
+                          : "!text-gray-dark"
+                      }`}
+                    />
+                  }
+                  className={`${
+                    activeTab === "sms" ? "!text-darkBlue" : "!text-gray-dark"
+                  } font-medium`}
+                >
+                  SMS
+                </Tabs.Tab>
+                <Tabs.Tab
+                  value="embed"
+                  leftSection={
+                    <EMBED_ICON
+                      className={`${
+                        activeTab === "embed"
+                          ? "!text-darkBlue"
+                          : "!text-gray-dark"
+                      }`}
+                    />
+                  }
+                  className={`${
+                    activeTab === "embed" ? "!text-darkBlue" : "!text-gray-dark"
+                  } font-medium`}
+                >
+                  Embed
+                </Tabs.Tab>
+              </Tabs.List>
+              <Tabs.Panel
                 value="email"
-                leftSection={
-                  <EMAIL_ICON
-                    className={`${
-                      activeTab === "email"
-                        ? "!text-darkBlue"
-                        : "!text-gray-dark"
-                    }`}
-                  />
-                }
-                className={`${
-                  activeTab === "email" ? "!text-darkBlue" : "!text-gray-dark"
-                } font-medium`}
+                className="pt-[24px]  flex flex-col gap-[24px]"
               >
-                Email
-              </Tabs.Tab>
-              <Tabs.Tab
-                value="sms"
-                leftSection={
-                  <SMS_ICON
-                    className={`${
-                      activeTab === "sms" ? "!text-darkBlue" : "!text-gray-dark"
-                    }`}
-                  />
-                }
-                className={`${
-                  activeTab === "sms" ? "!text-darkBlue" : "!text-gray-dark"
-                } font-medium`}
-              >
-                SMS
-              </Tabs.Tab>
-              <Tabs.Tab
-                value="embed"
-                leftSection={
-                  <EMBED_ICON
-                    className={`${
-                      activeTab === "embed"
-                        ? "!text-darkBlue"
-                        : "!text-gray-dark"
-                    }`}
-                  />
-                }
-                className={`${
-                  activeTab === "embed" ? "!text-darkBlue" : "!text-gray-dark"
-                } font-medium`}
-              >
-                Embed
-              </Tabs.Tab>
-            </Tabs.List>
-            <Tabs.Panel
-              value="email"
-              className="pt-[24px]  flex flex-col gap-[24px]"
-            >
-              <Tabs
-                color="#6C668526"
-                variant="pills"
-                radius="xl"
-                value={activeSubTab}
-                onChange={setActiveSubTab}
-              >
-                <Tabs.List>
-                  <Tabs.Tab
-                    value="contacts"
-                    className={`${
-                      activeSubTab === "contacts"
-                        ? "!text-darkBlue font-bold"
-                        : "!text-[#6C6685] font-medium"
-                    } `}
+                <div className="flex flex-col gap-[8px]">
+                  <Tabs
+                    color="#6C668526"
+                    variant="pills"
+                    radius="xl"
+                    value={activeSubTab}
+                    onChange={setActiveSubTab}
                   >
-                    Contacts
-                  </Tabs.Tab>
-                  <Tabs.Tab
-                    value="tags"
-                    className={`${
-                      activeSubTab === "tags"
-                        ? "!text-darkBlue font-bold"
-                        : "!text-[#6C6685] font-medium"
-                    } `}
-                  >
-                    Tags
-                  </Tabs.Tab>
-                </Tabs.List>
-                <Tabs.Panel value="contacts" className="mt-[12px]">
-                  <button
-                    className="flex justify-center items-center border border-[##E9E8ED] rounded-[8px] p-[8px_12px] text-[14px] gap-[8px] font-medium text-darkBlue"
-                    type="button"
+                    <Tabs.List>
+                      <Tabs.Tab
+                        value="contacts"
+                        className={`${
+                          activeSubTab === "contacts"
+                            ? "!text-darkBlue font-bold"
+                            : "!text-[#6C6685] font-medium"
+                        } `}
+                      >
+                        Contacts
+                      </Tabs.Tab>
+                      <Tabs.Tab
+                        value="tags"
+                        className={`${
+                          activeSubTab === "tags"
+                            ? "!text-darkBlue font-bold"
+                            : "!text-[#6C6685] font-medium"
+                        } `}
+                      >
+                        Tags
+                      </Tabs.Tab>
+                    </Tabs.List>
+                    <Tabs.Panel value="contacts" className="mt-[12px]">
+                      <button
+                        className="flex justify-center items-center border border-[##E9E8ED] rounded-[8px] p-[8px_12px] text-[14px] gap-[8px] font-medium text-darkBlue"
+                        type="button"
+                        onClick={() => {
+                          setIsContactsSelectionModalOpen(true);
+                          setIsShareVideoModalOpen(false);
+                        }}
+                      >
+                        <p>Select Contacts</p>
+                        <ARROW_RIGHT />
+                      </button>
+                    </Tabs.Panel>
+
+                    <Tabs.Panel value="tags" className="mt-[12px]">
+                      <MultiSelect
+                        className="md:w-1/2 w-full"
+                        placeholder="Select one or Multiple Tags"
+                        data={contactTagsData}
+                        value={selectedContactTags}
+                        onChange={(value) => {
+                          setSelectedContactTags(value);
+                        }}
+                        clearable
+                        searchable
+                        nothingFoundMessage="Nothing found..."
+                        hidePickedOptions
+                      />
+                    </Tabs.Panel>
+                  </Tabs>
+                  {noSelectedContactsError !== "" && (
+                    <p className="text-[12px] text-red-500">
+                      {noSelectedContactsError}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-[8px]">
+                  <TextInput
+                    label="Email Subject"
+                    placeholder="Email Subject"
+                    className="w-full max-w-[350px]"
+                    id="emailSubject"
+                    value={emailSubject}
+                    onChange={(e) => setEmailSubject(e.target.value)}
+                  />
+                  {noEmailSubjectError !== "" && (
+                    <p className="text-[12px] text-red-500">
+                      {noEmailSubjectError}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-[8px]">
+                  <TextEditor ref={quillRef} />
+                  {noEmailContentError !== "" && (
+                    <p className="text-[12px] text-red-500">
+                      {noEmailContentError}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-[16px]">
+                  <CustomButton
+                    label="Send Email"
+                    varient="filled"
+                    className="w-fit"
+                    onClick={ValidateEmailSend}
+                  />
+                  <CustomButton
+                    label="Cancel"
+                    varient="outlined"
+                    className="w-fit"
                     onClick={() => {
-                      setIsContactsSelectionModalOpen(true);
                       setIsShareVideoModalOpen(false);
                     }}
-                  >
-                    <p>Select Contacts</p>
-                    <ARROW_RIGHT />
-                  </button>
-                </Tabs.Panel>
-
-                <Tabs.Panel value="tags" className="mt-[12px]">
-                  <MultiSelect
-                    className="md:w-1/2 w-full"
-                    placeholder="Select one or Multiple Tags"
-                    data={["#tag1", "#tag2", "#tag3", "#tag4"]}
-                    clearable
-                    searchable
-                    nothingFoundMessage="Nothing found..."
-                    hidePickedOptions
-                  />
-                </Tabs.Panel>
-              </Tabs>
-              <TextEditor ref={quillRef} />
-              <div className="flex items-center gap-[16px]">
-                <CustomButton
-                  label="Send Email"
-                  varient="filled"
-                  className="w-fit"
-                  onClick={handleSubmitEmail}
-                />
-                <CustomButton
-                  label="Cancel"
-                  varient="outlined"
-                  className="w-fit"
-                  onClick={() => {
-                    setIsShareVideoModalOpen(false);
-                  }}
-                />
-              </div>
-            </Tabs.Panel>
-
-            <Tabs.Panel
-              value="sms"
-              className="pt-[24px] flex flex-col gap-[24px]"
-            >
-              <Tabs
-                color="#6C668526"
-                variant="pills"
-                radius="xl"
-                value={activeSubTab}
-                onChange={setActiveSubTab}
-              >
-                <Tabs.List>
-                  <Tabs.Tab
-                    value="contacts"
-                    className={`${
-                      activeSubTab === "contacts"
-                        ? "!text-darkBlue font-bold"
-                        : "!text-[#6C6685] font-medium"
-                    } `}
-                  >
-                    Contacts
-                  </Tabs.Tab>
-                  <Tabs.Tab
-                    value="tags"
-                    className={`${
-                      activeSubTab === "tags"
-                        ? "!text-darkBlue font-bold"
-                        : "!text-[#6C6685] font-medium"
-                    } `}
-                  >
-                    Tags
-                  </Tabs.Tab>
-                </Tabs.List>
-                <Tabs.Panel value="contacts" className="mt-[12px]">
-                  <button
-                    className="flex justify-center items-center border border-[##E9E8ED] rounded-[8px] p-[8px_12px] text-[14px] gap-[8px] font-medium text-darkBlue"
-                    type="button"
-                    onClick={() => {
-                      setIsSMSContactsSelectionModalOpen(true);
-                      setIsShareVideoModalOpen(false);
-                    }}
-                  >
-                    <p>Select Contacts</p>
-                    <ARROW_RIGHT />
-                  </button>
-                </Tabs.Panel>
-
-                <Tabs.Panel value="tags" className="mt-[12px]">
-                  <MultiSelect
-                    className="md:w-1/2 w-full"
-                    placeholder="Select one or Multiple Tags"
-                    data={["#tag1", "#tag2", "#tag3", "#tag4"]}
-                    clearable
-                    searchable
-                    nothingFoundMessage="Nothing found..."
-                    hidePickedOptions
-                  />
-                </Tabs.Panel>
-              </Tabs>
-              <div className="w-full">
-                <p className="text-[14px] mb-[8px]">Content</p>
-                <div className="relative rounded-[12px] w-full h-[350px] !bg-[#F7F7F8] border border-[#D7D5DD] overflow-hidden">
-                  <button
-                    type="button"
-                    className="bg-white p-[8px] text-darkBlue text-[14px] font-medium shadow-sm w-full text-start"
-                    onClick={() => {
-                      setSmsContent(
-                        `${smsContent} ${videoToBeShared?.shareableLink} `
-                      );
-                    }}
-                  >
-                    Paste Video Link
-                  </button>
-                  <textarea
-                    placeholder="SMS Content"
-                    value={smsContent}
-                    onChange={(e) => setSmsContent(e.target.value)}
-                    className="!bg-transparent h-full w-full text-[14px] outline-none p-[8px]"
                   />
                 </div>
-              </div>
-              <div className="flex items-center gap-[16px]">
-                <CustomButton
-                  label="Send SMS"
-                  varient="filled"
-                  className="w-fit"
-                  onClick={handleSubmitSMS}
-                />
-                <CustomButton
-                  label="Cancel"
-                  varient="outlined"
-                  className="w-fit"
-                  onClick={() => {
-                    setIsShareVideoModalOpen(false);
-                  }}
-                />
-              </div>
-            </Tabs.Panel>
+              </Tabs.Panel>
 
-            <Tabs.Panel
-              value="embed"
-              className="pt-[24px] flex flex-col gap-[24px] items-end"
-            >
-              <div className="w-full">
-                <p className="text-[14px] mb-[8px]">Embed Link</p>
-                <div className="relative rounded-[12px] w-full h-[350px] bg-[#F7F7F8] border border-[#D7D5DD] overflow-hidden">
-                  <CopyButton
-                    value={`<div
+              <Tabs.Panel
+                value="sms"
+                className="pt-[24px] flex flex-col gap-[24px]"
+              >
+                <div className="flex flex-col gap-[8px]">
+                  <Tabs
+                    color="#6C668526"
+                    variant="pills"
+                    radius="xl"
+                    value={activeSubTab}
+                    onChange={setActiveSubTab}
+                  >
+                    <Tabs.List>
+                      <Tabs.Tab
+                        value="contacts"
+                        className={`${
+                          activeSubTab === "contacts"
+                            ? "!text-darkBlue font-bold"
+                            : "!text-[#6C6685] font-medium"
+                        } `}
+                      >
+                        Contacts
+                      </Tabs.Tab>
+                      <Tabs.Tab
+                        value="tags"
+                        className={`${
+                          activeSubTab === "tags"
+                            ? "!text-darkBlue font-bold"
+                            : "!text-[#6C6685] font-medium"
+                        } `}
+                      >
+                        Tags
+                      </Tabs.Tab>
+                    </Tabs.List>
+                    <Tabs.Panel value="contacts" className="mt-[12px]">
+                      <button
+                        className="flex justify-center items-center border border-[##E9E8ED] rounded-[8px] p-[8px_12px] text-[14px] gap-[8px] font-medium text-darkBlue"
+                        type="button"
+                        onClick={() => {
+                          setIsSMSContactsSelectionModalOpen(true);
+                          setIsShareVideoModalOpen(false);
+                        }}
+                      >
+                        <p>Select Contacts</p>
+                        <ARROW_RIGHT />
+                      </button>
+                    </Tabs.Panel>
+
+                    <Tabs.Panel value="tags" className="mt-[12px]">
+                      <MultiSelect
+                        className="md:w-1/2 w-full"
+                        placeholder="Select one or Multiple Tags"
+                        data={contactTagsData}
+                        value={selectedContactTags}
+                        onChange={(value) => {
+                          setSelectedContactTags(value);
+                        }}
+                        clearable
+                        searchable
+                        nothingFoundMessage="Nothing found..."
+                        hidePickedOptions
+                      />
+                    </Tabs.Panel>
+                  </Tabs>
+                  {noSelectedContactsError !== "" && (
+                    <p className="text-[12px] text-red-500">
+                      {noSelectedContactsError}
+                    </p>
+                  )}
+                </div>
+                <div className="w-full">
+                  <p className="text-[14px] mb-[8px]">Content</p>
+                  <div className="relative rounded-[12px] w-full h-[350px] !bg-[#F7F7F8] border border-[#D7D5DD] overflow-hidden">
+                    <button
+                      type="button"
+                      className="bg-white p-[8px] text-darkBlue text-[14px] font-medium shadow-sm w-full text-start"
+                      onClick={() => {
+                        setSmsContent(
+                          `${smsContent} ${videoToBeShared?.shareableLink} `
+                        );
+                      }}
+                    >
+                      Paste Video Link
+                    </button>
+
+                    <textarea
+                      id="smsContent-container"
+                      placeholder="SMS Content"
+                      value={smsContent}
+                      onChange={(e) => setSmsContent(e.target.value)}
+                      className="!bg-transparent h-[calc(100%-40px)] w-full text-[14px] outline-none p-[8px]"
+                    />
+                  </div>
+                  {noSMSContentError !== "" && (
+                    <p className="text-[12px] text-red-500 mt-[8px]">
+                      {noSMSContentError}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-[16px]">
+                  <CustomButton
+                    label="Send SMS"
+                    varient="filled"
+                    className="w-fit"
+                    onClick={ValidateSMSSend}
+                  />
+                  <CustomButton
+                    label="Cancel"
+                    varient="outlined"
+                    className="w-fit"
+                    onClick={() => {
+                      setIsShareVideoModalOpen(false);
+                    }}
+                  />
+                </div>
+              </Tabs.Panel>
+
+              <Tabs.Panel
+                value="embed"
+                className="pt-[24px] flex flex-col gap-[24px] items-end"
+              >
+                <div className="w-full">
+                  <p className="text-[14px] mb-[8px]">Embed Link</p>
+                  <div className="relative rounded-[12px] w-full h-[350px] bg-[#F7F7F8] border border-[#D7D5DD] overflow-hidden">
+                    <CopyButton
+                      value={`<div
                               style={{
                               position: "relative",
                               paddingBottom: "56.25%",
@@ -818,32 +1116,32 @@ export const ShareVideoModal = () => {
                                 height: "100%",
                               }}
                             ></iframe></div>`}
-                  >
-                    {({ copied, copy }) => (
-                      <ActionIcon
-                        onClick={copy}
-                        className="!w-fit !bg-white rounded-tl-[12px] !p-[8px] !h-[35px]"
-                        timeout={3000}
-                      >
-                        {!copied ? (
-                          <div className="flex items-center gap-[8px]">
-                            <p className="text-[14px] text-darkBlue font-medium">
-                              Copy The Embed Link
-                            </p>
-                            <COPY_TEXT_ICON className="text-darkBlue" />
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-[8px]">
-                            <COPY_TEXT_ICON className="text-green-500" />
-                            <p className="text-[14px] text-green-500 font-medium">
-                              Link Copied
-                            </p>
-                          </div>
-                        )}
-                      </ActionIcon>
-                    )}
-                  </CopyButton>
-                  <p className="px-[16px] py-[24px] w-[80%]">{`
+                    >
+                      {({ copied, copy }) => (
+                        <ActionIcon
+                          onClick={copy}
+                          className="!w-fit !bg-white rounded-tl-[12px] !p-[8px] !h-[35px]"
+                          timeout={3000}
+                        >
+                          {!copied ? (
+                            <div className="flex items-center gap-[8px]">
+                              <p className="text-[14px] text-darkBlue font-medium">
+                                Copy The Embed Link
+                              </p>
+                              <COPY_TEXT_ICON className="text-darkBlue" />
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-[8px]">
+                              <COPY_TEXT_ICON className="text-green-500" />
+                              <p className="text-[14px] text-green-500 font-medium">
+                                Link Copied
+                              </p>
+                            </div>
+                          )}
+                        </ActionIcon>
+                      )}
+                    </CopyButton>
+                    <p className="px-[16px] py-[24px] w-[80%]">{`
                   <div
                     style={{
                       position: "relative",
@@ -867,34 +1165,38 @@ export const ShareVideoModal = () => {
                     ></iframe>
                   </div>
                   `}</p>
+                  </div>
                 </div>
-              </div>
-              <CopyButton value={videoToBeShared.videoLink}>
-                {({ copied, copy }) => (
-                  <ActionIcon onClick={copy} className="!w-fit !bg-transparent">
-                    {!copied ? (
-                      <div className="flex items-center gap-[8px]">
-                        <COPY_TEXT_ICON className="text-darkBlue" />
-                        <p className="text-[14px] text-darkBlue font-medium">
-                          Copy Video Link
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-[8px]">
-                        <COPY_TEXT_ICON className="text-green-500" />
-                        <p className="text-[14px] text-green-500 font-medium">
-                          Link Copied
-                        </p>
-                      </div>
-                    )}
-                  </ActionIcon>
-                )}
-              </CopyButton>
-            </Tabs.Panel>
-          </Tabs>
+                <CopyButton value={videoToBeShared.videoLink}>
+                  {({ copied, copy }) => (
+                    <ActionIcon
+                      onClick={copy}
+                      className="!w-fit !bg-transparent"
+                    >
+                      {!copied ? (
+                        <div className="flex items-center gap-[8px]">
+                          <COPY_TEXT_ICON className="text-darkBlue" />
+                          <p className="text-[14px] text-darkBlue font-medium">
+                            Copy Video Link
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-[8px]">
+                          <COPY_TEXT_ICON className="text-green-500" />
+                          <p className="text-[14px] text-green-500 font-medium">
+                            Link Copied
+                          </p>
+                        </div>
+                      )}
+                    </ActionIcon>
+                  )}
+                </CopyButton>
+              </Tabs.Panel>
+            </Tabs>
+          </div>
         </div>
-      </div>
-    </ModalRoot>
+      </ModalRoot>
+    </>
   );
 };
 
@@ -930,7 +1232,14 @@ export const DeleteVideoConfirmationModal = () => {
     });
 
     if (response.success) {
-      console.log("Video Deleted Successfully", response.data);
+      toast.success("Video Deleted Successfully", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
 
       // Remove the Video from the Videos Data
       const updatedVideosData = videosData.filter(
@@ -939,7 +1248,14 @@ export const DeleteVideoConfirmationModal = () => {
 
       setVideosData(updatedVideosData);
     } else {
-      console.log("Error while deleting video: ", response.error);
+      toast.error(response.error || "Error while deleting video", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
 
     setModalLoadingOverlay(false);
@@ -1127,25 +1443,13 @@ export const ContactsSelectionModalEmail = () => {
           <Table>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Contact ID</Table.Th>
                 <Table.Th>Contact Name</Table.Th>
-                <Table.Th>Date Added</Table.Th>
+                <Table.Th>Email Address</Table.Th>
                 <Table.Th></Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
               {filteredContacts?.map((contact) => {
-                const date = new Date(contact.dateAdded);
-
-                // Format the date as MM/DD/YYYY
-                const formattedDate = `${String(date.getMonth() + 1).padStart(
-                  2,
-                  "0"
-                )}/${String(date.getDate()).padStart(
-                  2,
-                  "0"
-                )}/${date.getFullYear()}`;
-
                 const isChecked = selectedContacts?.some(
                   (selectedContact) =>
                     selectedContact?.id === contact?.id &&
@@ -1154,13 +1458,12 @@ export const ContactsSelectionModalEmail = () => {
 
                 return (
                   <Table.Tr key={contact.id}>
-                    <Table.Td>{contact.id}</Table.Td>
                     <Table.Td className="capitalize">
                       {contact?.firstNameLowerCase +
                         " " +
                         contact?.lastNameLowerCase}
                     </Table.Td>
-                    <Table.Td>{formattedDate}</Table.Td>
+                    <Table.Td>{contact.email}</Table.Td>
                     <Table.Td>
                       <Checkbox
                         checked={isChecked}
@@ -1173,7 +1476,7 @@ export const ContactsSelectionModalEmail = () => {
             </Table.Tbody>
           </Table>
         </div>
-        <div className="bg-white p-[12px_24px] flex flex-col gap-[10px]">
+        <div className="bg-white p-[12px_24px] flex flex-col gap-[16px] justify-center items-center">
           <button
             className="loadMoreContactsBtn p-[10px_16px] border border-[##DBDBDB] rounded-[8px] text-[14px] font-medium text-darkBlue mx-auto"
             type="button"
@@ -1354,25 +1657,13 @@ export const ContactsSelectionModalSMS = () => {
           <Table>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Contact ID</Table.Th>
                 <Table.Th>Contact Name</Table.Th>
-                <Table.Th>Date Added</Table.Th>
+                <Table.Th>Phone Number</Table.Th>
                 <Table.Th></Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
               {filteredContacts?.map((contact) => {
-                const date = new Date(contact.dateAdded);
-
-                // Format the date as MM/DD/YYYY
-                const formattedDate = `${String(date.getMonth() + 1).padStart(
-                  2,
-                  "0"
-                )}/${String(date.getDate()).padStart(
-                  2,
-                  "0"
-                )}/${date.getFullYear()}`;
-
                 const isChecked = selectedSMSContacts?.some(
                   (selectedContact) =>
                     selectedContact?.id === contact?.id &&
@@ -1381,13 +1672,12 @@ export const ContactsSelectionModalSMS = () => {
 
                 return (
                   <Table.Tr key={contact.id}>
-                    <Table.Td>{contact.id}</Table.Td>
                     <Table.Td className="capitalize">
                       {contact?.firstNameLowerCase +
                         " " +
                         contact?.lastNameLowerCase}
                     </Table.Td>
-                    <Table.Td>{formattedDate}</Table.Td>
+                    <Table.Td>{contact.phone}</Table.Td>
                     <Table.Td>
                       <Checkbox
                         checked={isChecked}
@@ -1400,7 +1690,7 @@ export const ContactsSelectionModalSMS = () => {
             </Table.Tbody>
           </Table>
         </div>
-        <div className="bg-white p-[12px_24px] flex flex-col">
+        <div className="bg-white p-[12px_24px] flex flex-col gap-[16px] justify-center items-center">
           <button
             className="loadMoreContactsBtn p-[10px_16px] border border-[##DBDBDB] rounded-[8px] text-[14px] font-medium text-darkBlue mx-auto"
             type="button"
@@ -1436,6 +1726,66 @@ export const ContactsSelectionModalSMS = () => {
               Send To Selected Contacts
             </button>
           </div>
+        </div>
+      </div>
+    </ModalRoot>
+  );
+};
+
+const VideoLinkNotAttachedModal = ({ onSendAnyway, onCancel }) => {
+  const isVideoLinkNotAttachedModalOpen = useGlobalModals(
+    (state) => state.isVideoLinkNotAttachedModalOpen
+  );
+  const setIsVideoLinkNotAttachedModalOpen = useGlobalModals(
+    (state) => state.setIsVideoLinkNotAttachedModalOpen
+  );
+  const modalLoadingOverlay = useGlobalModals(
+    (state) => state.modalLoadingOverlay
+  );
+
+  return (
+    <ModalRoot
+      loadingOverlay={modalLoadingOverlay}
+      showModal={isVideoLinkNotAttachedModalOpen}
+      onClose={() => {
+        setIsVideoLinkNotAttachedModalOpen(false);
+        onCancel();
+      }}
+    >
+      <div className="flex flex-col items-center text-center gap-[12px] w-[500px]">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="50"
+          height="50"
+          viewBox="0 0 24 24"
+          fill="red"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M12 1.67c.955 0 1.845 .467 2.39 1.247l.105 .16l8.114 13.548a2.914 2.914 0 0 1 -2.307 4.363l-.195 .008h-16.225a2.914 2.914 0 0 1 -2.582 -4.2l.099 -.185l8.11 -13.538a2.914 2.914 0 0 1 2.491 -1.403zm.01 13.33l-.127 .007a1 1 0 0 0 0 1.986l.117 .007l.127 -.007a1 1 0 0 0 0 -1.986l-.117 -.007zm-.01 -7a1 1 0 0 0 -.993 .883l-.007 .117v4l.007 .117a1 1 0 0 0 1.986 0l.007 -.117v-4l-.007 -.117a1 1 0 0 0 -.993 -.883z" />
+        </svg>
+        <p className="text-[16px] text-gray-500">
+          Video Link is not attached to the Video!
+        </p>
+        <div className="flex items-center gap-[12px]">
+          <button
+            className="bg-primary text-[16px] font-medium w-[150px] p-[12px_16px] text-white rounded-[8px] mt-[12px]"
+            type="button"
+            onClick={() => {
+              onSendAnyway();
+            }}
+          >
+            Send Anyway
+          </button>
+          <button
+            className="bg-red-500 text-[16px] font-medium w-[150px] p-[12px_16px] text-white rounded-[8px] mt-[12px]"
+            type="button"
+            onClick={() => {
+              setIsVideoLinkNotAttachedModalOpen(false);
+              onCancel();
+            }}
+          >
+            Cancel
+          </button>
         </div>
       </div>
     </ModalRoot>

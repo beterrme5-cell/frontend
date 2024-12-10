@@ -46,3 +46,27 @@ export const getDecryptedUserData = async (params) => {
     };
   }
 };
+
+// API to get the user's Location id
+export const getUserLocationId = async () => {
+  // Get the accountId and userLocationId from the Local Storage
+  const accessToken = localStorage.getItem("accessToken");
+
+  try {
+    const response = await axios.get(`${BASE_URL}/user/getUserLocationId`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    console.error("Error while getting user location: ", error);
+    return {
+      success: false,
+      error: error.response?.data?.message || "An unexpected error occurred",
+    };
+  }
+};

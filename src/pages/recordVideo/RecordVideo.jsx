@@ -17,8 +17,10 @@ import { useUserStore } from "../../store/userStore";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { getHistoryOfMessages } from "../../api/commsAPIs";
+import { getUserLocationId } from "../../api/auth";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+import { toast } from "react-toastify";
 
 const RecordVideo = () => {
   const videosData = useUserStore((state) => state.videosData);
@@ -30,10 +32,6 @@ const RecordVideo = () => {
 
   const setIsNewRecordingModalOpen = useGlobalModals(
     (state) => state.setIsNewRecordingModalOpen
-  );
-
-  const setIsUploadVideoModalOpen = useGlobalModals(
-    (state) => state.setIsUploadVideoModalOpen
   );
 
   const setLoading = useLoadingBackdrop((state) => state.setLoading);
@@ -58,6 +56,29 @@ const RecordVideo = () => {
         success: false,
         error: error.response?.data?.message || "An unexpected error occurred",
       };
+    }
+  };
+
+  // Function to Get the Location Id of the User and Redirect to the GHL Media Storage Page
+  const handleUploadVideoBtnClick = async () => {
+    setLoading(true);
+
+    const response = await getUserLocationId();
+
+    if (response.success) {
+      window.location.href = `https://app.gohighlevel.com/v2/location/${response.data.userLocationId}/media-storage`;
+      setLoading(false);
+    } else {
+      setLoading(false);
+      toast.error("Unknown error occurred!", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     }
   };
 
@@ -110,9 +131,7 @@ const RecordVideo = () => {
     <LibraryRoot>
       <LibraryHeader
         title="My Library"
-        onUploadVideoBtnClick={() => {
-          setIsUploadVideoModalOpen(true);
-        }}
+        onUploadVideoBtnClick={handleUploadVideoBtnClick}
       />
       <LibraryBody>
         <BodyTabsRoot>
