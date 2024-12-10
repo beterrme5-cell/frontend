@@ -557,7 +557,7 @@ export const ShareVideoModal = () => {
       API_DATA = {
         contactIds: sendToAllContacts ? [] : selectedContacts,
         tags: [],
-        message: emailContent || htmlContent,
+        message: emailContent || htmlContent, // added htmlContent here to take content from params if email content state is not set yet
         subject: emailSubject,
         sendToAll: sendToAllContacts,
         videoId: videoToBeShared._id,
@@ -566,7 +566,7 @@ export const ShareVideoModal = () => {
       API_DATA = {
         contactIds: [],
         tags: selectedContactTags,
-        message: emailContent || htmlContent,
+        message: emailContent || htmlContent, // added htmlContent here to take content from params if email content state is not set yet
         subject: emailSubject,
         sendToAll: false,
         videoId: videoToBeShared._id,
