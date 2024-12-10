@@ -332,9 +332,23 @@ export const EditVideoModal = () => {
     });
 
     if (response.success) {
-      console.log("Video Updated Successfully", response.data);
+      toast.success("Video Updated Successfully", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     } else {
-      console.log("Error while updating video: ", response.error);
+      toast.error(response.error || "Error while updating video", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
 
     // Find the Video in the Videos Data and update it
@@ -1218,7 +1232,14 @@ export const DeleteVideoConfirmationModal = () => {
     });
 
     if (response.success) {
-      console.log("Video Deleted Successfully", response.data);
+      toast.success("Video Deleted Successfully", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
 
       // Remove the Video from the Videos Data
       const updatedVideosData = videosData.filter(
@@ -1227,7 +1248,14 @@ export const DeleteVideoConfirmationModal = () => {
 
       setVideosData(updatedVideosData);
     } else {
-      console.log("Error while deleting video: ", response.error);
+      toast.error(response.error || "Error while deleting video", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
 
     setModalLoadingOverlay(false);
