@@ -18,7 +18,7 @@ import {
   PreRecordingDataInputModal,
   ShareVideoModal,
   StartRecordingWarningModal,
-  UploadVideoModal,
+  // UploadVideoModal,
 } from "./components/ui/GlobalModals.jsx";
 import LoadingBackdrop from "./components/ui/LoadingBackdrop.jsx";
 
@@ -30,7 +30,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <MantineProvider theme={theme}>
     {/* Modals */}
     <DeleteVideoConfirmationModal />
-    <UploadVideoModal />
+    {/* <UploadVideoModal /> */}
     <EditVideoModal />
     <ShareVideoModal />
     <PreRecordingDataInputModal />
