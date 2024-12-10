@@ -6,6 +6,10 @@ import "./index.css";
 import { router } from "./Router.jsx";
 import { RouterProvider } from "react-router-dom";
 
+//react toastify
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
+
 // Mantine Dev Styles
 import "@mantine/core/styles.css";
 import {
@@ -33,6 +37,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <StartRecordingWarningModal />
     {/* Modals */}
     <LoadingBackdrop />
+    {/* REACT TOASTIFY - CONTAINER */}
+    <ToastContainer />
     <RouterProvider router={router} />
   </MantineProvider>
 );

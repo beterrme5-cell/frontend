@@ -31,6 +31,7 @@ import {
   sendEmailToSelectedContacts,
   sendSMSToSelectedContacts,
 } from "../../api/commsAPIs";
+import { toast } from "react-toastify";
 
 function quillGetHTML(inputDelta) {
   var tempCont = document.createElement("div");
@@ -515,7 +516,7 @@ export const ShareVideoModal = () => {
     }
 
     if (quillHTML.includes(videoToBeShared?.shareableLink)) {
-      return handleSubmitEmail();
+      return handleSubmitEmail(quillHTML);
     }
 
     setIsVideoLinkNotAttachedModalOpen(true);
@@ -548,16 +549,15 @@ export const ShareVideoModal = () => {
     setIsShareVideoModalOpen(false);
   };
 
-  const handleSubmitEmail = async () => {
+  const handleSubmitEmail = async (htmlContent) => {
     setModalLoadingOverlay(true);
-
     let API_DATA;
 
     if (selectedContacts.length > 0 || sendToAllContacts) {
       API_DATA = {
         contactIds: sendToAllContacts ? [] : selectedContacts,
         tags: [],
-        message: emailContent,
+        message: emailContent || htmlContent,
         subject: emailSubject,
         sendToAll: sendToAllContacts,
         videoId: videoToBeShared._id,
@@ -566,7 +566,7 @@ export const ShareVideoModal = () => {
       API_DATA = {
         contactIds: [],
         tags: selectedContactTags,
-        message: emailContent,
+        message: emailContent || htmlContent,
         subject: emailSubject,
         sendToAll: false,
         videoId: videoToBeShared._id,
@@ -577,7 +577,15 @@ export const ShareVideoModal = () => {
     const response = await sendEmailToSelectedContacts(API_DATA);
 
     if (response.success) {
-      console.log("Email Sent Successfully: ", response.data);
+      toast.success(response.data.message, {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+
       const rawHistoryData = response.data.data;
 
       const newHistoryData = rawHistoryData.map((history) => {
@@ -609,11 +617,19 @@ export const ShareVideoModal = () => {
       setEmailSubject("");
       setNoEmailContentError("");
       setNoEmailSubjectError("");
+      setEmailContent("");
       setActiveTab("email");
       setActiveSubTab("contacts");
     } else {
       setModalLoadingOverlay(false);
-      console.log("Error while sending email: ", response.error);
+      toast.error(response.error || "Error while sending emails", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
   };
 
@@ -646,6 +662,15 @@ export const ShareVideoModal = () => {
     // Send Email API
     const response = await sendSMSToSelectedContacts(API_DATA);
     if (response.success) {
+      toast.success(response.data.message, {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+
       const rawHistoryData = response.data.data;
       const newHistoryData = rawHistoryData.map((history) => {
         return {
@@ -677,6 +702,14 @@ export const ShareVideoModal = () => {
       setNoSMSContentError("");
     } else {
       console.log("Error while sending SMS: ", response.error);
+      toast.error(response.error || "Error while sending SMS", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       setModalLoadingOverlay(false);
     }
   };
