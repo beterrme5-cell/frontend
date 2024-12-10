@@ -11,6 +11,7 @@ export const sendSMSToSelectedContacts = async (params) => {
       `${BASE_URL}/comms/sendSMS`,
       {
         contactIds: params.contactIds,
+        tags: params.tags,
         message: params.message,
         sendToAll: params.sendToAll,
         videoId: params.videoId,
@@ -44,6 +45,8 @@ export const sendEmailToSelectedContacts = async (params) => {
         message: params.message,
         sendToAll: params.sendToAll,
         videoId: params.videoId,
+        tags: params.tags,
+        subject: params.subject,
       },
       {
         headers: {

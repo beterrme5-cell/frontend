@@ -74,7 +74,7 @@ export const useGlobalModals = create((set) => ({
   // --------------------------------------------------
   // Video Link Not Attched - Warning Modal
   // --------------------------------------------------
-  isVideoLinkNotAttachedModalOpen: true,
+  isVideoLinkNotAttachedModalOpen: false,
   setIsVideoLinkNotAttachedModalOpen: (isOpen) =>
     set({ isVideoLinkNotAttachedModalOpen: isOpen }),
 }));
