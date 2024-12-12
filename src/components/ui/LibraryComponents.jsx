@@ -68,8 +68,6 @@ const NewRecordingBtn = () => {
       return;
     }
 
-    // Set the access token in the local storage for the new tab
-
     // create a new tab and navigate to the new recording page
     const newTab = window.open(
       `${import.meta.env.VITE_RECORD_PAGE_URL}/recordings/${accessToken}`,

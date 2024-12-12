@@ -150,6 +150,20 @@ export const StartRecordingWarningModal = () => {
     (state) => state.setIsWarningModalOpen
   );
 
+  useEffect(() => {
+    let timeoutId;
+
+    if (isWarningModalOpen) {
+      timeoutId = setTimeout(() => {
+        setIsWarningModalOpen(false);
+      }, 30000);
+    }
+
+    return () => {
+      clearTimeout(timeoutId); // Clear the specific timeout using the ID
+    };
+  }, [isWarningModalOpen, setIsWarningModalOpen]);
+
   return (
     <ModalRoot
       loadingOverlay={false}
@@ -169,10 +183,11 @@ export const StartRecordingWarningModal = () => {
           <path stroke="none" d="M0 0h24v24H0z" fill="none" />
           <path d="M12 1.67c.955 0 1.845 .467 2.39 1.247l.105 .16l8.114 13.548a2.914 2.914 0 0 1 -2.307 4.363l-.195 .008h-16.225a2.914 2.914 0 0 1 -2.582 -4.2l.099 -.185l8.11 -13.538a2.914 2.914 0 0 1 2.491 -1.403zm.01 13.33l-.127 .007a1 1 0 0 0 0 1.986l.117 .007l.127 -.007a1 1 0 0 0 0 -1.986l-.117 -.007zm-.01 -7a1 1 0 0 0 -.993 .883l-.007 .117v4l.007 .117a1 1 0 0 0 1.986 0l.007 -.117v-4l-.007 -.117a1 1 0 0 0 -.993 -.883z" />
         </svg>
-        <h2 className="font-bold text-[24px]">Oops...</h2>
-        <p className="text-[14px] text-gray-500">
-          Due to the security reasons, you can&apos;t record a screen inside the
-          iframe. Please do screen recording in new tab opened.
+        <h2 className="font-bold text-[24px]">Notice</h2>
+        <p className="text-[16px] text-gray-500">
+          Screen recording is not supported in this window.
+          <br />
+          Please switch to the opened tab to continue recording.
         </p>
         <button
           className="bg-primary text-[16px] font-medium w-[150px] p-[12px_16px] text-white rounded-[8px] mt-[12px]"
