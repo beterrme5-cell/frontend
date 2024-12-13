@@ -1460,43 +1460,53 @@ export const ContactsSelectionModalEmail = () => {
       <div className="w-[70vw] flex flex-col gap-[10px] h-[70dvh] max-h-[90vh]">
         <div className="flex flex-col gap-[16px] h-[calc(100%-110px)] overflow-auto">
           <h2 className="font-medium text-[24px]">Select Contacts</h2>
-          <Table>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Contact Name</Table.Th>
-                <Table.Th>Email Address</Table.Th>
-                <Table.Th></Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {filteredContacts?.map((contact) => {
-                const isChecked = selectedContacts?.some(
-                  (selectedContact) =>
-                    selectedContact?.id === contact?.id &&
-                    selectedContact?.isChecked
-                );
+          {filteredContacts?.length > 0 ? (
+            <Table>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Contact Name</Table.Th>
+                  <Table.Th>Email Address</Table.Th>
+                  <Table.Th></Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {filteredContacts?.map((contact) => {
+                  const isChecked = selectedContacts?.some(
+                    (selectedContact) =>
+                      selectedContact?.id === contact?.id &&
+                      selectedContact?.isChecked
+                  );
 
-                return (
-                  <Table.Tr key={contact.id}>
-                    <Table.Td className="capitalize">
-                      {contact?.firstNameLowerCase +
-                        " " +
-                        contact?.lastNameLowerCase}
-                    </Table.Td>
-                    <Table.Td>{contact.email}</Table.Td>
-                    <Table.Td>
-                      <Checkbox
-                        checked={isChecked}
-                        onChange={() => handleSelectContact(contact)}
-                      />
-                    </Table.Td>
-                  </Table.Tr>
-                );
-              })}
-            </Table.Tbody>
-          </Table>
+                  return (
+                    <Table.Tr key={contact.id}>
+                      <Table.Td className="capitalize">
+                        {contact?.firstNameLowerCase +
+                          " " +
+                          contact?.lastNameLowerCase}
+                      </Table.Td>
+                      <Table.Td>{contact.email}</Table.Td>
+                      <Table.Td>
+                        <Checkbox
+                          checked={isChecked}
+                          onChange={() => handleSelectContact(contact)}
+                        />
+                      </Table.Td>
+                    </Table.Tr>
+                  );
+                })}
+              </Table.Tbody>
+            </Table>
+          ) : (
+            <p className="text-gray-500">
+              No Contacts Found. Please add contacts to send emails.
+            </p>
+          )}
         </div>
-        <div className="bg-white p-[12px_24px] flex flex-col gap-[16px] justify-center items-center">
+        <div
+          className={`bg-white p-[12px_24px]  flex-col gap-[16px] justify-center items-center ${
+            filteredContacts?.length > 0 ? "flex" : "hidden"
+          }`}
+        >
           <button
             className="loadMoreContactsBtn p-[10px_16px] border border-[##DBDBDB] rounded-[8px] text-[14px] font-medium text-darkBlue mx-auto"
             type="button"
@@ -1674,43 +1684,53 @@ export const ContactsSelectionModalSMS = () => {
       <div className="w-[70vw] flex flex-col gap-[10px] h-[70dvh] max-h-[90vh]">
         <div className="flex flex-col gap-[16px] h-[calc(100%-110px)] overflow-auto">
           <h2 className="font-medium text-[24px]">Select Contacts</h2>
-          <Table>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Contact Name</Table.Th>
-                <Table.Th>Phone Number</Table.Th>
-                <Table.Th></Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {filteredContacts?.map((contact) => {
-                const isChecked = selectedSMSContacts?.some(
-                  (selectedContact) =>
-                    selectedContact?.id === contact?.id &&
-                    selectedContact?.isChecked
-                );
+          {filteredContacts?.length > 0 ? (
+            <Table>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Contact Name</Table.Th>
+                  <Table.Th>Phone Number</Table.Th>
+                  <Table.Th></Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {filteredContacts?.map((contact) => {
+                  const isChecked = selectedSMSContacts?.some(
+                    (selectedContact) =>
+                      selectedContact?.id === contact?.id &&
+                      selectedContact?.isChecked
+                  );
 
-                return (
-                  <Table.Tr key={contact.id}>
-                    <Table.Td className="capitalize">
-                      {contact?.firstNameLowerCase +
-                        " " +
-                        contact?.lastNameLowerCase}
-                    </Table.Td>
-                    <Table.Td>{contact.phone}</Table.Td>
-                    <Table.Td>
-                      <Checkbox
-                        checked={isChecked}
-                        onChange={() => handleSelectContact(contact)}
-                      />
-                    </Table.Td>
-                  </Table.Tr>
-                );
-              })}
-            </Table.Tbody>
-          </Table>
+                  return (
+                    <Table.Tr key={contact.id}>
+                      <Table.Td className="capitalize">
+                        {contact?.firstNameLowerCase +
+                          " " +
+                          contact?.lastNameLowerCase}
+                      </Table.Td>
+                      <Table.Td>{contact.phone}</Table.Td>
+                      <Table.Td>
+                        <Checkbox
+                          checked={isChecked}
+                          onChange={() => handleSelectContact(contact)}
+                        />
+                      </Table.Td>
+                    </Table.Tr>
+                  );
+                })}
+              </Table.Tbody>
+            </Table>
+          ) : (
+            <p className="text-gray-500">
+              No Contacts Found. Please add contacts to send emails.
+            </p>
+          )}
         </div>
-        <div className="bg-white p-[12px_24px] flex flex-col gap-[16px] justify-center items-center">
+        <div
+          className={`bg-white p-[12px_24px] flex-col gap-[16px] justify-center items-center ${
+            filteredContacts?.length > 0 ? "flex" : "hidden"
+          }`}
+        >
           <button
             className="loadMoreContactsBtn p-[10px_16px] border border-[##DBDBDB] rounded-[8px] text-[14px] font-medium text-darkBlue mx-auto"
             type="button"
