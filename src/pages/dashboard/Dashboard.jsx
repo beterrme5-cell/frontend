@@ -10,89 +10,15 @@ import {
   VideoTabItemsList,
   VideoTabSection,
 } from "../../components/ui/LibraryComponents";
-import { useEffect } from "react";
-import { getAllVideos } from "../../api/libraryAPIs";
-import { useLoadingBackdrop } from "../../store/loadingBackdrop";
 import { useUserStore } from "../../store/userStore";
-import { getHistoryOfMessages } from "../../api/commsAPIs";
-import { toast } from "react-toastify";
-import { getUserLocationId } from "../../api/auth";
 
 const Dashboard = () => {
   const videosData = useUserStore((state) => state.videosData);
-  const setVideosData = useUserStore((state) => state.setVideosData);
   const historyData = useUserStore((state) => state.historyData);
-  const setHistoryData = useUserStore((state) => state.setHistoryData);
-
-  const setLoading = useLoadingBackdrop((state) => state.setLoading);
-
-  const fetchVideosData = useUserStore((state) => state.fetchVideosData);
-
-  // Function to Get the Location Id of the User and Redirect to the GHL Media Storage Page
-  const handleUploadVideoBtnClick = async () => {
-    setLoading(true);
-
-    const response = await getUserLocationId();
-
-    if (response.success) {
-      window.location.href = `https://app.gohighlevel.com/v2/location/${response.data.userLocationId}/media-storage`;
-      setLoading(false);
-    } else {
-      setLoading(false);
-      toast.error("Unknown error occurred!", {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-    }
-  };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        // Fetch all data in parallel
-        const [videosResponse, historyResponse] = await Promise.all([
-          getAllVideos(),
-          getHistoryOfMessages(),
-        ]);
-
-        // Check responses and set state only after all are resolved
-        if (videosResponse.success && historyResponse.success) {
-          // Update states
-          setVideosData(videosResponse.data.videos);
-          setHistoryData(historyResponse.data.histories);
-        } else {
-          console.error("Error fetching data");
-          if (!videosResponse.success) {
-            console.error("Error fetching videos: ", videosResponse.error);
-          }
-          if (!historyResponse.success) {
-            console.error("Error fetching history: ", historyResponse.error);
-          }
-        }
-
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-        console.error("Error fetching data: ", error);
-      }
-    };
-
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setLoading, setVideosData, fetchVideosData]);
 
   return (
     <LibraryRoot>
-      <LibraryHeader
-        title="My Library"
-        onUploadVideoBtnClick={handleUploadVideoBtnClick}
-      />
+      <LibraryHeader title="My Library" />
       <LibraryBody>
         <BodyTabsRoot>
           <Tabs.List>

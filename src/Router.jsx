@@ -14,7 +14,7 @@ export const router = createBrowserRouter([
         element: <Dashboard />,
       },
       {
-        path: "recordings/:accessToken",
+        path: "recordings/:accessToken/:userLocationId",
         element: <RecordVideo />,
       },
       {
@@ -22,7 +22,7 @@ export const router = createBrowserRouter([
         element: <VideoDetail />,
       },
       {
-        path: "recordings/:accessToken/video-detail/:videoId",
+        path: "recordings/:accessToken/:userLocationId/video-detail/:videoId",
         element: <VideoDetail />,
       },
       {

@@ -3,9 +3,9 @@ import axios from "axios";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // API to get all videos from the database\
-export const getAllVideos = async () => {
+export const getAllVideos = async (accessToken) => {
   // Get the accountId and userLocationId from the Local Storage
-  const accessToken = localStorage.getItem("accessToken");
+  // const accessToken = localStorage.getItem("accessToken");
   try {
     const response = await axios.get(`${BASE_URL}/video/getVideosByAccountId`, {
       headers: {

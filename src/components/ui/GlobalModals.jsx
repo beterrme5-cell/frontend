@@ -316,11 +316,14 @@ export const EditVideoModal = () => {
   const videosData = useUserStore((state) => state.videosData);
   const setVideosData = useUserStore((state) => state.setVideosData);
 
+  // State to update the Video Detail Screen State
+  const setVideoDetail = useUserStore((state) => state.setVideoDetail);
+
   // Modal Form
   const form = useForm({
     initialValues: {
-      videoName: videoToBeEdited?.title,
-      videoDescription: videoToBeEdited?.description,
+      videoName: videoToBeEdited?.title || "",
+      videoDescription: videoToBeEdited?.description || "",
     },
 
     validate: {
@@ -347,6 +350,8 @@ export const EditVideoModal = () => {
     });
 
     if (response.success) {
+      setVideoDetail(response.data.video);
+
       toast.success("Video Updated Successfully", {
         position: "bottom-right",
         autoClose: 5000,

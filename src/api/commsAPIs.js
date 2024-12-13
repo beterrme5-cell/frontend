@@ -68,7 +68,7 @@ export const sendEmailToSelectedContacts = async (params) => {
 };
 
 // API to get the History of the Messages sent by the user
-export const getHistoryOfMessages = async () => {
+export const getHistoryOfMessages = async (accessToken) => {
   try {
     const response = await axios.get(`${BASE_URL}/user/getUserHistories`, {
       headers: {

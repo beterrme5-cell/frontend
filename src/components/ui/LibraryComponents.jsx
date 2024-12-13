@@ -1,4 +1,3 @@
-import CustomButton from "./CustomButton";
 import { Menu, Tabs, Table, CopyButton } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
 import { Link, useLocation } from "react-router-dom";
@@ -31,18 +30,22 @@ export const LibraryRoot = ({ children }) => {
   );
 };
 
-export const LibraryHeader = ({ title, onUploadVideoBtnClick }) => {
+export const LibraryHeader = ({ title }) => {
   const pageLocation = useLocation();
+
+  const userLocationId = localStorage.getItem("userLocationId");
 
   return (
     <header className="flex items-center justify-between">
       <h1 className="text-[28px] font-bold ">{title}</h1>
       <div className="flex items-center gap-[12px]">
-        <CustomButton
-          onClick={onUploadVideoBtnClick}
-          varient="outlined"
-          label="Upload Video"
-        />
+        <a
+          href={`https://app.gohighlevel.com/v2/location/${userLocationId}/media-storage`}
+          className="p-[8px_16px] text-[14px] font-medium rounded-[8px] bg-white border border-gray-dark text-darkBlue"
+          target="_blank"
+        >
+          Upload Video
+        </a>
         {pageLocation.pathname.split("/")[1] === "recordings" ? (
           <RecordLoomVideoBtn />
         ) : (
@@ -62,6 +65,7 @@ const NewRecordingBtn = () => {
     setIsWarningModalOpen(true);
 
     const accessToken = localStorage.getItem("accessToken");
+    const userLocationId = localStorage.getItem("userLocationId");
 
     if (!accessToken) {
       console.error("Access Token not found");
@@ -70,7 +74,9 @@ const NewRecordingBtn = () => {
 
     // create a new tab and navigate to the new recording page
     const newTab = window.open(
-      `${import.meta.env.VITE_RECORD_PAGE_URL}/recordings/${accessToken}`,
+      `${
+        import.meta.env.VITE_RECORD_PAGE_URL
+      }/recordings/${accessToken}/${userLocationId}`,
       "_blank"
     );
 

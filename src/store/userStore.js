@@ -30,4 +30,11 @@ export const useUserStore = create((set) => ({
   // --------------------------------------------------
   historyData: [],
   setHistoryData: (historyData) => set({ historyData }),
+
+  // --------------------------------------------------
+  // Video's Data for VideoDetail Page
+  // --------------------------------------------------
+
+  videoDetail: {},
+  setVideoDetail: (videoDetail) => set({ videoDetail }),
 }));
