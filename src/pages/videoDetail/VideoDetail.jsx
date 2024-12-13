@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   VideoDetailActionBtn,
   VideoDetailActions,
@@ -9,11 +9,13 @@ import {
 import { useGlobalModals } from "../../store/globalModals";
 import { useParams } from "react-router-dom";
 import { getVideoById } from "../../api/libraryAPIs";
+import { useUserStore } from "../../store/userStore";
 
 const VideoDetail = () => {
-  const [videoData, setVideoData] = useState({});
-
   const { videoId } = useParams();
+
+  const videoDetail = useUserStore((state) => state.videoDetail);
+  const setVideoDetail = useUserStore((state) => state.setVideoDetail);
 
   // Global State for Delete Video Modal
   const setVideoToBeDeleted = useGlobalModals(
@@ -44,7 +46,7 @@ const VideoDetail = () => {
       const response = await getVideoById(videoId);
 
       if (response.success) {
-        setVideoData(response.data.video);
+        setVideoDetail(response.data.video);
       }
 
       if (!response.success) {
@@ -53,21 +55,21 @@ const VideoDetail = () => {
     };
 
     fetchVideoData();
-  }, [videoId]);
+  }, [videoId, setVideoDetail]);
 
   return (
     <VideoDetailRoot>
       <VideoDetailHeader
-        title={videoData.title}
-        description={videoData.description}
+        title={videoDetail.title}
+        description={videoDetail.description}
       />
-      <VideoDetailPreview videoUrl={videoData.embeddedLink} />
+      <VideoDetailPreview videoUrl={videoDetail.embeddedLink} />
       <VideoDetailActions>
         <VideoDetailActionBtn
           label="Share"
           actionType="share"
           onClick={() => {
-            setVideoToBeShared(videoData);
+            setVideoToBeShared(videoDetail);
             setIsShareVideoModalOpen(true);
           }}
         />
@@ -75,7 +77,7 @@ const VideoDetail = () => {
           label="Edit"
           actionType="edit"
           onClick={() => {
-            setVideoToBeEdited(videoData);
+            setVideoToBeEdited(videoDetail);
             setIsEditVideoModalOpen(true);
           }}
         />
@@ -83,7 +85,7 @@ const VideoDetail = () => {
           label="Delete"
           actionType="delete"
           onClick={() => {
-            setVideoToBeDeleted(videoData);
+            setVideoToBeDeleted(videoDetail);
             setIsDeleteVideoModalOpen(true);
           }}
         />

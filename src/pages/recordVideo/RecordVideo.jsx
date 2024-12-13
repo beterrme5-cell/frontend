@@ -15,12 +15,10 @@ import { useEffect } from "react";
 import { useLoadingBackdrop } from "../../store/loadingBackdrop";
 import { useUserStore } from "../../store/userStore";
 import { useParams } from "react-router-dom";
-import axios from "axios";
 import { getHistoryOfMessages } from "../../api/commsAPIs";
 import { getUserLocationId } from "../../api/auth";
-
-const BASE_URL = import.meta.env.VITE_BASE_URL;
 import { toast } from "react-toastify";
+import { getAllVideos } from "../../api/libraryAPIs";
 
 const RecordVideo = () => {
   const videosData = useUserStore((state) => state.videosData);
@@ -28,36 +26,13 @@ const RecordVideo = () => {
   const historyData = useUserStore((state) => state.historyData);
   const setHistoryData = useUserStore((state) => state.setHistoryData);
 
-  const { accessToken } = useParams();
+  const { accessToken, userLocationId } = useParams();
 
   const setIsNewRecordingModalOpen = useGlobalModals(
     (state) => state.setIsNewRecordingModalOpen
   );
 
   const setLoading = useLoadingBackdrop((state) => state.setLoading);
-
-  const getAllVideos = async () => {
-    try {
-      const response = await axios.get(
-        `${BASE_URL}/video/getVideosByAccountId`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      return {
-        success: true,
-        data: response.data,
-      };
-    } catch (error) {
-      console.error("Error while fetching all videos: ", error);
-      return {
-        success: false,
-        error: error.response?.data?.message || "An unexpected error occurred",
-      };
-    }
-  };
 
   // Function to Get the Location Id of the User and Redirect to the GHL Media Storage Page
   const handleUploadVideoBtnClick = async () => {
@@ -82,42 +57,54 @@ const RecordVideo = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        // Fetch all data in parallel
-        const [videosResponse, historyResponse] = await Promise.all([
-          getAllVideos(),
-          getHistoryOfMessages(),
-        ]);
+  // Function to Fetch all the Videos and History of the User
+  const fetchData = async (token) => {
+    try {
+      // Fetch all data in parallel
+      const [videosResponse, historyResponse] = await Promise.all([
+        getAllVideos(token),
+        getHistoryOfMessages(token),
+      ]);
 
-        // Check responses and set state only after all are resolved
-        if (videosResponse.success && historyResponse.success) {
-          console.log("historyResponse", historyResponse.data);
-          // Update states
-          setVideosData(videosResponse.data.videos);
-          setHistoryData(historyResponse.data.histories);
-        } else {
-          console.error("Error fetching data");
-          if (!videosResponse.success) {
-            console.error("Error fetching videos: ", videosResponse.error);
-          }
-          if (!historyResponse.success) {
-            console.error("Error fetching history: ", historyResponse.error);
-          }
+      // Check responses and set state only after all are resolved
+      if (videosResponse.success && historyResponse.success) {
+        // Update states
+        setVideosData(videosResponse.data.videos);
+        setHistoryData(historyResponse.data.histories);
+      } else {
+        if (!videosResponse.success) {
+          toast.error(videosResponse.error || "Error Fetching Videos", {
+            position: "bottom-right",
+            autoClose: 5000,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
         }
-
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-        console.error("Error fetching data: ", error);
+        if (!historyResponse.success) {
+          toast.error(historyResponse.error || "Error Fetching History", {
+            position: "bottom-right",
+            autoClose: 5000,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+        }
       }
-    };
-
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setLoading, setVideosData, accessToken]);
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+      toast.error("Error Fetching Data", {
+        position: "bottom-right",
+        autoClose: 5000,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
+  };
 
   useEffect(() => {
     setIsNewRecordingModalOpen(true);
@@ -125,6 +112,20 @@ const RecordVideo = () => {
 
   useEffect(() => {
     localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("userLocationId", userLocationId);
+
+    if (!accessToken) {
+      return;
+    }
+
+    const fetchLibraryData = async () => {
+      setLoading(true);
+      await fetchData(accessToken);
+      setLoading(false);
+    };
+
+    fetchLibraryData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accessToken]);
 
   return (

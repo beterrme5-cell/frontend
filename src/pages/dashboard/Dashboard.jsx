@@ -10,39 +10,62 @@ import {
   VideoTabItemsList,
   VideoTabSection,
 } from "../../components/ui/LibraryComponents";
-import { useEffect } from "react";
-import { getAllVideos } from "../../api/libraryAPIs";
-import { useLoadingBackdrop } from "../../store/loadingBackdrop";
 import { useUserStore } from "../../store/userStore";
-import { getHistoryOfMessages } from "../../api/commsAPIs";
 import { toast } from "react-toastify";
-import { getUserLocationId } from "../../api/auth";
+import { getAllVideos } from "../../api/libraryAPIs";
+import { getHistoryOfMessages } from "../../api/commsAPIs";
+import { useLoadingBackdrop } from "../../store/loadingBackdrop";
+import { useEffect, useState } from "react";
+import { getDecryptedUserData } from "../../api/auth";
 
 const Dashboard = () => {
   const videosData = useUserStore((state) => state.videosData);
-  const setVideosData = useUserStore((state) => state.setVideosData);
   const historyData = useUserStore((state) => state.historyData);
+  const setVideosData = useUserStore((state) => state.setVideosData);
   const setHistoryData = useUserStore((state) => state.setHistoryData);
-
   const setLoading = useLoadingBackdrop((state) => state.setLoading);
+  const [error, setError] = useState(false);
+  // Function to Fetch all the Data
+  const fetchData = async (accessToken) => {
+    try {
+      // Fetch all data in parallel
+      const [videosResponse, historyResponse] = await Promise.all([
+        getAllVideos(accessToken),
+        getHistoryOfMessages(accessToken),
+      ]);
 
-  const fetchVideosData = useUserStore((state) => state.fetchVideosData);
-
-  // Function to Get the Location Id of the User and Redirect to the GHL Media Storage Page
-  const handleUploadVideoBtnClick = async () => {
-    setLoading(true);
-
-    const response = await getUserLocationId();
-
-    if (response.success) {
-      window.location.href = `https://app.gohighlevel.com/v2/location/${response.data.userLocationId}/media-storage`;
-      setLoading(false);
-    } else {
-      setLoading(false);
-      toast.error("Unknown error occurred!", {
+      // Check responses and set state only after all are resolved
+      if (videosResponse.success && historyResponse.success) {
+        // Update states
+        setVideosData(videosResponse.data.videos);
+        setHistoryData(historyResponse.data.histories);
+      } else {
+        if (!videosResponse.success) {
+          toast.error(videosResponse.error || "Error Fetching Videos", {
+            position: "bottom-right",
+            autoClose: 5000,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+        }
+        if (!historyResponse.success) {
+          toast.error(historyResponse.error || "Error Fetching History", {
+            position: "bottom-right",
+            autoClose: 5000,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+      toast.error("Error Fetching Data", {
         position: "bottom-right",
         autoClose: 5000,
-        hideProgressBar: true,
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
@@ -51,48 +74,54 @@ const Dashboard = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        // Fetch all data in parallel
-        const [videosResponse, historyResponse] = await Promise.all([
-          getAllVideos(),
-          getHistoryOfMessages(),
-        ]);
-
-        // Check responses and set state only after all are resolved
-        if (videosResponse.success && historyResponse.success) {
-          // Update states
-          setVideosData(videosResponse.data.videos);
-          setHistoryData(historyResponse.data.histories);
+  // Function to Get Key from GHL iFrame and Save it in Local Storage
+  const postKeyToAPIAndCheckUserId = async () => {
+    const key = await new Promise((resolve) => {
+      window.parent.postMessage({ message: "REQUEST_USER_DATA" }, "*");
+      window.addEventListener("message", ({ data }) => {
+        console.log(data);
+        if (data.message === "REQUEST_USER_DATA_RESPONSE") {
+          resolve(data.payload);
         } else {
-          console.error("Error fetching data");
-          if (!videosResponse.success) {
-            console.error("Error fetching videos: ", videosResponse.error);
-          }
-          if (!historyResponse.success) {
-            console.error("Error fetching history: ", historyResponse.error);
-          }
+          resolve(null);
         }
+      });
+    });
 
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-        console.error("Error fetching data: ", error);
+    return key;
+  };
+
+  useEffect(() => {
+    const fetchLibraryData = async () => {
+      setLoading(true);
+
+      const key = await postKeyToAPIAndCheckUserId();
+
+      // Send Data to the Backend API to Decrypt the code
+      const response = await getDecryptedUserData({ tokenKey: key });
+
+      if (!response.success || response.data.accessToken === undefined) {
+        setError(true);
+        return setLoading(false);
       }
+
+      // Fetch all the Data
+      await fetchData(response.data.accessToken);
+
+      // Save the accountId and userLocationId in the Local Storage
+      localStorage.setItem("accessToken", response.data.accessToken);
+      localStorage.setItem("userLocationId", response.data.user.userLocationId);
+
+      setLoading(false);
     };
 
-    fetchData();
+    fetchLibraryData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setLoading, setVideosData, fetchVideosData]);
+  }, [error]);
 
   return (
     <LibraryRoot>
-      <LibraryHeader
-        title="My Library"
-        onUploadVideoBtnClick={handleUploadVideoBtnClick}
-      />
+      <LibraryHeader title="My Library" />
       <LibraryBody>
         <BodyTabsRoot>
           <Tabs.List>
