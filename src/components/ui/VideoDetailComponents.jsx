@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
   DELETE_ICON,
   EDIT_ICON,
@@ -7,19 +7,19 @@ import {
 } from "../../assets/icons/DynamicIcons.jsx";
 import { Spoiler } from "@mantine/core";
 
-// import goBackIcon from "../../assets/icons/goBack.svg";
-
 export const VideoDetailRoot = ({ children }) => {
   const recodingsPagePath = window.location.pathname.split("/")[1];
 
-  const accessToken = localStorage.getItem("accessToken");
+  // const accessToken = localStorage.getItem("accessToken");
+
+  const { accessToken, userLocationId } = useParams();
 
   return (
     <section className="bg-white p-[32px] rounded-[12px] flex flex-col gap-[12px]">
       <Link
         to={
           recodingsPagePath === "recordings"
-            ? `/recordings/${accessToken}`
+            ? `/recordings/${accessToken}/${userLocationId}`
             : "/"
         }
         className="flex items-center gap-[8px] text-[16px] font-medium text-primary"
