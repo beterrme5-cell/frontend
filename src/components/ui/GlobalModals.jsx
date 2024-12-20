@@ -828,7 +828,14 @@ export const ShareVideoModal = () => {
         <div className="flex flex-col gap-[24px] w-[70vw]">
           <h3 className="text-[24px] font-medium">Share Video</h3>
           <div className="flex flex-col gap-[24px]">
-            <Tabs color="#2A85FF" value={activeTab} onChange={setActiveTab}>
+            <Tabs
+              color="#2A85FF"
+              value={activeTab}
+              onChange={(value) => {
+                setActiveTab(value);
+                setSendToAllContacts(false);
+              }}
+            >
               <Tabs.List>
                 <Tabs.Tab
                   value="email"
