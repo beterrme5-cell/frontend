@@ -1560,15 +1560,22 @@ export const ContactsSelectionModalEmail = () => {
       <div className="w-[70vw] flex flex-col gap-[10px] h-[70dvh] justify-between">
         <div className="flex flex-col gap-[16px]">
           <h2 className="font-medium text-[24px]">Select Contacts</h2>
-          <TextInput
-            description="Please add atleast three characters to search..."
-            placeholder="Search Contacts"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="max-w-[350px] searchContactsInput"
-          />
+          <div className="flex flex-col gap-[4px]">
+            <TextInput
+              placeholder="Search Contacts"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="max-w-[350px] searchContactsInput"
+            />
+            <p className="font-bold text-[14px]">Instructions:</p>
+            <div>
+              <p className="text-[#868e96] text-[12px]">
+                - Please add atleast three characters to search by name or email
+              </p>
+            </div>
+          </div>
           {filteredContacts?.length > 0 ? (
-            <div className="selectContactsDiv h-[calc(70dvh-248px)] overflow-auto">
+            <div className="selectContactsDiv h-[calc(70dvh-290px)] overflow-auto">
               <Table stickyHeader stickyHeaderOffset={0}>
                 <Table.Thead>
                   <Table.Tr>
@@ -1731,27 +1738,6 @@ export const ContactsSelectionModalSMS = () => {
     setIsShareVideoModalOpen(true);
   };
 
-  useEffect(() => {
-    const fetchContacts = async () => {
-      setModalLoadingOverlay(true);
-      // Fetch Contacts from the Database
-      const response = await getContacts({
-        page: contactsPagination,
-        pageLimit: 100,
-      });
-
-      if (response.success) {
-        setUserContactsData(response.data.contacts);
-      } else {
-        console.log("Error while fetching contacts: ", response.error);
-      }
-      setModalLoadingOverlay(false);
-    };
-
-    fetchContacts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setModalLoadingOverlay, setUserContactsData]);
-
   const handleLoadMoreContacts = async () => {
     setModalLoadingOverlay(true);
 
@@ -1780,6 +1766,68 @@ export const ContactsSelectionModalSMS = () => {
     setModalLoadingOverlay(false);
   };
 
+  const fetchContactsOnSearch = async (query) => {
+    setModalLoadingOverlay(true);
+    // Fetch Contacts from the Database
+    const response = await getContacts({
+      page: contactsPagination,
+      pageLimit: 100,
+      search: query,
+    });
+    if (response.success) {
+      setUserContactsData(response.data.contacts);
+    } else {
+      console.log("Error while fetching contacts: ", response.error);
+    }
+    setModalLoadingOverlay(false);
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedFetchContacts = useCallback(
+    debounce((query) => fetchContactsOnSearch(query), 500), // Adjust debounce time as needed
+    []
+  );
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      setModalLoadingOverlay(true);
+      // Fetch Contacts from the Database
+      const response = await getContacts({
+        page: contactsPagination,
+        pageLimit: 100,
+        search: "",
+      });
+
+      if (response.success) {
+        setUserContactsData(response.data.contacts);
+      } else {
+        console.log("Error while fetching contacts: ", response.error);
+      }
+      setModalLoadingOverlay(false);
+    };
+
+    if (searchQuery === "") {
+      fetchContacts("");
+      return;
+    }
+
+    if (searchQuery !== "" && searchQuery.length < 3) {
+      return;
+    }
+
+    // Trigger the debounced function whenever searchQuery changes
+    debouncedFetchContacts(searchQuery);
+
+    // Cleanup to cancel any pending debounce on unmount or searchQuery change
+    return () => debouncedFetchContacts.cancel();
+  }, [
+    searchQuery,
+    debouncedFetchContacts,
+    contactsPagination,
+    setModalLoadingOverlay,
+    setUserContactsData,
+  ]);
+
   return (
     <ModalRoot
       loadingOverlay={modalLoadingOverlay}
@@ -1794,15 +1842,26 @@ export const ContactsSelectionModalSMS = () => {
       <div className="w-[70vw] flex flex-col gap-[10px] h-[70dvh] max-h-[90vh]">
         <div className="flex flex-col gap-[16px] h-[calc(100%-110px)] overflow-auto">
           <h2 className="font-medium text-[24px]">Select Contacts</h2>
-          <TextInput
-            description="Please add atleast three characters to search..."
-            placeholder="Search Contacts"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="max-w-[350px] searchContactsInput"
-          />
+          <div className="flex flex-col gap-[4px]">
+            <TextInput
+              placeholder="Search Contacts"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="max-w-[350px] searchContactsInput"
+            />
+            <p className="font-bold text-[14px]">Instructions:</p>
+            <div>
+              <p className="text-[#868e96] text-[12px]">
+                - Please add atleast three characters to search by name...
+              </p>
+              <p className="text-[#868e96] text-[12px]">
+                - If you want to search by phone number, please add atleast two
+                numbers after the country code. i.e, +9234
+              </p>
+            </div>
+          </div>
           {filteredContacts?.length > 0 ? (
-            <div className="selectContactsDiv h-[calc(70dvh-248px)] overflow-auto">
+            <div className="selectContactsDiv h-[calc(70dvh-310px)] overflow-auto">
               <Table stickyHeader stickyHeaderOffset={0}>
                 <Table.Thead>
                   <Table.Tr>
