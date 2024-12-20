@@ -144,6 +144,7 @@ export const getContacts = async (params) => {
       {
         page: params.page,
         pageLimit: params.pageLimit,
+        search: params.search,
       },
       {
         headers: {

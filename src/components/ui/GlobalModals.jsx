@@ -13,7 +13,7 @@ import { LoadingOverlay, MultiSelect } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import CustomVideoInput from "./CustomVideoInput";
 import CustomButton from "./CustomButton";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Quill from "quill";
 import {
   ARROW_RIGHT,
@@ -31,6 +31,7 @@ import {
   sendSMSToSelectedContacts,
 } from "../../api/commsAPIs";
 import { toast } from "react-toastify";
+import debounce from "lodash.debounce";
 
 function quillGetHTML(inputDelta) {
   var tempCont = document.createElement("div");
@@ -1455,27 +1456,6 @@ export const ContactsSelectionModalEmail = () => {
     setIsShareVideoModalOpen(true);
   };
 
-  useEffect(() => {
-    const fetchContacts = async () => {
-      setModalLoadingOverlay(true);
-      // Fetch Contacts from the Database
-      const response = await getContacts({
-        page: contactsPagination,
-        pageLimit: 100,
-      });
-
-      if (response.success) {
-        setUserContactsData(response.data.contacts);
-      } else {
-        console.log("Error while fetching contacts: ", response.error);
-      }
-      setModalLoadingOverlay(false);
-    };
-
-    fetchContacts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setModalLoadingOverlay, setUserContactsData]);
-
   const handleLoadMoreContacts = async () => {
     setModalLoadingOverlay(true);
 
@@ -1504,6 +1484,68 @@ export const ContactsSelectionModalEmail = () => {
     setModalLoadingOverlay(false);
   };
 
+  const fetchContactsOnSearch = async (query) => {
+    setModalLoadingOverlay(true);
+    // Fetch Contacts from the Database
+    const response = await getContacts({
+      page: contactsPagination,
+      pageLimit: 100,
+      search: query,
+    });
+    if (response.success) {
+      setUserContactsData(response.data.contacts);
+    } else {
+      console.log("Error while fetching contacts: ", response.error);
+    }
+    setModalLoadingOverlay(false);
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedFetchContacts = useCallback(
+    debounce((query) => fetchContactsOnSearch(query), 500), // Adjust debounce time as needed
+    []
+  );
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      setModalLoadingOverlay(true);
+      // Fetch Contacts from the Database
+      const response = await getContacts({
+        page: contactsPagination,
+        pageLimit: 100,
+        search: "",
+      });
+
+      if (response.success) {
+        setUserContactsData(response.data.contacts);
+      } else {
+        console.log("Error while fetching contacts: ", response.error);
+      }
+      setModalLoadingOverlay(false);
+    };
+
+    if (searchQuery === "") {
+      fetchContacts("");
+      return;
+    }
+
+    if (searchQuery !== "" && searchQuery.length < 3) {
+      return;
+    }
+
+    // Trigger the debounced function whenever searchQuery changes
+    debouncedFetchContacts(searchQuery);
+
+    // Cleanup to cancel any pending debounce on unmount or searchQuery change
+    return () => debouncedFetchContacts.cancel();
+  }, [
+    searchQuery,
+    debouncedFetchContacts,
+    contactsPagination,
+    setModalLoadingOverlay,
+    setUserContactsData,
+  ]);
+
   return (
     <ModalRoot
       loadingOverlay={modalLoadingOverlay}
@@ -1519,6 +1561,7 @@ export const ContactsSelectionModalEmail = () => {
         <div className="flex flex-col gap-[16px]">
           <h2 className="font-medium text-[24px]">Select Contacts</h2>
           <TextInput
+            description="Please add atleast three characters to search..."
             placeholder="Search Contacts"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -1752,6 +1795,7 @@ export const ContactsSelectionModalSMS = () => {
         <div className="flex flex-col gap-[16px] h-[calc(100%-110px)] overflow-auto">
           <h2 className="font-medium text-[24px]">Select Contacts</h2>
           <TextInput
+            description="Please add atleast three characters to search..."
             placeholder="Search Contacts"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
