@@ -97,11 +97,30 @@ body {
   margin-right: 0px !important;
 }
 #text-editor-mainContainer .ql-toolbar .ql-formats:not(:last-child) {
-  border-right: 1px solid rgba(100, 121, 143, 0.12) !important;
+  border-right: 1px solid rgba(100, 121, 143, 0.2) !important;
+}
+
+#text-editor-mainContainer
+  .ql-toolbar
+  #custom-buttons-wrapper
+  .ql-formats:not(:last-child) {
+  border-right: 2px solid rgba(100, 121, 143, 0.3) !important;
 }
 
 .ql-picker-options {
   border-radius: 8px !important;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.ql-picker-options::-webkit-scrollbar {
+  width: 5px !important;
+  border-radius: 5px !important;
+  background-color: #a5a5a532 !important;
+}
+.ql-picker-options::-webkit-scrollbar-thumb {
+  background-color: #36363682;
+  border-radius: 6px !important;
 }
 
 #text-editor-container {
