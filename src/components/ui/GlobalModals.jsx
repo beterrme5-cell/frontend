@@ -33,9 +33,6 @@ import {
 } from "../../api/commsAPIs";
 import { toast } from "react-toastify";
 
-// Variable to store the Total Count of Contacts
-let totalContactsCount = 0;
-
 function quillGetHTML(inputDelta) {
   var tempCont = document.createElement("div");
   new Quill(tempCont).setContents(inputDelta);
@@ -520,6 +517,8 @@ export const ShareVideoModal = () => {
   const [noEmailSubjectError, setNoEmailSubjectError] = useState("");
   const [noEmailContentError, setNoEmailContentError] = useState("");
 
+  const [editorContent, setEditorContent] = useState(null);
+
   // Use a ref to access the quill instance directly
   const quillRef = useRef();
 
@@ -614,6 +613,8 @@ export const ShareVideoModal = () => {
     const response = await sendEmailToSelectedContacts(API_DATA);
 
     if (response.success) {
+      setEditorContent(null);
+
       toast.success(response.data.message, {
         position: "bottom-right",
         autoClose: 5000,
@@ -784,7 +785,6 @@ export const ShareVideoModal = () => {
       setSelectedContactTags([]);
     } else {
       setSelectedSMSContacts([]);
-      setSendToAllContacts(false);
     }
   }, [activeSubTab, setSelectedSMSContacts, setSendToAllContacts]);
 
@@ -941,7 +941,7 @@ export const ShareVideoModal = () => {
 
                       {sendToAllContacts ? (
                         <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px] flex items-center h-fit">
-                          Sending to All {totalContactsCount} Contacts...
+                          Sending to All Contacts...
                         </p>
                       ) : (
                         <div className="flex items-center gap-[4px]">
@@ -1001,7 +1001,11 @@ export const ShareVideoModal = () => {
                   )}
                 </div>
                 <div className="flex flex-col gap-[8px]">
-                  <TextEditor ref={quillRef} />
+                  <TextEditor
+                    ref={quillRef}
+                    editorContent={editorContent}
+                    setEditorContent={setEditorContent}
+                  />
                   {noEmailContentError !== "" && (
                     <p className="text-[12px] text-red-500">
                       {noEmailContentError}
@@ -1079,7 +1083,7 @@ export const ShareVideoModal = () => {
                       <div className="flex items-center gap-[4px]">
                         {sendToAllContacts ? (
                           <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
-                            Sending to All {totalContactsCount} Contacts...
+                            Sending to All Contacts...
                           </p>
                         ) : (
                           selectedSMSContacts.slice(0, 2).map((contact) => (
@@ -1436,8 +1440,6 @@ export const ContactsSelectionModalEmail = () => {
     );
   });
 
-  totalContactsCount = filteredContacts?.length;
-
   const handleSelectContact = (contactDetails) => {
     // Check if the Contact is already selected then on unchecking remove it from the selected contacts
     const isContactSelected = selectedContacts.some(
@@ -1661,8 +1663,6 @@ export const ContactsSelectionModalSMS = () => {
       contact?.phone !== ""
     );
   });
-
-  totalContactsCount = filteredContacts?.length;
 
   const handleSelectContact = (contactDetails) => {
     // Check if the Contact is already selected then on unchecking remove it from the selected contacts

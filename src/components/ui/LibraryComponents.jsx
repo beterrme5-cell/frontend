@@ -499,137 +499,145 @@ export const HistoryTableList = () => {
   );
 };
 
-export const TextEditor = forwardRef(({ onTextChange }, ref) => {
-  const videoToBeShared = useGlobalModals((state) => state.videoToBeShared);
+export const TextEditor = forwardRef(
+  ({ onTextChange, editorContent, setEditorContent }, ref) => {
+    const videoToBeShared = useGlobalModals((state) => state.videoToBeShared);
 
-  const containerRef = useRef(null);
-  const onTextChangeRef = useRef(onTextChange);
+    const containerRef = useRef(null);
+    const onTextChangeRef = useRef(onTextChange);
 
-  useLayoutEffect(() => {
-    onTextChangeRef.current = onTextChange;
-  });
-
-  useEffect(() => {
-    const container = containerRef.current;
-    const editorContainer = container.appendChild(
-      container.ownerDocument.createElement("div")
-    );
-
-    // Set the ID of the editorContainer
-    editorContainer.id = "text-editor-container";
-
-    const toolbarOptions = [
-      [{ header: [1, 2, 3, 4, 5, 6, false] }],
-      [{ align: [] }],
-      ["bold", "italic", "underline", "strike"], // toggled buttons
-      [{ list: "ordered" }, { list: "bullet" }, { list: "check" }],
-      ["blockquote"],
-    ];
-
-    const quill = new Quill(editorContainer, {
-      theme: "snow",
-      placeholder: "Write something...",
-      modules: {
-        toolbar: toolbarOptions,
-      },
+    useLayoutEffect(() => {
+      onTextChangeRef.current = onTextChange;
     });
 
-    // Toolbar Custom Options
-    // Get the toolbar container
-    const toolbar = quill.getModule("toolbar");
+    useEffect(() => {
+      const container = containerRef.current;
+      const editorContainer = container.appendChild(
+        container.ownerDocument.createElement("div")
+      );
 
-    // Create a wrapper for custom buttons
-    const customButtonsWrapper = document.createElement("div");
-    customButtonsWrapper.id = "custom-buttons-wrapper";
+      // Set the ID of the editorContainer
+      editorContainer.id = "text-editor-container";
 
-    const pasteLinkButton = document.createElement("button");
-    pasteLinkButton.innerHTML = "Paste Video Link";
-    pasteLinkButton.setAttribute("type", "button");
-    pasteLinkButton.onclick = () => {
-      // Paste the video link into the editor
-      const range = quill.getSelection();
+      const toolbarOptions = [
+        [{ header: [1, 2, 3, 4, 5, 6, false] }],
+        [{ align: [] }],
+        ["bold", "italic", "underline", "strike"], // toggled buttons
+        [{ list: "ordered" }, { list: "bullet" }, { list: "check" }],
+        ["blockquote"],
+      ];
 
-      if (range === null) {
-        const updatedVideoLink = `${videoToBeShared?.shareableLink} `;
+      const quill = new Quill(editorContainer, {
+        theme: "snow",
+        placeholder: "Write something...",
+        modules: {
+          toolbar: toolbarOptions,
+        },
+      });
 
-        quill.insertText(0, updatedVideoLink, {
+      // Toolbar Custom Options
+      // Get the toolbar container
+      const toolbar = quill.getModule("toolbar");
+
+      // Create a wrapper for custom buttons
+      const customButtonsWrapper = document.createElement("div");
+      customButtonsWrapper.id = "custom-buttons-wrapper";
+
+      const pasteLinkButton = document.createElement("button");
+      pasteLinkButton.innerHTML = "Paste Video Link";
+      pasteLinkButton.setAttribute("type", "button");
+      pasteLinkButton.onclick = () => {
+        // Paste the video link into the editor
+        const range = quill.getSelection();
+
+        if (range === null) {
+          const updatedVideoLink = `${videoToBeShared?.shareableLink} `;
+
+          quill.insertText(0, updatedVideoLink, {
+            bold: true,
+          });
+
+          return quill.setSelection(range.index + updatedVideoLink.length);
+        }
+
+        // Adding a space before and after the link
+        const updatedVideoLink = ` ${videoToBeShared?.shareableLink} `;
+
+        // Insert the link with formatting
+        quill.insertText(range.index, updatedVideoLink, {
           bold: true,
         });
 
-        return quill.setSelection(range.index + updatedVideoLink.length);
+        // Move the cursor to the end of the inserted link
+        quill.setSelection(range.index + updatedVideoLink.length);
+      };
+
+      const pasteThumbnailButton = document.createElement("button");
+      pasteThumbnailButton.innerHTML = "Paste Thumbnail";
+      pasteThumbnailButton.setAttribute("type", "button");
+      pasteThumbnailButton.onclick = () => {
+        // Set the width and height
+        const width = "300px"; // You can modify this to any value or make it dynamic
+        const height = "200px"; // Modify this as well
+
+        // Create the image tag with width and height
+        const imageTag = `<img src="${videoToBeShared.thumbnailURL}" width="${width}" height="${height}" />`;
+
+        const range = quill.getSelection();
+        if (range === null) {
+          // Insert the image at the current cursor position
+          quill.clipboard.dangerouslyPasteHTML(0, imageTag);
+          // Move the cursor to the end of the inserted image
+          quill.setSelection(0 + imageTag.length);
+        }
+
+        // Insert the image at the current cursor position
+        quill.clipboard.dangerouslyPasteHTML(range.index, imageTag);
+        // Move the cursor to the end of the inserted image
+        quill.setSelection(range.index + imageTag.length);
+      };
+
+      // embedButton.classList.add("ql-formats");
+      pasteLinkButton.classList.add("ql-formats");
+      pasteThumbnailButton.classList.add("ql-formats");
+
+      // Append custom buttons to the wrapper
+      // customButtonsWrapper.appendChild(embedButton);
+      customButtonsWrapper.appendChild(pasteLinkButton);
+      customButtonsWrapper.appendChild(pasteThumbnailButton);
+
+      // Append the wrapper to the toolbar
+      toolbar.container.appendChild(customButtonsWrapper);
+
+      // Restore editor content if available
+      if (editorContent) {
+        quill.setContents(editorContent);
       }
 
-      // Adding a space before and after the link
-      const updatedVideoLink = ` ${videoToBeShared?.shareableLink} `;
+      ref.current = quill;
 
-      // Insert the link with formatting
-      quill.insertText(range.index, updatedVideoLink, {
-        bold: true,
+      quill.on(Quill.events.TEXT_CHANGE, (...args) => {
+        setEditorContent(quill.getContents());
+        onTextChangeRef.current?.(...args);
       });
 
-      // Move the cursor to the end of the inserted link
-      quill.setSelection(range.index + updatedVideoLink.length);
-    };
-
-    const pasteThumbnailButton = document.createElement("button");
-    pasteThumbnailButton.innerHTML = "Paste Thumbnail";
-    pasteThumbnailButton.setAttribute("type", "button");
-    pasteThumbnailButton.onclick = () => {
-      // Set the width and height
-      const width = "300px"; // You can modify this to any value or make it dynamic
-      const height = "200px"; // Modify this as well
-
-      // Create the image tag with width and height
-      const imageTag = `<img src="${videoToBeShared.thumbnailURL}" width="${width}" height="${height}" />`;
-
-      const range = quill.getSelection();
-      if (range === null) {
-        // Insert the image at the current cursor position
-        quill.clipboard.dangerouslyPasteHTML(0, imageTag);
-        // Move the cursor to the end of the inserted image
-        quill.setSelection(0 + imageTag.length);
-      }
-
-      // Insert the image at the current cursor position
-      quill.clipboard.dangerouslyPasteHTML(range.index, imageTag);
-      // Move the cursor to the end of the inserted image
-      quill.setSelection(range.index + imageTag.length);
-    };
-
-    // embedButton.classList.add("ql-formats");
-    pasteLinkButton.classList.add("ql-formats");
-    pasteThumbnailButton.classList.add("ql-formats");
-
-    // Append custom buttons to the wrapper
-    // customButtonsWrapper.appendChild(embedButton);
-    customButtonsWrapper.appendChild(pasteLinkButton);
-    customButtonsWrapper.appendChild(pasteThumbnailButton);
-
-    // Append the wrapper to the toolbar
-    toolbar.container.appendChild(customButtonsWrapper);
-
-    ref.current = quill;
-
-    quill.on(Quill.events.TEXT_CHANGE, (...args) => {
-      onTextChangeRef.current?.(...args);
-    });
-
-    return () => {
-      ref.current = null;
-      container.innerHTML = "";
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ref]);
-  return (
-    <div className="flex flex-col gap-[8px]">
-      <p className="text-[14px] font-medium">Email Content</p>
-      <div
-        ref={containerRef}
-        className="h-[246px] overflow-hidden flex flex-col"
-        id="text-editor-mainContainer"
-      ></div>
-    </div>
-  );
-});
+      return () => {
+        ref.current = null;
+        container.innerHTML = "";
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ref]);
+    return (
+      <div className="flex flex-col gap-[8px]">
+        <p className="text-[14px] font-medium">Email Content</p>
+        <div
+          ref={containerRef}
+          className="h-[246px] overflow-hidden flex flex-col"
+          id="text-editor-mainContainer"
+        ></div>
+      </div>
+    );
+  }
+);
 
 TextEditor.displayName = "Editor";
