@@ -33,6 +33,9 @@ import {
 } from "../../api/commsAPIs";
 import { toast } from "react-toastify";
 
+// Variable to store the Total Count of Contacts
+let totalContactsCount = 0;
+
 function quillGetHTML(inputDelta) {
   var tempCont = document.createElement("div");
   new Quill(tempCont).setContents(inputDelta);
@@ -915,7 +918,7 @@ export const ShareVideoModal = () => {
                     </Tabs.List>
                     <Tabs.Panel
                       value="contacts"
-                      className="mt-[12px] flex gap-[8px]"
+                      className="mt-[12px] flex gap-[8px] items-center"
                     >
                       <button
                         className="flex justify-center items-center border border-[##E9E8ED] rounded-[8px] p-[8px_12px] text-[14px] gap-[8px] font-medium text-darkBlue"
@@ -928,22 +931,29 @@ export const ShareVideoModal = () => {
                         <p>Select Contacts</p>
                         <ARROW_RIGHT />
                       </button>
-                      <div className="flex items-center gap-[4px]">
-                        {selectedContacts.slice(0, 2).map((contact) => (
-                          <p
-                            key={contact.id}
-                            className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]"
-                          >
-                            {contact.email}
-                          </p>
-                        ))}
 
-                        {selectedContacts.length > 2 && (
-                          <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
-                            + {selectedContacts.length - 2} More
-                          </p>
-                        )}
-                      </div>
+                      {sendToAllContacts ? (
+                        <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px] flex items-center h-fit">
+                          Sending to All {totalContactsCount} Contacts...
+                        </p>
+                      ) : (
+                        <div className="flex items-center gap-[4px]">
+                          {selectedContacts.slice(0, 2).map((contact) => (
+                            <p
+                              key={contact.id}
+                              className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]"
+                            >
+                              {contact.email}
+                            </p>
+                          ))}
+
+                          {selectedContacts.length > 2 && (
+                            <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
+                              + {selectedContacts.length - 2} More
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </Tabs.Panel>
 
                     <Tabs.Panel value="tags" className="mt-[12px]">
@@ -1060,15 +1070,25 @@ export const ShareVideoModal = () => {
                         <ARROW_RIGHT />
                       </button>
                       <div className="flex items-center gap-[4px]">
-                        {selectedSMSContacts.slice(0, 2).map((contact) => (
-                          <p
-                            key={contact.id}
-                            className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px] capitalize"
-                          >
-                            {contact.firstNameLowerCase}&nbsp;
-                            {contact.lastNameLowerCase}
+                        {sendToAllContacts ? (
+                          <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
+                            Sending to All {totalContactsCount} Contacts...
                           </p>
-                        ))}
+                        ) : (
+                          selectedSMSContacts.slice(0, 2).map((contact) => (
+                            <p
+                              key={contact.id}
+                              className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px] capitalize"
+                            >
+                              {contact.firstNameLowerCase &&
+                              contact.firstNameLowerCase
+                                ? contact.firstNameLowerCase +
+                                  " " +
+                                  contact.lastNameLowerCase
+                                : contact.phone}
+                            </p>
+                          ))
+                        )}
 
                         {selectedSMSContacts.length > 2 && (
                           <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
@@ -1409,6 +1429,8 @@ export const ContactsSelectionModalEmail = () => {
     );
   });
 
+  totalContactsCount = filteredContacts?.length;
+
   const handleSelectContact = (contactDetails) => {
     // Check if the Contact is already selected then on unchecking remove it from the selected contacts
     const isContactSelected = selectedContacts.some(
@@ -1632,6 +1654,8 @@ export const ContactsSelectionModalSMS = () => {
       contact?.phone !== ""
     );
   });
+
+  totalContactsCount = filteredContacts?.length;
 
   const handleSelectContact = (contactDetails) => {
     // Check if the Contact is already selected then on unchecking remove it from the selected contacts
