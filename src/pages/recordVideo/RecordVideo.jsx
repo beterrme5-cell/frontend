@@ -15,7 +15,7 @@ import { useEffect } from "react";
 import { useLoadingBackdrop } from "../../store/loadingBackdrop";
 import { useUserStore } from "../../store/userStore";
 import { useParams } from "react-router-dom";
-import { getHistoryOfMessages } from "../../api/commsAPIs";
+import { getContactTags, getHistoryOfMessages } from "../../api/commsAPIs";
 import { getUserLocationId } from "../../api/auth";
 import { toast } from "react-toastify";
 import { getAllVideos } from "../../api/libraryAPIs";
@@ -25,7 +25,9 @@ const RecordVideo = () => {
   const setVideosData = useUserStore((state) => state.setVideosData);
   const historyData = useUserStore((state) => state.historyData);
   const setHistoryData = useUserStore((state) => state.setHistoryData);
-
+  const setContactTagsData = useGlobalModals(
+    (state) => state.setContactTagsData
+  );
   const { accessToken, userLocationId } = useParams();
 
   const setIsNewRecordingModalOpen = useGlobalModals(
@@ -127,6 +129,23 @@ const RecordVideo = () => {
     fetchLibraryData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accessToken]);
+
+  useEffect(() => {
+    const fetchContactTags = async () => {
+      const response = await getContactTags(accessToken);
+
+      if (response.success) {
+        const tagsData = response.data.userTags.map((tag) => {
+          return tag.name;
+        });
+        setContactTagsData(tagsData);
+      } else {
+        console.log("Error while fetching Contact Tags: ", response.error);
+      }
+    };
+
+    fetchContactTags();
+  }, [setContactTagsData, accessToken]);
 
   return (
     <LibraryRoot>

@@ -13,7 +13,7 @@ import { LoadingOverlay, MultiSelect } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import CustomVideoInput from "./CustomVideoInput";
 import CustomButton from "./CustomButton";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Quill from "quill";
 import {
   ARROW_RIGHT,
@@ -27,11 +27,11 @@ import { StartRecordingBtn, TextEditor } from "./LibraryComponents";
 import { deleteVideo, getContacts, updateVideo } from "../../api/libraryAPIs";
 import { useUserStore } from "../../store/userStore";
 import {
-  getContactTags,
   sendEmailToSelectedContacts,
   sendSMSToSelectedContacts,
 } from "../../api/commsAPIs";
 import { toast } from "react-toastify";
+import debounce from "lodash.debounce";
 
 function quillGetHTML(inputDelta) {
   var tempCont = document.createElement("div");
@@ -494,10 +494,6 @@ export const ShareVideoModal = () => {
 
   const contactTagsData = useGlobalModals((state) => state.contactTagsData);
 
-  const setContactTagsData = useGlobalModals(
-    (state) => state.setContactTagsData
-  );
-
   const setIsVideoLinkNotAttachedModalOpen = useGlobalModals(
     (state) => state.setIsVideoLinkNotAttachedModalOpen
   );
@@ -516,6 +512,8 @@ export const ShareVideoModal = () => {
   const [noSMSContentError, setNoSMSContentError] = useState("");
   const [noEmailSubjectError, setNoEmailSubjectError] = useState("");
   const [noEmailContentError, setNoEmailContentError] = useState("");
+
+  const [editorContent, setEditorContent] = useState(null);
 
   // Use a ref to access the quill instance directly
   const quillRef = useRef();
@@ -611,6 +609,8 @@ export const ShareVideoModal = () => {
     const response = await sendEmailToSelectedContacts(API_DATA);
 
     if (response.success) {
+      setEditorContent(null);
+
       toast.success(response.data.message, {
         position: "bottom-right",
         autoClose: 5000,
@@ -781,26 +781,15 @@ export const ShareVideoModal = () => {
       setSelectedContactTags([]);
     } else {
       setSelectedSMSContacts([]);
-      setSendToAllContacts(false);
     }
   }, [activeSubTab, setSelectedSMSContacts, setSendToAllContacts]);
 
+  let quilRefContent = quillRef?.current?.getContents();
   useEffect(() => {
-    const fetchContactTags = async () => {
-      const response = await getContactTags();
-
-      if (response.success) {
-        const tagsData = response.data.userTags.map((tag) => {
-          return tag.name;
-        });
-        setContactTagsData(tagsData);
-      } else {
-        console.log("Error while fetching Contact Tags: ", response.error);
-      }
-    };
-
-    fetchContactTags();
-  }, [setContactTagsData]);
+    if (quilRefContent?.ops[0]?.insert !== "\n") {
+      setNoEmailContentError("");
+    }
+  }, [quilRefContent]);
 
   return (
     <>
@@ -825,7 +814,14 @@ export const ShareVideoModal = () => {
         <div className="flex flex-col gap-[24px] w-[70vw]">
           <h3 className="text-[24px] font-medium">Share Video</h3>
           <div className="flex flex-col gap-[24px]">
-            <Tabs color="#2A85FF" value={activeTab} onChange={setActiveTab}>
+            <Tabs
+              color="#2A85FF"
+              value={activeTab}
+              onChange={(value) => {
+                setActiveTab(value);
+                setSendToAllContacts(false);
+              }}
+            >
               <Tabs.List>
                 <Tabs.Tab
                   value="email"
@@ -913,7 +909,10 @@ export const ShareVideoModal = () => {
                         Tags
                       </Tabs.Tab>
                     </Tabs.List>
-                    <Tabs.Panel value="contacts" className="mt-[12px]">
+                    <Tabs.Panel
+                      value="contacts"
+                      className="mt-[12px] flex gap-[8px] items-center"
+                    >
                       <button
                         className="flex justify-center items-center border border-[##E9E8ED] rounded-[8px] p-[8px_12px] text-[14px] gap-[8px] font-medium text-darkBlue"
                         type="button"
@@ -925,6 +924,29 @@ export const ShareVideoModal = () => {
                         <p>Select Contacts</p>
                         <ARROW_RIGHT />
                       </button>
+
+                      {sendToAllContacts ? (
+                        <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px] flex items-center h-fit">
+                          Sending to All Contacts...
+                        </p>
+                      ) : (
+                        <div className="flex items-center gap-[4px]">
+                          {selectedContacts.slice(0, 2).map((contact) => (
+                            <p
+                              key={contact.id}
+                              className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]"
+                            >
+                              {contact.email}
+                            </p>
+                          ))}
+
+                          {selectedContacts.length > 2 && (
+                            <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
+                              + {selectedContacts.length - 2} More
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </Tabs.Panel>
 
                     <Tabs.Panel value="tags" className="mt-[12px]">
@@ -936,6 +958,7 @@ export const ShareVideoModal = () => {
                         onChange={(value) => {
                           setSelectedContactTags(value);
                         }}
+                        maxDropdownHeight={200}
                         clearable
                         searchable
                         nothingFoundMessage="Nothing found..."
@@ -965,7 +988,11 @@ export const ShareVideoModal = () => {
                   )}
                 </div>
                 <div className="flex flex-col gap-[8px]">
-                  <TextEditor ref={quillRef} />
+                  <TextEditor
+                    ref={quillRef}
+                    editorContent={editorContent}
+                    setEditorContent={setEditorContent}
+                  />
                   {noEmailContentError !== "" && (
                     <p className="text-[12px] text-red-500">
                       {noEmailContentError}
@@ -1024,7 +1051,11 @@ export const ShareVideoModal = () => {
                         Tags
                       </Tabs.Tab>
                     </Tabs.List>
-                    <Tabs.Panel value="contacts" className="mt-[12px]">
+
+                    <Tabs.Panel
+                      value="contacts"
+                      className="mt-[12px] flex gap-[8px]"
+                    >
                       <button
                         className="flex justify-center items-center border border-[##E9E8ED] rounded-[8px] p-[8px_12px] text-[14px] gap-[8px] font-medium text-darkBlue"
                         type="button"
@@ -1036,6 +1067,33 @@ export const ShareVideoModal = () => {
                         <p>Select Contacts</p>
                         <ARROW_RIGHT />
                       </button>
+                      <div className="flex items-center gap-[4px]">
+                        {sendToAllContacts ? (
+                          <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
+                            Sending to All Contacts...
+                          </p>
+                        ) : (
+                          selectedSMSContacts.slice(0, 2).map((contact) => (
+                            <p
+                              key={contact.id}
+                              className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px] capitalize"
+                            >
+                              {contact.firstNameLowerCase &&
+                              contact.firstNameLowerCase
+                                ? contact.firstNameLowerCase +
+                                  " " +
+                                  contact.lastNameLowerCase
+                                : contact.phone}
+                            </p>
+                          ))
+                        )}
+
+                        {selectedSMSContacts.length > 2 && (
+                          <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
+                            + {selectedSMSContacts.length - 2} More
+                          </p>
+                        )}
+                      </div>
                     </Tabs.Panel>
 
                     <Tabs.Panel value="tags" className="mt-[12px]">
@@ -1360,6 +1418,7 @@ export const ContactsSelectionModalEmail = () => {
   );
 
   const [contactsPagination, setContactsPagination] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const filteredContacts = userContactsData?.contacts?.filter((contact) => {
     return (
@@ -1397,27 +1456,6 @@ export const ContactsSelectionModalEmail = () => {
     setIsShareVideoModalOpen(true);
   };
 
-  useEffect(() => {
-    const fetchContacts = async () => {
-      setModalLoadingOverlay(true);
-      // Fetch Contacts from the Database
-      const response = await getContacts({
-        page: contactsPagination,
-        pageLimit: 100,
-      });
-
-      if (response.success) {
-        setUserContactsData(response.data.contacts);
-      } else {
-        console.log("Error while fetching contacts: ", response.error);
-      }
-      setModalLoadingOverlay(false);
-    };
-
-    fetchContacts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setModalLoadingOverlay, setUserContactsData]);
-
   const handleLoadMoreContacts = async () => {
     setModalLoadingOverlay(true);
 
@@ -1446,6 +1484,68 @@ export const ContactsSelectionModalEmail = () => {
     setModalLoadingOverlay(false);
   };
 
+  const fetchContactsOnSearch = async (query) => {
+    setModalLoadingOverlay(true);
+    // Fetch Contacts from the Database
+    const response = await getContacts({
+      page: contactsPagination,
+      pageLimit: 100,
+      search: query,
+    });
+    if (response.success) {
+      setUserContactsData(response.data.contacts);
+    } else {
+      console.log("Error while fetching contacts: ", response.error);
+    }
+    setModalLoadingOverlay(false);
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedFetchContacts = useCallback(
+    debounce((query) => fetchContactsOnSearch(query), 500), // Adjust debounce time as needed
+    []
+  );
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      setModalLoadingOverlay(true);
+      // Fetch Contacts from the Database
+      const response = await getContacts({
+        page: contactsPagination,
+        pageLimit: 100,
+        search: "",
+      });
+
+      if (response.success) {
+        setUserContactsData(response.data.contacts);
+      } else {
+        console.log("Error while fetching contacts: ", response.error);
+      }
+      setModalLoadingOverlay(false);
+    };
+
+    if (searchQuery === "") {
+      fetchContacts("");
+      return;
+    }
+
+    if (searchQuery !== "" && searchQuery.length < 3) {
+      return;
+    }
+
+    // Trigger the debounced function whenever searchQuery changes
+    debouncedFetchContacts(searchQuery);
+
+    // Cleanup to cancel any pending debounce on unmount or searchQuery change
+    return () => debouncedFetchContacts.cancel();
+  }, [
+    searchQuery,
+    debouncedFetchContacts,
+    contactsPagination,
+    setModalLoadingOverlay,
+    setUserContactsData,
+  ]);
+
   return (
     <ModalRoot
       loadingOverlay={modalLoadingOverlay}
@@ -1457,45 +1557,61 @@ export const ContactsSelectionModalEmail = () => {
         setSelectedContacts([]);
       }}
     >
-      <div className="w-[70vw] flex flex-col gap-[10px] h-[70dvh] max-h-[90vh]">
-        <div className="flex flex-col gap-[16px] h-[calc(100%-110px)] overflow-auto">
+      <div className="w-[70vw] flex flex-col gap-[10px] h-[70dvh] justify-between">
+        <div className="flex flex-col gap-[16px]">
           <h2 className="font-medium text-[24px]">Select Contacts</h2>
+          <div className="flex flex-col gap-[4px]">
+            <TextInput
+              placeholder="Search Contacts"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="max-w-[350px] searchContactsInput"
+            />
+            <p className="font-bold text-[14px]">Instructions:</p>
+            <div>
+              <p className="text-[#868e96] text-[12px]">
+                - Please add atleast three characters to search by name or email
+              </p>
+            </div>
+          </div>
           {filteredContacts?.length > 0 ? (
-            <Table>
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>Contact Name</Table.Th>
-                  <Table.Th>Email Address</Table.Th>
-                  <Table.Th></Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {filteredContacts?.map((contact) => {
-                  const isChecked = selectedContacts?.some(
-                    (selectedContact) =>
-                      selectedContact?.id === contact?.id &&
-                      selectedContact?.isChecked
-                  );
+            <div className="selectContactsDiv h-[calc(70dvh-290px)] overflow-auto">
+              <Table stickyHeader stickyHeaderOffset={0}>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Contact Name</Table.Th>
+                    <Table.Th>Email Address</Table.Th>
+                    <Table.Th></Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {filteredContacts?.map((contact) => {
+                    const isChecked = selectedContacts?.some(
+                      (selectedContact) =>
+                        selectedContact?.id === contact?.id &&
+                        selectedContact?.isChecked
+                    );
 
-                  return (
-                    <Table.Tr key={contact.id}>
-                      <Table.Td className="capitalize">
-                        {contact?.firstNameLowerCase +
-                          " " +
-                          contact?.lastNameLowerCase}
-                      </Table.Td>
-                      <Table.Td>{contact.email}</Table.Td>
-                      <Table.Td>
-                        <Checkbox
-                          checked={isChecked}
-                          onChange={() => handleSelectContact(contact)}
-                        />
-                      </Table.Td>
-                    </Table.Tr>
-                  );
-                })}
-              </Table.Tbody>
-            </Table>
+                    return (
+                      <Table.Tr key={contact.id}>
+                        <Table.Td className="capitalize">
+                          {contact?.firstNameLowerCase +
+                            " " +
+                            contact?.lastNameLowerCase}
+                        </Table.Td>
+                        <Table.Td>{contact.email}</Table.Td>
+                        <Table.Td>
+                          <Checkbox
+                            checked={isChecked}
+                            onChange={() => handleSelectContact(contact)}
+                          />
+                        </Table.Td>
+                      </Table.Tr>
+                    );
+                  })}
+                </Table.Tbody>
+              </Table>
+            </div>
           ) : (
             <p className="text-gray-500">
               No Contacts Found. Please add contacts to send emails.
@@ -1584,6 +1700,7 @@ export const ContactsSelectionModalSMS = () => {
   );
 
   const [contactsPagination, setContactsPagination] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const filteredContacts = userContactsData?.contacts?.filter((contact) => {
     return (
@@ -1621,27 +1738,6 @@ export const ContactsSelectionModalSMS = () => {
     setIsShareVideoModalOpen(true);
   };
 
-  useEffect(() => {
-    const fetchContacts = async () => {
-      setModalLoadingOverlay(true);
-      // Fetch Contacts from the Database
-      const response = await getContacts({
-        page: contactsPagination,
-        pageLimit: 100,
-      });
-
-      if (response.success) {
-        setUserContactsData(response.data.contacts);
-      } else {
-        console.log("Error while fetching contacts: ", response.error);
-      }
-      setModalLoadingOverlay(false);
-    };
-
-    fetchContacts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setModalLoadingOverlay, setUserContactsData]);
-
   const handleLoadMoreContacts = async () => {
     setModalLoadingOverlay(true);
 
@@ -1670,6 +1766,68 @@ export const ContactsSelectionModalSMS = () => {
     setModalLoadingOverlay(false);
   };
 
+  const fetchContactsOnSearch = async (query) => {
+    setModalLoadingOverlay(true);
+    // Fetch Contacts from the Database
+    const response = await getContacts({
+      page: contactsPagination,
+      pageLimit: 100,
+      search: query,
+    });
+    if (response.success) {
+      setUserContactsData(response.data.contacts);
+    } else {
+      console.log("Error while fetching contacts: ", response.error);
+    }
+    setModalLoadingOverlay(false);
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedFetchContacts = useCallback(
+    debounce((query) => fetchContactsOnSearch(query), 500), // Adjust debounce time as needed
+    []
+  );
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      setModalLoadingOverlay(true);
+      // Fetch Contacts from the Database
+      const response = await getContacts({
+        page: contactsPagination,
+        pageLimit: 100,
+        search: "",
+      });
+
+      if (response.success) {
+        setUserContactsData(response.data.contacts);
+      } else {
+        console.log("Error while fetching contacts: ", response.error);
+      }
+      setModalLoadingOverlay(false);
+    };
+
+    if (searchQuery === "") {
+      fetchContacts("");
+      return;
+    }
+
+    if (searchQuery !== "" && searchQuery.length < 3) {
+      return;
+    }
+
+    // Trigger the debounced function whenever searchQuery changes
+    debouncedFetchContacts(searchQuery);
+
+    // Cleanup to cancel any pending debounce on unmount or searchQuery change
+    return () => debouncedFetchContacts.cancel();
+  }, [
+    searchQuery,
+    debouncedFetchContacts,
+    contactsPagination,
+    setModalLoadingOverlay,
+    setUserContactsData,
+  ]);
+
   return (
     <ModalRoot
       loadingOverlay={modalLoadingOverlay}
@@ -1684,42 +1842,62 @@ export const ContactsSelectionModalSMS = () => {
       <div className="w-[70vw] flex flex-col gap-[10px] h-[70dvh] max-h-[90vh]">
         <div className="flex flex-col gap-[16px] h-[calc(100%-110px)] overflow-auto">
           <h2 className="font-medium text-[24px]">Select Contacts</h2>
+          <div className="flex flex-col gap-[4px]">
+            <TextInput
+              placeholder="Search Contacts"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="max-w-[350px] searchContactsInput"
+            />
+            <p className="font-bold text-[14px]">Instructions:</p>
+            <div>
+              <p className="text-[#868e96] text-[12px]">
+                - Please add atleast three characters to search by name...
+              </p>
+              <p className="text-[#868e96] text-[12px]">
+                - If you want to search by phone number, please add atleast two
+                numbers after the country code. i.e, +9234
+              </p>
+            </div>
+          </div>
           {filteredContacts?.length > 0 ? (
-            <Table>
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>Contact Name</Table.Th>
-                  <Table.Th>Phone Number</Table.Th>
-                  <Table.Th></Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {filteredContacts?.map((contact) => {
-                  const isChecked = selectedSMSContacts?.some(
-                    (selectedContact) =>
-                      selectedContact?.id === contact?.id &&
-                      selectedContact?.isChecked
-                  );
+            <div className="selectContactsDiv h-[calc(70dvh-310px)] overflow-auto">
+              <Table stickyHeader stickyHeaderOffset={0}>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Contact Name</Table.Th>
+                    <Table.Th>Phone Number</Table.Th>
+                    <Table.Th></Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {filteredContacts?.map((contact) => {
+                    const isChecked = selectedSMSContacts?.some(
+                      (selectedContact) =>
+                        selectedContact?.id === contact?.id &&
+                        selectedContact?.isChecked
+                    );
 
-                  return (
-                    <Table.Tr key={contact.id}>
-                      <Table.Td className="capitalize">
-                        {contact?.firstNameLowerCase +
-                          " " +
-                          contact?.lastNameLowerCase}
-                      </Table.Td>
-                      <Table.Td>{contact.phone}</Table.Td>
-                      <Table.Td>
-                        <Checkbox
-                          checked={isChecked}
-                          onChange={() => handleSelectContact(contact)}
-                        />
-                      </Table.Td>
-                    </Table.Tr>
-                  );
-                })}
-              </Table.Tbody>
-            </Table>
+                    return (
+                      <Table.Tr key={contact.id}>
+                        <Table.Td className="capitalize">
+                          {contact?.firstNameLowerCase +
+                            " " +
+                            contact?.lastNameLowerCase}
+                        </Table.Td>
+                        <Table.Td>{contact.phone}</Table.Td>
+                        <Table.Td>
+                          <Checkbox
+                            checked={isChecked}
+                            onChange={() => handleSelectContact(contact)}
+                          />
+                        </Table.Td>
+                      </Table.Tr>
+                    );
+                  })}
+                </Table.Tbody>
+              </Table>
+            </div>
           ) : (
             <p className="text-gray-500">
               No Contacts Found. Please add contacts to send emails.
@@ -1824,7 +2002,7 @@ const VideoLinkNotAttachedModal = ({ onSendAnyway, onCancel }) => {
               onCancel();
             }}
           >
-            Cancel
+            Go Back
           </button>
         </div>
       </div>

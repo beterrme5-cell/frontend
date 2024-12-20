@@ -97,11 +97,30 @@ body {
   margin-right: 0px !important;
 }
 #text-editor-mainContainer .ql-toolbar .ql-formats:not(:last-child) {
-  border-right: 1px solid rgba(100, 121, 143, 0.12) !important;
+  border-right: 1px solid rgba(100, 121, 143, 0.2) !important;
+}
+
+#text-editor-mainContainer
+  .ql-toolbar
+  #custom-buttons-wrapper
+  .ql-formats:not(:last-child) {
+  border-right: 2px solid rgba(100, 121, 143, 0.3) !important;
 }
 
 .ql-picker-options {
   border-radius: 8px !important;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.ql-picker-options::-webkit-scrollbar {
+  width: 5px !important;
+  border-radius: 5px !important;
+  background-color: #a5a5a532 !important;
+}
+.ql-picker-options::-webkit-scrollbar-thumb {
+  background-color: #36363682;
+  border-radius: 6px !important;
 }
 
 #text-editor-container {
@@ -179,5 +198,21 @@ span .em-lns-1do042d {
 }
 #historyTabSection::-webkit-scrollbar-thumb {
   background-color: #2a85ff;
+  border-radius: 6px !important;
+}
+
+/* Select Conatcs Modal */
+.searchContactsInput input {
+  padding: 8px 12px !important;
+  height: 40px !important;
+}
+
+.selectContactsDiv::-webkit-scrollbar {
+  width: 3px !important;
+  border-radius: 3px !important;
+  background-color: white !important;
+}
+.selectContactsDiv::-webkit-scrollbar-thumb {
+  background-color: #21212199;
   border-radius: 6px !important;
 }

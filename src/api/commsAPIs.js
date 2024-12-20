@@ -1,11 +1,10 @@
 import axios from "axios";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-// Get the accountId and userLocationId from the Local Storage
-const accessToken = localStorage.getItem("accessToken");
-
 // API to send a SMS to the user
 export const sendSMSToSelectedContacts = async (params) => {
+  // Get the accountId and userLocationId from the Local Storage
+  const accessToken = localStorage.getItem("accessToken");
   try {
     const response = await axios.post(
       `${BASE_URL}/comms/sendSMS`,
@@ -37,6 +36,8 @@ export const sendSMSToSelectedContacts = async (params) => {
 
 // API to send a Email to the user
 export const sendEmailToSelectedContacts = async (params) => {
+  // Get the accountId and userLocationId from the Local Storage
+  const accessToken = localStorage.getItem("accessToken");
   try {
     const response = await axios.post(
       `${BASE_URL}/comms/sendEmail`,
@@ -89,7 +90,9 @@ export const getHistoryOfMessages = async (accessToken) => {
 };
 
 // API to get the Tags of the Contacts of the user
-export const getContactTags = async () => {
+export const getContactTags = async (accessToken) => {
+  // Get the accountId and userLocationId from the Local Storage
+  // const accessToken = localStorage.getItem("accessToken");
   try {
     const response = await axios.get(`${BASE_URL}/user/getUserTags`, {
       headers: {
