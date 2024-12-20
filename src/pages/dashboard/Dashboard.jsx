@@ -13,10 +13,11 @@ import {
 import { useUserStore } from "../../store/userStore";
 import { toast } from "react-toastify";
 import { getAllVideos } from "../../api/libraryAPIs";
-import { getHistoryOfMessages } from "../../api/commsAPIs";
+import { getContactTags, getHistoryOfMessages } from "../../api/commsAPIs";
 import { useLoadingBackdrop } from "../../store/loadingBackdrop";
 import { useEffect, useState } from "react";
 import { getDecryptedUserData } from "../../api/auth";
+import { useGlobalModals } from "../../store/globalModals";
 
 const Dashboard = () => {
   const videosData = useUserStore((state) => state.videosData);
@@ -24,6 +25,9 @@ const Dashboard = () => {
   const setVideosData = useUserStore((state) => state.setVideosData);
   const setHistoryData = useUserStore((state) => state.setHistoryData);
   const setLoading = useLoadingBackdrop((state) => state.setLoading);
+  const setContactTagsData = useGlobalModals(
+    (state) => state.setContactTagsData
+  );
   const [error, setError] = useState(false);
   // Function to Fetch all the Data
   const fetchData = async (accessToken) => {
@@ -117,6 +121,25 @@ const Dashboard = () => {
     fetchLibraryData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [error]);
+
+  useEffect(() => {
+    const accessToken = localStorage.getItem("accessToken");
+
+    const fetchContactTags = async () => {
+      const response = await getContactTags(accessToken);
+
+      if (response.success) {
+        const tagsData = response.data.userTags.map((tag) => {
+          return tag.name;
+        });
+        setContactTagsData(tagsData);
+      } else {
+        console.log("Error while fetching Contact Tags: ", response.error);
+      }
+    };
+
+    fetchContactTags();
+  }, [setContactTagsData]);
 
   return (
     <LibraryRoot>

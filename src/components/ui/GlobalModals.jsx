@@ -27,7 +27,6 @@ import { StartRecordingBtn, TextEditor } from "./LibraryComponents";
 import { deleteVideo, getContacts, updateVideo } from "../../api/libraryAPIs";
 import { useUserStore } from "../../store/userStore";
 import {
-  getContactTags,
   sendEmailToSelectedContacts,
   sendSMSToSelectedContacts,
 } from "../../api/commsAPIs";
@@ -494,10 +493,6 @@ export const ShareVideoModal = () => {
 
   const contactTagsData = useGlobalModals((state) => state.contactTagsData);
 
-  const setContactTagsData = useGlobalModals(
-    (state) => state.setContactTagsData
-  );
-
   const setIsVideoLinkNotAttachedModalOpen = useGlobalModals(
     (state) => state.setIsVideoLinkNotAttachedModalOpen
   );
@@ -787,23 +782,6 @@ export const ShareVideoModal = () => {
       setSelectedSMSContacts([]);
     }
   }, [activeSubTab, setSelectedSMSContacts, setSendToAllContacts]);
-
-  useEffect(() => {
-    const fetchContactTags = async () => {
-      const response = await getContactTags();
-
-      if (response.success) {
-        const tagsData = response.data.userTags.map((tag) => {
-          return tag.name;
-        });
-        setContactTagsData(tagsData);
-      } else {
-        console.log("Error while fetching Contact Tags: ", response.error);
-      }
-    };
-
-    fetchContactTags();
-  }, [setContactTagsData]);
 
   let quilRefContent = quillRef?.current?.getContents();
   useEffect(() => {
