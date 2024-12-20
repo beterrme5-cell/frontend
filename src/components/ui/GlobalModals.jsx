@@ -1043,7 +1043,11 @@ export const ShareVideoModal = () => {
                         Tags
                       </Tabs.Tab>
                     </Tabs.List>
-                    <Tabs.Panel value="contacts" className="mt-[12px]">
+
+                    <Tabs.Panel
+                      value="contacts"
+                      className="mt-[12px] flex gap-[8px]"
+                    >
                       <button
                         className="flex justify-center items-center border border-[##E9E8ED] rounded-[8px] p-[8px_12px] text-[14px] gap-[8px] font-medium text-darkBlue"
                         type="button"
@@ -1055,6 +1059,23 @@ export const ShareVideoModal = () => {
                         <p>Select Contacts</p>
                         <ARROW_RIGHT />
                       </button>
+                      <div className="flex items-center gap-[4px]">
+                        {selectedSMSContacts.slice(0, 2).map((contact) => (
+                          <p
+                            key={contact.id}
+                            className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px] capitalize"
+                          >
+                            {contact.firstNameLowerCase}&nbsp;
+                            {contact.lastNameLowerCase}
+                          </p>
+                        ))}
+
+                        {selectedSMSContacts.length > 2 && (
+                          <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
+                            + {selectedSMSContacts.length - 2} More
+                          </p>
+                        )}
+                      </div>
                     </Tabs.Panel>
 
                     <Tabs.Panel value="tags" className="mt-[12px]">
