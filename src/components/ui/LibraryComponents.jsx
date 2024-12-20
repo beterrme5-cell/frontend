@@ -523,7 +523,6 @@ export const TextEditor = forwardRef(({ onTextChange }, ref) => {
       [{ align: [] }],
       ["bold", "italic", "underline", "strike"], // toggled buttons
       [{ list: "ordered" }, { list: "bullet" }, { list: "check" }],
-      [{ indent: "-1" }, { indent: "+1" }],
       ["blockquote"],
     ];
 
