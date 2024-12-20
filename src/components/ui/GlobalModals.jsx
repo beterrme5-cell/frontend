@@ -1417,6 +1417,7 @@ export const ContactsSelectionModalEmail = () => {
   );
 
   const [contactsPagination, setContactsPagination] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const filteredContacts = userContactsData?.contacts?.filter((contact) => {
     return (
@@ -1514,45 +1515,53 @@ export const ContactsSelectionModalEmail = () => {
         setSelectedContacts([]);
       }}
     >
-      <div className="w-[70vw] flex flex-col gap-[10px] h-[70dvh] max-h-[90vh]">
-        <div className="flex flex-col gap-[16px] h-[calc(100%-110px)] overflow-auto">
+      <div className="w-[70vw] flex flex-col gap-[10px] h-[70dvh] justify-between">
+        <div className="flex flex-col gap-[16px]">
           <h2 className="font-medium text-[24px]">Select Contacts</h2>
+          <TextInput
+            placeholder="Search Contacts"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="max-w-[350px] searchContactsInput"
+          />
           {filteredContacts?.length > 0 ? (
-            <Table>
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>Contact Name</Table.Th>
-                  <Table.Th>Email Address</Table.Th>
-                  <Table.Th></Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {filteredContacts?.map((contact) => {
-                  const isChecked = selectedContacts?.some(
-                    (selectedContact) =>
-                      selectedContact?.id === contact?.id &&
-                      selectedContact?.isChecked
-                  );
+            <div className="selectContactsDiv h-[calc(70dvh-248px)] overflow-auto">
+              <Table stickyHeader stickyHeaderOffset={0}>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Contact Name</Table.Th>
+                    <Table.Th>Email Address</Table.Th>
+                    <Table.Th></Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {filteredContacts?.map((contact) => {
+                    const isChecked = selectedContacts?.some(
+                      (selectedContact) =>
+                        selectedContact?.id === contact?.id &&
+                        selectedContact?.isChecked
+                    );
 
-                  return (
-                    <Table.Tr key={contact.id}>
-                      <Table.Td className="capitalize">
-                        {contact?.firstNameLowerCase +
-                          " " +
-                          contact?.lastNameLowerCase}
-                      </Table.Td>
-                      <Table.Td>{contact.email}</Table.Td>
-                      <Table.Td>
-                        <Checkbox
-                          checked={isChecked}
-                          onChange={() => handleSelectContact(contact)}
-                        />
-                      </Table.Td>
-                    </Table.Tr>
-                  );
-                })}
-              </Table.Tbody>
-            </Table>
+                    return (
+                      <Table.Tr key={contact.id}>
+                        <Table.Td className="capitalize">
+                          {contact?.firstNameLowerCase +
+                            " " +
+                            contact?.lastNameLowerCase}
+                        </Table.Td>
+                        <Table.Td>{contact.email}</Table.Td>
+                        <Table.Td>
+                          <Checkbox
+                            checked={isChecked}
+                            onChange={() => handleSelectContact(contact)}
+                          />
+                        </Table.Td>
+                      </Table.Tr>
+                    );
+                  })}
+                </Table.Tbody>
+              </Table>
+            </div>
           ) : (
             <p className="text-gray-500">
               No Contacts Found. Please add contacts to send emails.
@@ -1641,6 +1650,7 @@ export const ContactsSelectionModalSMS = () => {
   );
 
   const [contactsPagination, setContactsPagination] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const filteredContacts = userContactsData?.contacts?.filter((contact) => {
     return (
@@ -1741,42 +1751,50 @@ export const ContactsSelectionModalSMS = () => {
       <div className="w-[70vw] flex flex-col gap-[10px] h-[70dvh] max-h-[90vh]">
         <div className="flex flex-col gap-[16px] h-[calc(100%-110px)] overflow-auto">
           <h2 className="font-medium text-[24px]">Select Contacts</h2>
+          <TextInput
+            placeholder="Search Contacts"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="max-w-[350px] searchContactsInput"
+          />
           {filteredContacts?.length > 0 ? (
-            <Table>
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>Contact Name</Table.Th>
-                  <Table.Th>Phone Number</Table.Th>
-                  <Table.Th></Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {filteredContacts?.map((contact) => {
-                  const isChecked = selectedSMSContacts?.some(
-                    (selectedContact) =>
-                      selectedContact?.id === contact?.id &&
-                      selectedContact?.isChecked
-                  );
+            <div className="selectContactsDiv h-[calc(70dvh-248px)] overflow-auto">
+              <Table stickyHeader stickyHeaderOffset={0}>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Contact Name</Table.Th>
+                    <Table.Th>Phone Number</Table.Th>
+                    <Table.Th></Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {filteredContacts?.map((contact) => {
+                    const isChecked = selectedSMSContacts?.some(
+                      (selectedContact) =>
+                        selectedContact?.id === contact?.id &&
+                        selectedContact?.isChecked
+                    );
 
-                  return (
-                    <Table.Tr key={contact.id}>
-                      <Table.Td className="capitalize">
-                        {contact?.firstNameLowerCase +
-                          " " +
-                          contact?.lastNameLowerCase}
-                      </Table.Td>
-                      <Table.Td>{contact.phone}</Table.Td>
-                      <Table.Td>
-                        <Checkbox
-                          checked={isChecked}
-                          onChange={() => handleSelectContact(contact)}
-                        />
-                      </Table.Td>
-                    </Table.Tr>
-                  );
-                })}
-              </Table.Tbody>
-            </Table>
+                    return (
+                      <Table.Tr key={contact.id}>
+                        <Table.Td className="capitalize">
+                          {contact?.firstNameLowerCase +
+                            " " +
+                            contact?.lastNameLowerCase}
+                        </Table.Td>
+                        <Table.Td>{contact.phone}</Table.Td>
+                        <Table.Td>
+                          <Checkbox
+                            checked={isChecked}
+                            onChange={() => handleSelectContact(contact)}
+                          />
+                        </Table.Td>
+                      </Table.Tr>
+                    );
+                  })}
+                </Table.Tbody>
+              </Table>
+            </div>
           ) : (
             <p className="text-gray-500">
               No Contacts Found. Please add contacts to send emails.

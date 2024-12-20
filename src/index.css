@@ -200,3 +200,19 @@ span .em-lns-1do042d {
   background-color: #2a85ff;
   border-radius: 6px !important;
 }
+
+/* Select Conatcs Modal */
+.searchContactsInput input {
+  padding: 8px 12px !important;
+  height: 40px !important;
+}
+
+.selectContactsDiv::-webkit-scrollbar {
+  width: 3px !important;
+  border-radius: 3px !important;
+  background-color: white !important;
+}
+.selectContactsDiv::-webkit-scrollbar-thumb {
+  background-color: #21212199;
+  border-radius: 6px !important;
+}
