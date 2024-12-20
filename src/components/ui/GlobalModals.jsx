@@ -805,6 +805,13 @@ export const ShareVideoModal = () => {
     fetchContactTags();
   }, [setContactTagsData]);
 
+  let quilRefContent = quillRef?.current?.getContents();
+  useEffect(() => {
+    if (quilRefContent?.ops[0]?.insert !== "\n") {
+      setNoEmailContentError("");
+    }
+  }, [quilRefContent]);
+
   return (
     <>
       <VideoLinkNotAttachedModal

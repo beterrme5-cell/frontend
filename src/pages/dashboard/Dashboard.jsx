@@ -79,7 +79,6 @@ const Dashboard = () => {
     const key = await new Promise((resolve) => {
       window.parent.postMessage({ message: "REQUEST_USER_DATA" }, "*");
       window.addEventListener("message", ({ data }) => {
-        console.log(data);
         if (data.message === "REQUEST_USER_DATA_RESPONSE") {
           resolve(data.payload);
         } else {
