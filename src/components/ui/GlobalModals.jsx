@@ -957,6 +957,7 @@ export const ShareVideoModal = () => {
                         onChange={(value) => {
                           setSelectedContactTags(value);
                         }}
+                        maxDropdownHeight={200}
                         clearable
                         searchable
                         nothingFoundMessage="Nothing found..."
