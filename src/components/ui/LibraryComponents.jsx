@@ -784,8 +784,6 @@ const SelectContactShortCodeDropDown = ({ quillRef }) => {
     const textLength = quill.getLength();
     const shortCodeValue = selectedShortCodeValue;
 
-    console.log("shortCodesSelected", shortCodesSelected);
-
     const updatedShortCodes = [...shortCodesSelected, selectedShortCodeValue];
     // remove duplicates
     const uniqueShortCodes = [...new Set(updatedShortCodes)];
@@ -826,7 +824,7 @@ const SelectContactShortCodeDropDown = ({ quillRef }) => {
         {shortCodesData.map((tag) => (
           <div
             key={tag.id}
-            className="p-[8px] hover:bg-[#F7F7F8] cursor-pointer rounded-[4px]"
+            className="p-[8px] hover:bg-[#F7F7F8] cursor-pointer rounded-[4px] text-[14px]"
             onClick={handleSelectContactShortCode}
           >
             {tag.name}
