@@ -821,6 +821,8 @@ export const ShareVideoModal = () => {
           setActiveTab("email");
           setActiveSubTab("contacts");
           setShortCodesSelected([]);
+          setEmailContent("");
+          setEditorContent(null);
         }}
       >
         <div className="flex flex-col gap-[24px] w-[70vw]">
