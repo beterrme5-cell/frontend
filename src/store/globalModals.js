@@ -77,4 +77,13 @@ export const useGlobalModals = create((set) => ({
   isVideoLinkNotAttachedModalOpen: false,
   setIsVideoLinkNotAttachedModalOpen: (isOpen) =>
     set({ isVideoLinkNotAttachedModalOpen: isOpen }),
+
+  // --------------------------------------------------
+  // Tags Drop Down - Email and SMS
+  // --------------------------------------------------
+  tagsDropDownOpen: false,
+  setTagsDropDownOpen: (isOpen) => set({ tagsDropDownOpen: isOpen }),
+  shortCodesSelected: [],
+  setShortCodesSelected: (shortCodes) =>
+    set({ shortCodesSelected: shortCodes }),
 }));

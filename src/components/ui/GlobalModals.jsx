@@ -498,6 +498,14 @@ export const ShareVideoModal = () => {
     (state) => state.setIsVideoLinkNotAttachedModalOpen
   );
 
+  const shortCodesSelected = useGlobalModals(
+    (state) => state.shortCodesSelected
+  );
+
+  const setShortCodesSelected = useGlobalModals(
+    (state) => state.setShortCodesSelected
+  );
+
   const [activeTab, setActiveTab] = useState("email");
   const [activeSubTab, setActiveSubTab] = useState("contacts");
 
@@ -593,6 +601,7 @@ export const ShareVideoModal = () => {
         subject: emailSubject,
         sendToAll: sendToAllContacts,
         videoId: videoToBeShared._id,
+        codesUsed: shortCodesSelected,
       };
     } else {
       API_DATA = {
@@ -602,6 +611,7 @@ export const ShareVideoModal = () => {
         subject: emailSubject,
         sendToAll: false,
         videoId: videoToBeShared._id,
+        codesUsed: shortCodesSelected,
       };
     }
 
@@ -609,6 +619,7 @@ export const ShareVideoModal = () => {
     const response = await sendEmailToSelectedContacts(API_DATA);
 
     if (response.success) {
+      setShortCodesSelected([]);
       setEditorContent(null);
 
       toast.success(response.data.message, {
@@ -809,6 +820,9 @@ export const ShareVideoModal = () => {
           setIsShareVideoModalOpen(false);
           setActiveTab("email");
           setActiveSubTab("contacts");
+          setShortCodesSelected([]);
+          setEmailContent("");
+          setEditorContent(null);
         }}
       >
         <div className="flex flex-col gap-[24px] w-[70vw]">
@@ -987,7 +1001,7 @@ export const ShareVideoModal = () => {
                     </p>
                   )}
                 </div>
-                <div className="flex flex-col gap-[8px]">
+                <div className="flex flex-col gap-[8px] relative">
                   <TextEditor
                     ref={quillRef}
                     editorContent={editorContent}

@@ -100,6 +100,10 @@ body {
   border-right: 1px solid rgba(100, 121, 143, 0.2) !important;
 }
 
+#text-editor-mainContainer #tag-button-wrapper {
+  border-right: 1px solid rgba(100, 121, 143, 0.2) !important;
+}
+
 #text-editor-mainContainer
   .ql-toolbar
   #custom-buttons-wrapper
@@ -158,6 +162,16 @@ body {
 #custom-buttons-wrapper button:hover {
   color: #2a85ff;
 }
+#tag-button-wrapper button {
+  width: fit-content;
+  font-size: 14px;
+  font-weight: 500;
+  color: #212121;
+}
+
+#tag-button-wrapper button:hover {
+  color: #2a85ff;
+}
 
 div#loom-sdk-record-overlay-shadow-root-id {
   display: block !important;
@@ -213,6 +227,16 @@ span .em-lns-1do042d {
   background-color: white !important;
 }
 .selectContactsDiv::-webkit-scrollbar-thumb {
+  background-color: #21212199;
+  border-radius: 6px !important;
+}
+
+#shortCodeDropDown-content::-webkit-scrollbar {
+  width: 3px !important;
+  border-radius: 3px !important;
+  background-color: white !important;
+}
+#shortCodeDropDown-content::-webkit-scrollbar-thumb {
   background-color: #21212199;
   border-radius: 6px !important;
 }
