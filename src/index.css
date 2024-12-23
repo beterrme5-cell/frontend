@@ -111,6 +111,11 @@ body {
   border-right: 2px solid rgba(100, 121, 143, 0.3) !important;
 }
 
+#text-editor-mainContainer .ql-toolbar #custom-buttons-wrapper {
+  display: inline-flex;
+  column-gap: 5px;
+}
+
 .ql-picker-options {
   border-radius: 8px !important;
   max-height: 180px;
