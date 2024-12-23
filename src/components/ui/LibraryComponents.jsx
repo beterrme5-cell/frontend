@@ -502,6 +502,10 @@ export const HistoryTableList = () => {
 export const TextEditor = forwardRef(
   ({ onTextChange, editorContent, setEditorContent }, ref) => {
     const videoToBeShared = useGlobalModals((state) => state.videoToBeShared);
+    const tagsDropDownOpen = useGlobalModals((state) => state.tagsDropDownOpen);
+    const setTagsDropDownOpen = useGlobalModals(
+      (state) => state.setTagsDropDownOpen
+    );
 
     const containerRef = useRef(null);
     const onTextChangeRef = useRef(onTextChange);
@@ -597,14 +601,33 @@ export const TextEditor = forwardRef(
         quill.setSelection(range.index + imageTag.length);
       };
 
-      // embedButton.classList.add("ql-formats");
-      pasteLinkButton.classList.add("ql-formats");
-      pasteThumbnailButton.classList.add("ql-formats");
+      // Style and append custom buttons to the wrapper
+      [pasteLinkButton, pasteThumbnailButton].forEach((btn) => {
+        btn.classList.add("ql-formats");
+        customButtonsWrapper.appendChild(btn);
+      });
 
-      // Append custom buttons to the wrapper
-      // customButtonsWrapper.appendChild(embedButton);
-      customButtonsWrapper.appendChild(pasteLinkButton);
-      customButtonsWrapper.appendChild(pasteThumbnailButton);
+      const tagsButtonWrapper = document.createElement("div");
+      tagsButtonWrapper.id = "tag-button-wrapper";
+
+      const tagButton = document.createElement("button");
+      tagButton.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="20" height="20" aria-hidden="true">
+            <path d="M0 80L0 229.5c0 17 6.7 33.3 18.7 45.3l176 176c25 25 65.5 25 90.5 0L418.7 317.3c25-25 25-65.5 0-90.5l-176-176c-12-12-28.3-18.7-45.3-18.7L48 32C21.5 32 0 53.5 0 80zm112 32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z" fill="currentColor"/>
+          </svg>
+        `;
+      tagButton.onclick = () => {
+        setTagsDropDownOpen(!tagsDropDownOpen);
+      };
+      tagButton.setAttribute("type", "button");
+      tagButton.classList.add("ql-formats");
+      tagsButtonWrapper.appendChild(tagButton);
+
+      // Add custom buttons wrapper to the toolbar
+      toolbar.container.insertBefore(
+        tagsButtonWrapper,
+        toolbar.container.firstChild
+      );
 
       // Append the wrapper to the toolbar
       toolbar.container.appendChild(customButtonsWrapper);
@@ -627,8 +650,10 @@ export const TextEditor = forwardRef(
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ref]);
+
     return (
-      <div className="flex flex-col gap-[8px]">
+      <div className="flex flex-col gap-[8px] relative">
+        <SelectContactShortCodeDropDown quillRef={ref} />
         <p className="text-[14px] font-medium">Email Content</p>
         <div
           ref={containerRef}
@@ -639,5 +664,177 @@ export const TextEditor = forwardRef(
     );
   }
 );
+
+const SelectContactShortCodeDropDown = ({ quillRef }) => {
+  const shortCodesData = [
+    {
+      id: 0,
+      name: "Full Name",
+      value: "{{name}}",
+    },
+    {
+      id: 1,
+      name: "First Name",
+      value: "{{first_name}}",
+    },
+    {
+      id: 2,
+      name: "Last Name",
+      value: "{{last_name}}",
+    },
+    {
+      id: 3,
+      name: "Email",
+      value: "{{email}}",
+    },
+    {
+      id: 4,
+      name: "Phone",
+      value: "{{phone}}",
+    },
+    {
+      id: 5,
+      name: "Company Name",
+      value: "{{company_name}}",
+    },
+    {
+      id: 6,
+      name: "Full Address",
+      value: "{{full_address}}",
+    },
+    {
+      id: 7,
+      name: "City",
+      value: "{{city}}",
+    },
+    {
+      id: 8,
+      name: "State",
+      value: "{{state}}",
+    },
+    {
+      id: 9,
+      name: "Country",
+      value: "{{country}}",
+    },
+    {
+      id: 10,
+      name: "Postal Code",
+      value: "{{postal_code}}",
+    },
+    {
+      id: 11,
+      name: "Date of Birth",
+      value: "{{date_of_birth}}",
+    },
+    {
+      id: 12,
+      name: "Source",
+      value: "{{source}}",
+    },
+    {
+      id: 13,
+      name: "ID",
+      value: "{{id}}",
+    },
+  ];
+
+  // shortCodes Tags Data
+  const tagsDropDownOpen = useGlobalModals((state) => state.tagsDropDownOpen);
+  const setTagsDropDownOpen = useGlobalModals(
+    (state) => state.setTagsDropDownOpen
+  );
+  const setShortCodesSelected = useGlobalModals(
+    (state) => state.setShortCodesSelected
+  );
+
+  const shortCodesSelected = useGlobalModals(
+    (state) => state.shortCodesSelected
+  );
+  const dropDownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropDownRef.current && !dropDownRef.current.contains(event.target)) {
+        setTagsDropDownOpen(false); // Close the dropdown
+      }
+    };
+
+    if (tagsDropDownOpen) {
+      // Add the event listener only when the dropdown is open
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    // Cleanup: Remove the event listener when the dropdown closes
+    return () => {
+      if (tagsDropDownOpen) {
+        document.removeEventListener("mousedown", handleClickOutside);
+      }
+    };
+  }, [tagsDropDownOpen, setTagsDropDownOpen]);
+
+  const handleSelectContactShortCode = (e) => {
+    const selectedShortCode = e.target.innerText;
+    const selectedShortCodeValue = shortCodesData.find(
+      (tag) => tag.name === selectedShortCode
+    ).value;
+
+    const quill = quillRef.current;
+    const quillContent = quill.getContents();
+    const textLength = quill.getLength();
+    const shortCodeValue = selectedShortCodeValue;
+
+    console.log("shortCodesSelected", shortCodesSelected);
+
+    const updatedShortCodes = [...shortCodesSelected, selectedShortCodeValue];
+    // remove duplicates
+    const uniqueShortCodes = [...new Set(updatedShortCodes)];
+
+    setShortCodesSelected(uniqueShortCodes);
+
+    if (quillContent.ops.length === 1 && quillContent.ops[0].insert === "\n") {
+      quill.insertText(0, shortCodeValue, {
+        bold: true,
+      });
+
+      quill.setSelection(textLength - 1 + shortCodeValue.length);
+    } else {
+      // Insert the Short Code with formatting
+      quill.insertText(textLength - 1, shortCodeValue, {
+        bold: true,
+      });
+
+      // Move the cursor to the end of the inserted Short Code
+      quill.setSelection(textLength + shortCodeValue.length);
+    }
+
+    setTagsDropDownOpen(false);
+  };
+
+  return (
+    <div
+      id="shortCodesDropDownWrapper"
+      ref={dropDownRef}
+      className={`h-[180px] w-[200px] rounded-[8px] flex flex-col gap-[4px] bg-white shadow-md absolute z-[1000] top-[80px] left-[10px] py-[8px] ps-[8px] ${
+        tagsDropDownOpen ? "block" : "hidden"
+      }`}
+    >
+      <div
+        className="h-full w-full overflow-auto pr-[6px]"
+        id="shortCodeDropDown-content"
+      >
+        {shortCodesData.map((tag) => (
+          <div
+            key={tag.id}
+            className="p-[8px] hover:bg-[#F7F7F8] cursor-pointer rounded-[4px]"
+            onClick={handleSelectContactShortCode}
+          >
+            {tag.name}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 TextEditor.displayName = "Editor";
