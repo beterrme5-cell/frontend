@@ -413,16 +413,7 @@ export const VideoTabItem = ({ videoData }) => {
           </Menu.Target>
           <Menu.Dropdown>
             <Menu.Item>
-              <buttton
-                onClick={() => {
-                  navigator.clipboard.writeText(videoData?.shareableLink);
-                }}
-                className="flex items-center gap-[8px]"
-              >
-                <COPY_ICON className="text-black" />
-                <p className="text-[14px] font-medium">Copy Link</p>
-              </buttton>
-              {/* <CopyButton value={videoData?.shareableLink}>
+              <CopyButton value={videoData?.shareableLink}>
                 {({ copy }) => (
                   <buttton
                     onClick={copy}
@@ -432,7 +423,7 @@ export const VideoTabItem = ({ videoData }) => {
                     <p className="text-[14px] font-medium">Copy Link</p>
                   </buttton>
                 )}
-              </CopyButton> */}
+              </CopyButton>
             </Menu.Item>
             <Menu.Item
               leftSection={<SHARE_ICON className="text-black" />}
