@@ -113,3 +113,28 @@ export const getContactTags = async (accessToken) => {
     };
   }
 };
+
+// API to get the users based on the contact tags selected
+export const getContactsBasedOnTags = async (selectedTags) => {
+  const accessToken = localStorage.getItem("accessToken");
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/user/getUserContactsByTags?tags=${selectedTags}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    console.error("Error while getting Contact Tags: ", error);
+    return {
+      success: false,
+      error: error.response?.data?.message || "An unexpected error occurred",
+    };
+  }
+};

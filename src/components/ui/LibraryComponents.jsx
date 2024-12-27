@@ -11,7 +11,7 @@ import {
 import Quill from "quill";
 import { createInstance } from "@loomhq/record-sdk";
 import { isSupported } from "@loomhq/record-sdk/is-supported";
-import { saveRecordedVideo } from "../../api/libraryAPIs";
+import { getUserDomain, saveRecordedVideo } from "../../api/libraryAPIs";
 import { useUserStore } from "../../store/userStore";
 import { setupLoomSDK } from "../../api/loomSDK";
 import {
@@ -23,6 +23,7 @@ import {
   VIDEO_OPTIONS_ICON,
 } from "../../assets/icons/DynamicIcons";
 import { useLoadingBackdrop } from "./../../store/loadingBackdrop";
+import { toast } from "react-toastify";
 
 export const LibraryRoot = ({ children }) => {
   return (
@@ -34,18 +35,46 @@ export const LibraryHeader = ({ title }) => {
   const pageLocation = useLocation();
 
   const userLocationId = localStorage.getItem("userLocationId");
+  const setLoading = useLoadingBackdrop((state) => state.setLoading);
+
+  const handleRedirectToMediaStorage = async () => {
+    setLoading(true);
+
+    const response = await getUserDomain();
+
+    if (response.success) {
+      const userDomain = response.data.userDomain;
+
+      if (userDomain) {
+        window.location.href = `https://${userDomain}/v2/location/${userLocationId}/media-storage`;
+      } else {
+        window.location.href = `https://app.gohighlevel.com/v2/location/${userLocationId}/media-storage`;
+      }
+    } else {
+      toast.error("Unknown error occurred!", {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    }
+
+    setLoading(false);
+  };
 
   return (
     <header className="flex items-center justify-between">
       <h1 className="text-[28px] font-bold ">{title}</h1>
       <div className="flex items-center gap-[12px]">
-        <a
-          href={`https://app.gohighlevel.com/v2/location/${userLocationId}/media-storage`}
+        <button
+          type="button"
           className="p-[8px_16px] text-[14px] font-medium rounded-[8px] bg-white border border-gray-dark text-darkBlue"
-          target="_blank"
+          onClick={handleRedirectToMediaStorage}
         >
           Upload Video
-        </a>
+        </button>
         {pageLocation.pathname.split("/")[1] === "recordings" ? (
           <RecordLoomVideoBtn />
         ) : (
@@ -620,10 +649,10 @@ export const TextEditor = forwardRef(
       };
 
       const firstNameShortCodeBtn = document.createElement("button");
-      firstNameShortCodeBtn.innerHTML = `<div style="display: flex; align-items: center; gap: 4px; white-space: nowrap;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"  width="18" height="18"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M192 128c0-17.7 14.3-32 32-32s32 14.3 32 32l0 7.8c0 27.7-2.4 55.3-7.1 82.5l-84.4 25.3c-40.6 12.2-68.4 49.6-68.4 92l0 71.9c0 40 32.5 72.5 72.5 72.5c26 0 50-13.9 62.9-36.5l13.9-24.3c26.8-47 46.5-97.7 58.4-150.5l94.4-28.3-12.5 37.5c-3.3 9.8-1.6 20.5 4.4 28.8s15.7 13.3 26 13.3l128 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-83.6 0 18-53.9c3.8-11.3 .9-23.8-7.4-32.4s-20.7-11.8-32.2-8.4L316.4 198.1c2.4-20.7 3.6-41.4 3.6-62.3l0-7.8c0-53-43-96-96-96s-96 43-96 96l0 32c0 17.7 14.3 32 32 32s32-14.3 32-32l0-32zm-9.2 177l49-14.7c-10.4 33.8-24.5 66.4-42.1 97.2l-13.9 24.3c-1.5 2.6-4.3 4.3-7.4 4.3c-4.7 0-8.5-3.8-8.5-8.5l0-71.9c0-14.1 9.3-26.6 22.8-30.7zM24 368c-13.3 0-24 10.7-24 24s10.7 24 24 24l40.3 0c-.2-2.8-.3-5.6-.3-8.5L64 368l-40 0zm592 48c13.3 0 24-10.7 24-24s-10.7-24-24-24l-310.1 0c-6.7 16.3-14.2 32.3-22.3 48L616 416z" fill="currentColor"/></svg><p style="margin: 0; line-height: normal;">Add First Name</p></div>`;
+      firstNameShortCodeBtn.innerHTML = `<p style="margin: 0 5px; line-height: normal;">Add First Name</p>`;
       firstNameShortCodeBtn.setAttribute("type", "button");
       firstNameShortCodeBtn.onclick = () => {
-        const firstNameShortCode = "{{first_name}}";
+        const firstNameShortCode = "{{contact.first_name}}";
         const range = quill.getSelection();
         if (range === null) {
           // Insert the image at the current cursor position
@@ -642,12 +671,10 @@ export const TextEditor = forwardRef(
       };
 
       // Style and append custom buttons to the wrapper
-      [firstNameShortCodeBtn, pasteLinkButton, pasteThumbnailButton].forEach(
-        (btn) => {
-          btn.classList.add("ql-formats");
-          customButtonsWrapper.appendChild(btn);
-        }
-      );
+      [pasteLinkButton, pasteThumbnailButton].forEach((btn) => {
+        btn.classList.add("ql-formats");
+        customButtonsWrapper.appendChild(btn);
+      });
 
       const tagsButtonWrapper = document.createElement("div");
       tagsButtonWrapper.id = "tag-button-wrapper";
@@ -662,8 +689,12 @@ export const TextEditor = forwardRef(
         setTagsDropDownOpen(!tagsDropDownOpen);
       };
       tagButton.setAttribute("type", "button");
-      tagButton.classList.add("ql-formats");
-      tagsButtonWrapper.appendChild(tagButton);
+
+      // Style and append custom buttons to the wrapper
+      [tagButton, firstNameShortCodeBtn].forEach((btn) => {
+        btn.classList.add("ql-formats");
+        tagsButtonWrapper.appendChild(btn);
+      });
 
       // Add custom buttons wrapper to the toolbar
       toolbar.container.insertBefore(
@@ -712,72 +743,72 @@ const SelectContactShortCodeDropDown = ({ quillRef }) => {
     {
       id: 0,
       name: "Full Name",
-      value: "{{name}}",
+      value: "{{contact.name}}",
     },
     {
       id: 1,
       name: "First Name",
-      value: "{{first_name}}",
+      value: "{{contact.first_name}}",
     },
     {
       id: 2,
       name: "Last Name",
-      value: "{{last_name}}",
+      value: "{{contact.last_name}}",
     },
     {
       id: 3,
       name: "Email",
-      value: "{{email}}",
+      value: "{{contact.email}}",
     },
     {
       id: 4,
       name: "Phone",
-      value: "{{phone}}",
+      value: "{{contact.phone}}",
     },
     {
       id: 5,
       name: "Company Name",
-      value: "{{company_name}}",
+      value: "{{contact.company_name}}",
     },
     {
       id: 6,
       name: "Full Address",
-      value: "{{full_address}}",
+      value: "{{contact.full_address}}",
     },
     {
       id: 7,
       name: "City",
-      value: "{{city}}",
+      value: "{{contact.city}}",
     },
     {
       id: 8,
       name: "State",
-      value: "{{state}}",
+      value: "{{contact.state}}",
     },
     {
       id: 9,
       name: "Country",
-      value: "{{country}}",
+      value: "{{contact.country}}",
     },
     {
       id: 10,
       name: "Postal Code",
-      value: "{{postal_code}}",
+      value: "{{contact.postal_code}}",
     },
     {
       id: 11,
       name: "Date of Birth",
-      value: "{{date_of_birth}}",
+      value: "{{contact.date_of_birth}}",
     },
     {
       id: 12,
       name: "Source",
-      value: "{{source}}",
+      value: "{{contact.source}}",
     },
     {
       id: 13,
       name: "ID",
-      value: "{{id}}",
+      value: "{{contact.id}}",
     },
   ];
 
