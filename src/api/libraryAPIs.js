@@ -164,3 +164,25 @@ export const getContacts = async (params) => {
     };
   }
 };
+
+// API to get the user Domain using locationId
+export const getUserDomain = async () => {
+  const accessToken = localStorage.getItem("accessToken");
+  try {
+    const response = await axios.get(`${BASE_URL}/user/getUserDomain`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    console.error("Error while fetching user domain: ", error);
+    return {
+      success: false,
+      error: error.response?.data?.message || "An unexpected error occurred",
+    };
+  }
+};
