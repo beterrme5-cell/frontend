@@ -46,9 +46,23 @@ export const LibraryHeader = ({ title }) => {
       const userDomain = response.data.userDomain;
 
       if (userDomain) {
-        window.location.href = `https://${userDomain}/v2/location/${userLocationId}/media-storage`;
+        const newTab = window.open(
+          `https://${userDomain}/v2/location/${userLocationId}/media-storage`,
+          "_blank"
+        );
+
+        if (newTab) {
+          newTab.focus();
+        }
       } else {
-        window.location.href = `https://app.gohighlevel.com/v2/location/${userLocationId}/media-storage`;
+        const newTab = window.open(
+          `https://app.gohighlevel.com/v2/location/${userLocationId}/media-storage`,
+          "_blank"
+        );
+
+        if (newTab) {
+          newTab.focus();
+        }
       }
     } else {
       toast.error("Unknown error occurred!", {
