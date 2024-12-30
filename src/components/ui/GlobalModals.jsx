@@ -2066,12 +2066,19 @@ export const ContactsSelectionModalSMS = () => {
                       contact?.lastNameLowerCase,
                     ]
                       .filter(Boolean) // Filters out null, undefined, or empty values
-                      .join(" "); // Joins the remaining values with a space
+                      .join(" "); // Joins the remaining values with a space8
+
+                    const formattedNumber =
+                      contact?.phone?.slice(0, -7) +
+                      "-" +
+                      contact?.phone?.slice(-7, -4) +
+                      "-" +
+                      contact?.phone?.slice(-4);
 
                     return (
                       <Table.Tr key={contact.id}>
                         <Table.Td className="capitalize">{fullName}</Table.Td>
-                        <Table.Td>{contact.phone}</Table.Td>
+                        <Table.Td>{formattedNumber}</Table.Td>
                         <Table.Td>
                           <Checkbox
                             checked={isChecked}
