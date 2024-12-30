@@ -634,7 +634,7 @@ export const ShareVideoModal = () => {
     }
 
     if (smsContent.includes(videoToBeShared?.shareableLink)) {
-      return handleSubmitEmail();
+      return handleSubmitSMS();
     }
 
     setIsVideoLinkNotAttachedModalOpen(true);
@@ -814,9 +814,10 @@ export const ShareVideoModal = () => {
   const handleSelectEmailTag = async (selectedTags) => {
     setSelectedContactTags(selectedTags);
     setFetchingContactsLinkedWithTags(true);
-    if (selectedTags.length < 1 || contactsLinkedWithTags.length >= 3) {
+
+    if (selectedTags.length < 1) {
       setFetchingContactsLinkedWithTags(false);
-      return;
+      return setContactsLinkedWithTags([]);
     }
 
     const response = await getContactsBasedOnTags(selectedTags);
@@ -1058,7 +1059,7 @@ export const ShareVideoModal = () => {
                           hidePickedOptions
                         />
                         {fetchingContactsLinkedWithTags && (
-                          <Loader color="#2A85FF" />
+                          <Loader color="#2A85FF" size="sm" />
                         )}
                         <div className="flex items-center gap-[4px]">
                           {contactsLinkedWithTags.slice(0, 2).map((contact) => (
@@ -1227,7 +1228,7 @@ export const ShareVideoModal = () => {
                           hidePickedOptions
                         />
                         {fetchingContactsLinkedWithTags && (
-                          <Loader color="#2A85FF" />
+                          <Loader color="#2A85FF" size="sm" />
                         )}
                         <div className="flex items-center gap-[4px]">
                           {contactsLinkedWithTags.slice(0, 2).map((contact) => (
@@ -1708,21 +1709,26 @@ export const ContactsSelectionModalEmail = () => {
                 - Please add at least 3 characters to search by name or email.
               </p>
             </div>
-            <button
-              className="p-[10px_16px] bg-primary text-white rounded-[8px] text-[14px] font-medium w-fit min-w-[168.59px]"
-              type="button"
-              onClick={() => {
-                setSendToAllContacts(true);
-                setIsContactsSelectionModalOpen(false);
-                setIsShareVideoModalOpen(true);
-              }}
-            >
-              Send To All Contacts
-            </button>
+            <div className="flex items-center gap-[4px]">
+              <button
+                className="p-[10px_16px] bg-primary text-white rounded-[8px] text-[14px] font-medium w-fit min-w-[168.59px]"
+                type="button"
+                onClick={() => {
+                  setSendToAllContacts(true);
+                  setIsContactsSelectionModalOpen(false);
+                  setIsShareVideoModalOpen(true);
+                }}
+              >
+                Send To All Contacts
+              </button>
+              <p className="p-[8px_12px] text-gray-500 text-[14px]">
+                Total Contacts: {sortedContacts?.length}
+              </p>
+            </div>
           </div>
 
           {sortedContacts?.length > 0 ? (
-            <div className="selectContactsDiv h-[calc(70dvh-290px)] overflow-auto">
+            <div className="selectContactsDiv h-[calc(70dvh-298px)] overflow-auto">
               <Table stickyHeader stickyHeaderOffset={0}>
                 <Table.Thead>
                   <Table.Tr>
@@ -1739,13 +1745,16 @@ export const ContactsSelectionModalEmail = () => {
                         selectedContact?.isChecked
                     );
 
+                    const fullName = [
+                      contact?.firstNameLowerCase,
+                      contact?.lastNameLowerCase,
+                    ]
+                      .filter(Boolean) // Filters out null, undefined, or empty values
+                      .join(" "); // Joins the remaining values with a space
+
                     return (
                       <Table.Tr key={contact.id}>
-                        <Table.Td className="capitalize">
-                          {contact?.firstNameLowerCase +
-                            " " +
-                            contact?.lastNameLowerCase}
-                        </Table.Td>
+                        <Table.Td className="capitalize">{fullName}</Table.Td>
                         <Table.Td>{contact.email}</Table.Td>
                         <Table.Td>
                           <Checkbox
@@ -1768,7 +1777,7 @@ export const ContactsSelectionModalEmail = () => {
           )}
         </div>
         <div
-          className={`bg-white p-[12px_24px]  flex-col gap-[16px] justify-center items-center ${
+          className={`bg-white p-[12px_24px]  flex-col gap-[24px] justify-center items-center ${
             sortedContacts?.length > 0 ? "flex" : "hidden"
           }`}
         >
@@ -1782,19 +1791,23 @@ export const ContactsSelectionModalEmail = () => {
           >
             Load More
           </button>
-
-          <button
-            className={`p-[10px_16px] ${
-              selectedContacts.length === 0
-                ? "bg-[#CBCBCB] text-white hover:cursor-not-allowed"
-                : "bg-primary text-white"
-            } rounded-[8px] text-[14px] font-medium w-fit`}
-            type="button"
-            onClick={handleSaveSelectedContacts}
-            disabled={selectedContacts.length === 0}
-          >
-            Send To Selected Contacts
-          </button>
+          <div className="flex flex-col items-center gap-[2px]">
+            <button
+              className={`p-[10px_16px] ${
+                selectedContacts.length === 0
+                  ? "bg-[#CBCBCB] text-white hover:cursor-not-allowed"
+                  : "bg-primary text-white"
+              } rounded-[8px] text-[14px] font-medium w-fit`}
+              type="button"
+              onClick={handleSaveSelectedContacts}
+              disabled={selectedContacts.length === 0}
+            >
+              Send To Selected Contacts
+            </button>
+            <p className="p-[8px_12px] text-gray-500 text-[14px]">
+              Selected Contacts: {selectedContacts?.length}
+            </p>
+          </div>
         </div>
       </div>
     </ModalRoot>
@@ -2012,17 +2025,23 @@ export const ContactsSelectionModalSMS = () => {
                 least 2 numbers after the country code. i.e, +1
               </p>
             </div>
-            <button
-              className="p-[10px_16px] bg-primary text-white rounded-[8px] text-[14px] font-medium w-fit min-w-[168.59px]"
-              type="button"
-              onClick={() => {
-                setSendToAllContacts(true);
-                setIsSMSContactsSelectionModalOpen(false);
-                setIsShareVideoModalOpen(true);
-              }}
-            >
-              Send To All Contacts
-            </button>
+
+            <div className="flex items-center gap-[4px]">
+              <button
+                className="p-[10px_16px] bg-primary text-white rounded-[8px] text-[14px] font-medium w-fit min-w-[168.59px]"
+                type="button"
+                onClick={() => {
+                  setSendToAllContacts(true);
+                  setIsSMSContactsSelectionModalOpen(false);
+                  setIsShareVideoModalOpen(true);
+                }}
+              >
+                Send To All Contacts
+              </button>
+              <p className="p-[8px_12px] text-gray-500 text-[14px]">
+                Total Contacts: {sortedContacts?.length}
+              </p>
+            </div>
           </div>
           {sortedContacts?.length > 0 ? (
             <div className="selectContactsDiv h-[calc(70dvh-310px)] overflow-auto">
@@ -2042,13 +2061,16 @@ export const ContactsSelectionModalSMS = () => {
                         selectedContact?.isChecked
                     );
 
+                    const fullName = [
+                      contact?.firstNameLowerCase,
+                      contact?.lastNameLowerCase,
+                    ]
+                      .filter(Boolean) // Filters out null, undefined, or empty values
+                      .join(" "); // Joins the remaining values with a space
+
                     return (
                       <Table.Tr key={contact.id}>
-                        <Table.Td className="capitalize">
-                          {contact?.firstNameLowerCase +
-                            " " +
-                            contact?.lastNameLowerCase}
-                        </Table.Td>
+                        <Table.Td className="capitalize">{fullName}</Table.Td>
                         <Table.Td>{contact.phone}</Table.Td>
                         <Table.Td>
                           <Checkbox
@@ -2085,19 +2107,23 @@ export const ContactsSelectionModalSMS = () => {
           >
             Load More
           </button>
-
-          <button
-            className={`p-[10px_16px] ${
-              selectedSMSContacts.length === 0
-                ? "bg-[#CBCBCB] text-white hover:cursor-not-allowed"
-                : "bg-primary text-white"
-            } rounded-[8px] text-[14px] font-medium w-fit`}
-            type="button"
-            onClick={handleSaveSelectedContacts}
-            disabled={selectedSMSContacts.length === 0}
-          >
-            Send To Selected Contacts
-          </button>
+          <div className="flex flex-col items-center gap-[2px]">
+            <button
+              className={`p-[10px_16px] ${
+                selectedSMSContacts.length === 0
+                  ? "bg-[#CBCBCB] text-white hover:cursor-not-allowed"
+                  : "bg-primary text-white"
+              } rounded-[8px] text-[14px] font-medium w-fit`}
+              type="button"
+              onClick={handleSaveSelectedContacts}
+              disabled={selectedSMSContacts.length === 0}
+            >
+              Send To Selected Contacts
+            </button>
+            <p className="p-[8px_12px] text-gray-500 text-[14px]">
+              Selected Contacts: {selectedSMSContacts?.length}
+            </p>
+          </div>
         </div>
       </div>
     </ModalRoot>

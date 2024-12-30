@@ -754,75 +754,75 @@ export const TextEditor = forwardRef(
 
 const SelectContactShortCodeDropDown = ({ quillRef }) => {
   const shortCodesData = [
+    // {
+    //   id: 1,
+    //   name: "My Email Signature",
+    //   value: "{{user.email_signature}}",
+    // },
     {
-      id: 0,
+      id: 2,
       name: "Full Name",
       value: "{{contact.name}}",
     },
     {
-      id: 1,
+      id: 3,
       name: "First Name",
       value: "{{contact.first_name}}",
     },
     {
-      id: 2,
+      id: 4,
       name: "Last Name",
       value: "{{contact.last_name}}",
     },
     {
-      id: 3,
+      id: 5,
       name: "Email",
       value: "{{contact.email}}",
     },
     {
-      id: 4,
+      id: 6,
       name: "Phone",
       value: "{{contact.phone}}",
     },
     {
-      id: 5,
+      id: 7,
       name: "Company Name",
       value: "{{contact.company_name}}",
     },
     {
-      id: 6,
+      id: 8,
       name: "Full Address",
       value: "{{contact.full_address}}",
     },
     {
-      id: 7,
+      id: 9,
       name: "City",
       value: "{{contact.city}}",
     },
     {
-      id: 8,
+      id: 10,
       name: "State",
       value: "{{contact.state}}",
     },
     {
-      id: 9,
+      id: 11,
       name: "Country",
       value: "{{contact.country}}",
     },
     {
-      id: 10,
+      id: 12,
       name: "Postal Code",
       value: "{{contact.postal_code}}",
     },
     {
-      id: 11,
+      id: 13,
       name: "Date of Birth",
       value: "{{contact.date_of_birth}}",
     },
     {
-      id: 12,
+      id: 14,
       name: "Source",
       value: "{{contact.source}}",
-    },
-    {
-      id: 13,
-      name: "ID",
-      value: "{{contact.id}}",
     },
   ];
 
