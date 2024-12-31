@@ -13,7 +13,11 @@ import {
 import { useUserStore } from "../../store/userStore";
 import { toast } from "react-toastify";
 import { getAllVideos } from "../../api/libraryAPIs";
-import { getContactTags, getHistoryOfMessages } from "../../api/commsAPIs";
+import {
+  getContactTags,
+  getCustomFields,
+  getHistoryOfMessages,
+} from "../../api/commsAPIs";
 import { useLoadingBackdrop } from "../../store/loadingBackdrop";
 import { useEffect, useState } from "react";
 import { getDecryptedUserData } from "../../api/auth";
@@ -28,21 +32,31 @@ const Dashboard = () => {
   const setContactTagsData = useGlobalModals(
     (state) => state.setContactTagsData
   );
+  const setCustomFieldsData = useGlobalModals(
+    (state) => state.setCustomFieldsData
+  );
   const [error, setError] = useState(false);
   // Function to Fetch all the Data
   const fetchData = async (accessToken) => {
     try {
       // Fetch all data in parallel
-      const [videosResponse, historyResponse] = await Promise.all([
-        getAllVideos(accessToken),
-        getHistoryOfMessages(accessToken),
-      ]);
+      const [videosResponse, historyResponse, customFieldsResponse] =
+        await Promise.all([
+          getAllVideos(accessToken),
+          getHistoryOfMessages(accessToken),
+          getCustomFields(accessToken),
+        ]);
 
       // Check responses and set state only after all are resolved
-      if (videosResponse.success && historyResponse.success) {
+      if (
+        videosResponse.success &&
+        historyResponse.success &&
+        customFieldsResponse.success
+      ) {
         // Update states
         setVideosData(videosResponse.data.videos);
         setHistoryData(historyResponse.data.histories);
+        setCustomFieldsData(customFieldsResponse.data.customFields || []);
       } else {
         if (!videosResponse.success) {
           toast.error(videosResponse.error || "Error Fetching Videos", {
@@ -63,6 +77,19 @@ const Dashboard = () => {
             draggable: true,
             progress: undefined,
           });
+        }
+        if (!customFieldsResponse.success) {
+          toast.error(
+            customFieldsResponse.error || "Error Fetching Custom Fields",
+            {
+              position: "bottom-right",
+              autoClose: 5000,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+            }
+          );
         }
       }
     } catch (error) {
