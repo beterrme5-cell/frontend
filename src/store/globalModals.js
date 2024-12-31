@@ -83,7 +83,15 @@ export const useGlobalModals = create((set) => ({
   // --------------------------------------------------
   tagsDropDownOpen: false,
   setTagsDropDownOpen: (isOpen) => set({ tagsDropDownOpen: isOpen }),
+  customTagsDropDownOpen: false,
+  setCustomTagsDropDownOpen: (isOpen) =>
+    set({ customTagsDropDownOpen: isOpen }),
   shortCodesSelected: [],
   setShortCodesSelected: (shortCodes) =>
     set({ shortCodesSelected: shortCodes }),
+
+  customFieldsData: [],
+  setCustomFieldsData: (data) => set({ customFieldsData: data }),
+  customFieldsSelected: [],
+  setCustomFieldsSelected: (data) => set({ customFieldsSelected: data }),
 }));

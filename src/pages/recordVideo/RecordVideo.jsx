@@ -15,7 +15,11 @@ import { useEffect } from "react";
 import { useLoadingBackdrop } from "../../store/loadingBackdrop";
 import { useUserStore } from "../../store/userStore";
 import { useParams } from "react-router-dom";
-import { getContactTags, getHistoryOfMessages } from "../../api/commsAPIs";
+import {
+  getContactTags,
+  getCustomFields,
+  getHistoryOfMessages,
+} from "../../api/commsAPIs";
 import { getUserLocationId } from "../../api/auth";
 import { toast } from "react-toastify";
 import { getAllVideos } from "../../api/libraryAPIs";
@@ -27,6 +31,9 @@ const RecordVideo = () => {
   const setHistoryData = useUserStore((state) => state.setHistoryData);
   const setContactTagsData = useGlobalModals(
     (state) => state.setContactTagsData
+  );
+  const setCustomFieldsData = useGlobalModals(
+    (state) => state.setCustomFieldsData
   );
   const { accessToken, userLocationId } = useParams();
 
@@ -63,16 +70,23 @@ const RecordVideo = () => {
   const fetchData = async (token) => {
     try {
       // Fetch all data in parallel
-      const [videosResponse, historyResponse] = await Promise.all([
-        getAllVideos(token),
-        getHistoryOfMessages(token),
-      ]);
+      const [videosResponse, historyResponse, customFieldsResponse] =
+        await Promise.all([
+          getAllVideos(token),
+          getHistoryOfMessages(token),
+          getCustomFields(token),
+        ]);
 
       // Check responses and set state only after all are resolved
-      if (videosResponse.success && historyResponse.success) {
+      if (
+        videosResponse.success &&
+        historyResponse.success &&
+        customFieldsResponse.success
+      ) {
         // Update states
         setVideosData(videosResponse.data.videos);
         setHistoryData(historyResponse.data.histories);
+        setCustomFieldsData(customFieldsResponse.data.customFields || []);
       } else {
         if (!videosResponse.success) {
           toast.error(videosResponse.error || "Error Fetching Videos", {
@@ -93,6 +107,19 @@ const RecordVideo = () => {
             draggable: true,
             progress: undefined,
           });
+        }
+        if (!customFieldsResponse.success) {
+          toast.error(
+            customFieldsResponse.error || "Error Fetching Custom Fields",
+            {
+              position: "bottom-right",
+              autoClose: 5000,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+            }
+          );
         }
       }
     } catch (error) {
