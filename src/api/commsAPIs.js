@@ -138,3 +138,24 @@ export const getContactsBasedOnTags = async (selectedTags) => {
     };
   }
 };
+
+// API to fetchg the custom fiekds of user created in the contacts
+export const getCustomFields = async (accessToken) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/user/getUserCustomFields`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    console.error("Error while getting custom fields: ", error);
+    return {
+      success: false,
+      error: error.response?.data?.message || "An unexpected error occurred",
+    };
+  }
+};

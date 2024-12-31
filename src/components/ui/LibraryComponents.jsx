@@ -1,4 +1,4 @@
-import { Menu, Tabs, Table, CopyButton } from "@mantine/core";
+import { Menu, Tabs, Table, CopyButton, Divider } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -15,6 +15,7 @@ import { getUserDomain, saveRecordedVideo } from "../../api/libraryAPIs";
 import { useUserStore } from "../../store/userStore";
 import { setupLoomSDK } from "../../api/loomSDK";
 import {
+  ARROW_RIGHT,
   COPY_ICON,
   DELETE_ICON,
   EDIT_ICON,
@@ -546,6 +547,9 @@ export const TextEditor = forwardRef(
   ({ onTextChange, editorContent, setEditorContent }, ref) => {
     const videoToBeShared = useGlobalModals((state) => state.videoToBeShared);
     const tagsDropDownOpen = useGlobalModals((state) => state.tagsDropDownOpen);
+    const customTagsDropDownOpen = useGlobalModals(
+      (state) => state.customTagsDropDownOpen
+    );
     const setTagsDropDownOpen = useGlobalModals(
       (state) => state.setTagsDropDownOpen
     );
@@ -740,7 +744,10 @@ export const TextEditor = forwardRef(
 
     return (
       <div className="flex flex-col gap-[8px] relative">
-        <SelectContactShortCodeDropDown quillRef={ref} />
+        {tagsDropDownOpen && <SelectContactShortCodeDropDown quillRef={ref} />}
+        {customTagsDropDownOpen && (
+          <SelectCustomShortCodeDropDown quillRef={ref} />
+        )}
         <p className="text-[14px] font-medium">Email Content</p>
         <div
           ref={containerRef}
@@ -754,73 +761,68 @@ export const TextEditor = forwardRef(
 
 const SelectContactShortCodeDropDown = ({ quillRef }) => {
   const shortCodesData = [
-    // {
-    //   id: 1,
-    //   name: "My Email Signature",
-    //   value: "{{user.email_signature}}",
-    // },
     {
-      id: 2,
+      id: 1,
       name: "Full Name",
       value: "{{contact.name}}",
     },
     {
-      id: 3,
+      id: 2,
       name: "First Name",
       value: "{{contact.first_name}}",
     },
     {
-      id: 4,
+      id: 3,
       name: "Last Name",
       value: "{{contact.last_name}}",
     },
     {
-      id: 5,
+      id: 4,
       name: "Email",
       value: "{{contact.email}}",
     },
     {
-      id: 6,
+      id: 5,
       name: "Phone",
       value: "{{contact.phone}}",
     },
     {
-      id: 7,
+      id: 6,
       name: "Company Name",
       value: "{{contact.company_name}}",
     },
     {
-      id: 8,
+      id: 7,
       name: "Full Address",
       value: "{{contact.full_address}}",
     },
     {
-      id: 9,
+      id: 8,
       name: "City",
       value: "{{contact.city}}",
     },
     {
-      id: 10,
+      id: 9,
       name: "State",
       value: "{{contact.state}}",
     },
     {
-      id: 11,
+      id: 10,
       name: "Country",
       value: "{{contact.country}}",
     },
     {
-      id: 12,
+      id: 11,
       name: "Postal Code",
       value: "{{contact.postal_code}}",
     },
     {
-      id: 13,
+      id: 12,
       name: "Date of Birth",
       value: "{{contact.date_of_birth}}",
     },
     {
-      id: 14,
+      id: 13,
       name: "Source",
       value: "{{contact.source}}",
     },
@@ -830,6 +832,9 @@ const SelectContactShortCodeDropDown = ({ quillRef }) => {
   const tagsDropDownOpen = useGlobalModals((state) => state.tagsDropDownOpen);
   const setTagsDropDownOpen = useGlobalModals(
     (state) => state.setTagsDropDownOpen
+  );
+  const setCustomTagsDropDownOpen = useGlobalModals(
+    (state) => state.setCustomTagsDropDownOpen
   );
   const setShortCodesSelected = useGlobalModals(
     (state) => state.setShortCodesSelected
@@ -901,7 +906,7 @@ const SelectContactShortCodeDropDown = ({ quillRef }) => {
       }`}
     >
       <div
-        className="h-full w-full overflow-auto pr-[6px]"
+        className="h-full w-full overflow-auto pr-[6px] flex flex-col gap-[8px]"
         id="shortCodeDropDown-content"
       >
         {shortCodesData.map((tag) => (
@@ -911,6 +916,158 @@ const SelectContactShortCodeDropDown = ({ quillRef }) => {
             onClick={handleSelectContactShortCode}
           >
             {tag.name}
+          </div>
+        ))}
+
+        <button
+          type="button"
+          onClick={() => {
+            setTagsDropDownOpen(false);
+            setCustomTagsDropDownOpen(true);
+          }}
+          className="flex items-center justify-between p-[8px] hover:bg-[#F7F7F8] cursor-pointer rounded-[4px]"
+        >
+          <p className="text-[16px] font-bold">Custom Fields</p>
+          <ARROW_RIGHT className="!text-[14px] text-black" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const SelectCustomShortCodeDropDown = ({ quillRef }) => {
+  // shortCodes Tags Data
+  const customTagsDropDownOpen = useGlobalModals(
+    (state) => state.customTagsDropDownOpen
+  );
+  const customFieldsData = useGlobalModals((state) => state.customFieldsData);
+  const setTagsDropDownOpen = useGlobalModals(
+    (state) => state.setTagsDropDownOpen
+  );
+  const setCustomTagsDropDownOpen = useGlobalModals(
+    (state) => state.setCustomTagsDropDownOpen
+  );
+  const setCustomFieldsSelected = useGlobalModals(
+    (state) => state.setCustomFieldsSelected
+  );
+
+  const customFieldsSelected = useGlobalModals(
+    (state) => state.customFieldsSelected
+  );
+  const dropDownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropDownRef.current && !dropDownRef.current.contains(event.target)) {
+        setCustomTagsDropDownOpen(false); // Close the dropdown
+      }
+    };
+
+    if (customTagsDropDownOpen) {
+      // Add the event listener only when the dropdown is open
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    // Cleanup: Remove the event listener when the dropdown closes
+    return () => {
+      if (customTagsDropDownOpen) {
+        document.removeEventListener("mousedown", handleClickOutside);
+      }
+    };
+  }, [customTagsDropDownOpen, setCustomTagsDropDownOpen]);
+
+  const customShortCodesData = customFieldsData.map((tag) => ({
+    id: tag.id,
+    name: tag.name,
+    value: `{{${tag.fieldKey}}}`,
+  }));
+
+  const handleSelectCustomShortCode = (e) => {
+    const selectedShortCode = e.target.innerText;
+    const selectedShortCodeValue = customShortCodesData.find(
+      (tag) => tag.name === selectedShortCode
+    ).value;
+    const selectedShortCodeId = customShortCodesData.find(
+      (tag) => tag.name === selectedShortCode
+    ).id;
+
+    const quill = quillRef.current;
+    const quillContent = quill.getContents();
+    const textLength = quill.getLength();
+    const shortCodeValue = selectedShortCodeValue;
+
+    const selectedShortCodeObject = {
+      id: selectedShortCodeId,
+      name: selectedShortCodeValue,
+    };
+
+    const updatedShortCodes = [
+      ...customFieldsSelected,
+      selectedShortCodeObject,
+    ];
+    // remove duplicates
+    const uniqueShortCodes = [...new Set(updatedShortCodes)];
+
+    setCustomFieldsSelected(uniqueShortCodes);
+
+    if (quillContent.ops.length === 1 && quillContent.ops[0].insert === "\n") {
+      quill.insertText(0, shortCodeValue);
+
+      quill.setSelection(textLength - 1 + shortCodeValue.length);
+    } else {
+      // Insert the Short Code with formatting
+      quill.insertText(textLength - 1, shortCodeValue);
+
+      // Move the cursor to the end of the inserted Short Code
+      quill.setSelection(textLength + shortCodeValue.length);
+    }
+
+    setCustomTagsDropDownOpen(false);
+  };
+
+  return (
+    <div
+      id="shortCodesDropDownWrapper"
+      ref={dropDownRef}
+      className={`h-[180px] w-[200px] rounded-[8px] flex flex-col gap-[4px] bg-white shadow-md absolute z-[1000] top-[80px] left-[10px] py-[8px] ps-[8px] ${
+        customTagsDropDownOpen ? "block" : "hidden"
+      }`}
+    >
+      <div
+        className="h-full w-full overflow-auto pr-[6px] flex flex-col gap-[8px]"
+        id="shortCodeDropDown-content"
+      >
+        <div className="py-[8px] flex flex-col gap-[8px]">
+          <button
+            type="button"
+            onClick={() => {
+              setCustomTagsDropDownOpen(false);
+              setTagsDropDownOpen(true);
+            }}
+            className="flex items-center gap-[8px] w-fit"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 448 512"
+              width="14px"
+              height="14px"
+            >
+              <path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.2 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" />
+            </svg>
+            <p className="text-[14px] font-bold">Go Back</p>
+          </button>
+          <Divider />
+        </div>
+
+        {customShortCodesData.map((tag) => (
+          <div key={tag.id}>
+            <div
+              key={tag.id}
+              className="p-[8px] hover:bg-[#F7F7F8] cursor-pointer rounded-[4px] text-[14px]"
+              onClick={handleSelectCustomShortCode}
+            >
+              {tag.name}
+            </div>
           </div>
         ))}
       </div>

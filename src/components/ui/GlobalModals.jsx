@@ -553,6 +553,13 @@ export const ShareVideoModal = () => {
   const setShortCodesSelected = useGlobalModals(
     (state) => state.setShortCodesSelected
   );
+  const customFieldsSelected = useGlobalModals(
+    (state) => state.customFieldsSelected
+  );
+
+  const setCustomFieldsSelected = useGlobalModals(
+    (state) => state.setCustomFieldsSelected
+  );
 
   const [activeTab, setActiveTab] = useState("email");
   const [activeSubTab, setActiveSubTab] = useState("contacts");
@@ -568,7 +575,6 @@ export const ShareVideoModal = () => {
   const [noSMSContentError, setNoSMSContentError] = useState("");
   const [noEmailSubjectError, setNoEmailSubjectError] = useState("");
   const [noEmailContentError, setNoEmailContentError] = useState("");
-
   const [editorContent, setEditorContent] = useState(null);
 
   const [contactsLinkedWithTags, setContactsLinkedWithTags] = useState([]);
@@ -654,6 +660,7 @@ export const ShareVideoModal = () => {
         sendToAll: sendToAllContacts,
         videoId: videoToBeShared._id,
         codesUsed: shortCodesSelected,
+        customFieldsUsed: customFieldsSelected,
       };
     } else {
       API_DATA = {
@@ -664,6 +671,7 @@ export const ShareVideoModal = () => {
         sendToAll: false,
         videoId: videoToBeShared._id,
         codesUsed: shortCodesSelected,
+        customFieldsUsed: customFieldsSelected,
       };
     }
 
@@ -672,6 +680,7 @@ export const ShareVideoModal = () => {
 
     if (response.success) {
       setShortCodesSelected([]);
+      setCustomFieldsSelected([]);
       setEditorContent(null);
 
       toast.success(response.data.message, {
@@ -893,6 +902,7 @@ export const ShareVideoModal = () => {
           setActiveTab("email");
           setActiveSubTab("contacts");
           setShortCodesSelected([]);
+          setCustomFieldsSelected([]);
           setEmailContent("");
           setEditorContent(null);
         }}
