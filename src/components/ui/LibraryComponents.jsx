@@ -1070,6 +1070,12 @@ const SelectCustomShortCodeDropDown = ({ quillRef }) => {
             </div>
           </div>
         ))}
+
+        {customShortCodesData.length === 0 && (
+          <p className="text-gray-600 text-center p-[8px]">
+            No Custom Fields Found!
+          </p>
+        )}
       </div>
     </div>
   );
