@@ -11,7 +11,7 @@ import {
 import Quill from "quill";
 import { createInstance } from "@loomhq/record-sdk";
 import { isSupported } from "@loomhq/record-sdk/is-supported";
-import { getUserDomain, saveRecordedVideo } from "../../api/libraryAPIs";
+import { saveRecordedVideo } from "../../api/libraryAPIs";
 import { useUserStore } from "../../store/userStore";
 import { setupLoomSDK } from "../../api/loomSDK";
 import {
@@ -24,7 +24,6 @@ import {
   VIDEO_OPTIONS_ICON,
 } from "../../assets/icons/DynamicIcons";
 import { useLoadingBackdrop } from "./../../store/loadingBackdrop";
-import { toast } from "react-toastify";
 
 export const LibraryRoot = ({ children }) => {
   return (
@@ -34,55 +33,58 @@ export const LibraryRoot = ({ children }) => {
 
 export const LibraryHeader = ({ title }) => {
   const pageLocation = useLocation();
-
   const userLocationId = localStorage.getItem("userLocationId");
-  const setLoading = useLoadingBackdrop((state) => state.setLoading);
+  const userDomain = useUserStore((state) => state.userDomain);
+
+  const setUpdateDomainModalOpen = useGlobalModals(
+    (state) => state.setUpdateDomainModalOpen
+  );
 
   const handleRedirectToMediaStorage = async () => {
-    setLoading(true);
+    if (userDomain) {
+      const newTab = window.open(
+        `https://${userDomain}/v2/location/${userLocationId}/media-storage`,
+        "_blank"
+      );
 
-    const response = await getUserDomain();
-
-    if (response.success) {
-      const userDomain = response.data.userDomain;
-
-      if (userDomain) {
-        const newTab = window.open(
-          `https://${userDomain}/v2/location/${userLocationId}/media-storage`,
-          "_blank"
-        );
-
-        if (newTab) {
-          newTab.focus();
-        }
-      } else {
-        const newTab = window.open(
-          `https://app.gohighlevel.com/v2/location/${userLocationId}/media-storage`,
-          "_blank"
-        );
-
-        if (newTab) {
-          newTab.focus();
-        }
+      if (newTab) {
+        newTab.focus();
       }
     } else {
-      toast.error("Unknown error occurred!", {
-        position: "bottom-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-    }
+      const newTab = window.open(
+        `https://app.gohighlevel.com/v2/location/${userLocationId}/media-storage`,
+        "_blank"
+      );
 
-    setLoading(false);
+      if (newTab) {
+        newTab.focus();
+      }
+    }
   };
 
   return (
     <header className="flex items-center justify-between">
       <h1 className="text-[28px] font-bold ">{title}</h1>
       <div className="flex items-center gap-[12px]">
+        {userDomain ? (
+          <div className="flex items-center gap-[8px]">
+            <p className="text-[14px] text-gray-500">{userDomain}</p>
+            <button
+              type="button"
+              onClick={() => setUpdateDomainModalOpen(true)}
+            >
+              <EDIT_ICON />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="p-[8px_16px] text-[14px] font-medium rounded-[8px] bg-white border border-gray-dark text-darkBlue"
+            onClick={() => setUpdateDomainModalOpen(true)}
+          >
+            Add Your Domain
+          </button>
+        )}
         <button
           type="button"
           className="p-[8px_16px] text-[14px] font-medium rounded-[8px] bg-white border border-gray-dark text-darkBlue"
