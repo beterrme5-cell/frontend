@@ -12,7 +12,7 @@ import {
 } from "../../components/ui/LibraryComponents";
 import { useUserStore } from "../../store/userStore";
 import { toast } from "react-toastify";
-import { getAllVideos } from "../../api/libraryAPIs";
+import { getAllVideos, getUserDomain } from "../../api/libraryAPIs";
 import {
   getContactTags,
   getCustomFields,
@@ -35,28 +35,36 @@ const Dashboard = () => {
   const setCustomFieldsData = useGlobalModals(
     (state) => state.setCustomFieldsData
   );
+  const setUserDomain = useUserStore((state) => state.setUserDomain);
   const [error, setError] = useState(false);
   // Function to Fetch all the Data
   const fetchData = async (accessToken) => {
     try {
       // Fetch all data in parallel
-      const [videosResponse, historyResponse, customFieldsResponse] =
-        await Promise.all([
-          getAllVideos(accessToken),
-          getHistoryOfMessages(accessToken),
-          getCustomFields(accessToken),
-        ]);
+      const [
+        videosResponse,
+        historyResponse,
+        customFieldsResponse,
+        userDomainResponse,
+      ] = await Promise.all([
+        getAllVideos(accessToken),
+        getHistoryOfMessages(accessToken),
+        getCustomFields(accessToken),
+        getUserDomain(accessToken),
+      ]);
 
       // Check responses and set state only after all are resolved
       if (
         videosResponse.success &&
         historyResponse.success &&
-        customFieldsResponse.success
+        customFieldsResponse.success &&
+        userDomainResponse.success
       ) {
         // Update states
         setVideosData(videosResponse.data.videos);
         setHistoryData(historyResponse.data.histories);
         setCustomFieldsData(customFieldsResponse.data.customFields || []);
+        setUserDomain(userDomainResponse.data.userDomain || "");
       } else {
         if (!videosResponse.success) {
           toast.error(videosResponse.error || "Error Fetching Videos", {
@@ -81,6 +89,19 @@ const Dashboard = () => {
         if (!customFieldsResponse.success) {
           toast.error(
             customFieldsResponse.error || "Error Fetching Custom Fields",
+            {
+              position: "bottom-right",
+              autoClose: 5000,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+            }
+          );
+        }
+        if (!userDomainResponse.success) {
+          toast.error(
+            customFieldsResponse.error || "Error Fetching User Domain",
             {
               position: "bottom-right",
               autoClose: 5000,
