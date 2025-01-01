@@ -94,4 +94,7 @@ export const useGlobalModals = create((set) => ({
   setCustomFieldsData: (data) => set({ customFieldsData: data }),
   customFieldsSelected: [],
   setCustomFieldsSelected: (data) => set({ customFieldsSelected: data }),
+
+  updateDomainModalOpen: false,
+  setUpdateDomainModalOpen: (isOpen) => set({ updateDomainModalOpen: isOpen }),
 }));

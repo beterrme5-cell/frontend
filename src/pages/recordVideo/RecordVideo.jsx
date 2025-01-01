@@ -20,9 +20,8 @@ import {
   getCustomFields,
   getHistoryOfMessages,
 } from "../../api/commsAPIs";
-import { getUserLocationId } from "../../api/auth";
 import { toast } from "react-toastify";
-import { getAllVideos } from "../../api/libraryAPIs";
+import { getAllVideos, getUserDomain } from "../../api/libraryAPIs";
 
 const RecordVideo = () => {
   const videosData = useUserStore((state) => state.videosData);
@@ -42,51 +41,36 @@ const RecordVideo = () => {
   );
 
   const setLoading = useLoadingBackdrop((state) => state.setLoading);
-
-  // Function to Get the Location Id of the User and Redirect to the GHL Media Storage Page
-  const handleUploadVideoBtnClick = async () => {
-    setLoading(true);
-
-    const response = await getUserLocationId();
-
-    if (response.success) {
-      window.location.href = `https://app.gohighlevel.com/v2/location/${response.data.userLocationId}/media-storage`;
-      setLoading(false);
-    } else {
-      setLoading(false);
-      toast.error("Unknown error occurred!", {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-    }
-  };
+  const setUserDomain = useUserStore((state) => state.setUserDomain);
 
   // Function to Fetch all the Videos and History of the User
   const fetchData = async (token) => {
     try {
       // Fetch all data in parallel
-      const [videosResponse, historyResponse, customFieldsResponse] =
-        await Promise.all([
-          getAllVideos(token),
-          getHistoryOfMessages(token),
-          getCustomFields(token),
-        ]);
+      const [
+        videosResponse,
+        historyResponse,
+        customFieldsResponse,
+        userDomainResponse,
+      ] = await Promise.all([
+        getAllVideos(token),
+        getHistoryOfMessages(token),
+        getCustomFields(token),
+        getUserDomain(token),
+      ]);
 
       // Check responses and set state only after all are resolved
       if (
         videosResponse.success &&
         historyResponse.success &&
-        customFieldsResponse.success
+        customFieldsResponse.success &&
+        userDomainResponse.success
       ) {
         // Update states
         setVideosData(videosResponse.data.videos);
         setHistoryData(historyResponse.data.histories);
         setCustomFieldsData(customFieldsResponse.data.customFields || []);
+        setUserDomain(userDomainResponse.data.userDomain || "");
       } else {
         if (!videosResponse.success) {
           toast.error(videosResponse.error || "Error Fetching Videos", {
@@ -111,6 +95,19 @@ const RecordVideo = () => {
         if (!customFieldsResponse.success) {
           toast.error(
             customFieldsResponse.error || "Error Fetching Custom Fields",
+            {
+              position: "bottom-right",
+              autoClose: 5000,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+            }
+          );
+        }
+        if (!userDomainResponse.success) {
+          toast.error(
+            customFieldsResponse.error || "Error Fetching User Domain",
             {
               position: "bottom-right",
               autoClose: 5000,
@@ -176,10 +173,7 @@ const RecordVideo = () => {
 
   return (
     <LibraryRoot>
-      <LibraryHeader
-        title="My Library"
-        onUploadVideoBtnClick={handleUploadVideoBtnClick}
-      />
+      <LibraryHeader title="My Library" />
       <LibraryBody>
         <BodyTabsRoot>
           <Tabs.List>

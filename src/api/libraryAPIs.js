@@ -166,8 +166,7 @@ export const getContacts = async (params) => {
 };
 
 // API to get the user Domain using locationId
-export const getUserDomain = async () => {
-  const accessToken = localStorage.getItem("accessToken");
+export const getUserDomain = async (accessToken) => {
   try {
     const response = await axios.get(`${BASE_URL}/user/getUserDomain`, {
       headers: {
@@ -180,6 +179,34 @@ export const getUserDomain = async () => {
     };
   } catch (error) {
     console.error("Error while fetching user domain: ", error);
+    return {
+      success: false,
+      error: error.response?.data?.message || "An unexpected error occurred",
+    };
+  }
+};
+
+// API to update the User Domain
+export const updateUserDomain = async (newDomain) => {
+  const accessToken = localStorage.getItem("accessToken");
+  try {
+    const response = await axios.patch(
+      `${BASE_URL}/user/updateUserDomain`,
+      {
+        domain: newDomain,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    console.error("Error while updating user domain: ", error);
     return {
       success: false,
       error: error.response?.data?.message || "An unexpected error occurred",

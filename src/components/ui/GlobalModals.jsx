@@ -25,7 +25,12 @@ import {
   SMS_ICON,
 } from "../../assets/icons/DynamicIcons.jsx";
 import { StartRecordingBtn, TextEditor } from "./LibraryComponents";
-import { deleteVideo, getContacts, updateVideo } from "../../api/libraryAPIs";
+import {
+  deleteVideo,
+  getContacts,
+  updateUserDomain,
+  updateVideo,
+} from "../../api/libraryAPIs";
 import { useUserStore } from "../../store/userStore";
 import {
   getContactsBasedOnTags,
@@ -2216,6 +2221,92 @@ const VideoLinkNotAttachedModal = ({ onSendAnyway, onCancel }) => {
             }}
           >
             Go Back
+          </button>
+        </div>
+      </div>
+    </ModalRoot>
+  );
+};
+
+export const UpdateUserDomainModal = () => {
+  const modalLoadingOverlay = useGlobalModals(
+    (state) => state.modalLoadingOverlay
+  );
+  const setModalLoadingOverlay = useGlobalModals(
+    (state) => state.setModalLoadingOverlay
+  );
+  const updateDomainModalOpen = useGlobalModals(
+    (state) => state.updateDomainModalOpen
+  );
+  const setUpdateDomainModalOpen = useGlobalModals(
+    (state) => state.setUpdateDomainModalOpen
+  );
+
+  const userDomain = useUserStore((state) => state.userDomain);
+  const setUserDomain = useUserStore((state) => state.setUserDomain);
+
+  const [newDomain, setNewDomain] = useState("");
+
+  const handleUpdateUserDomain = async () => {
+    setModalLoadingOverlay(true);
+
+    const response = await updateUserDomain(newDomain);
+
+    if (response.success) {
+      setUpdateDomainModalOpen(false);
+      setUserDomain(newDomain);
+
+      toast.success("Domain updated successfully.", {
+        autoClose: 3000,
+        position: "bottom-right",
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+      });
+    } else {
+      toast.error(response.error || "Couldn't update domain.", {
+        autoClose: 3000,
+        position: "bottom-right",
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+      });
+    }
+
+    setModalLoadingOverlay(false);
+  };
+
+  useEffect(() => {
+    setNewDomain(userDomain);
+  }, [userDomain]);
+
+  return (
+    <ModalRoot
+      loadingOverlay={modalLoadingOverlay}
+      showModal={updateDomainModalOpen}
+      onClose={() => {
+        setUpdateDomainModalOpen(false);
+        setNewDomain(userDomain);
+      }}
+    >
+      <div className="flex flex-col gap-[24px] w-fit">
+        <div className="flex flex-col gap-[8px]">
+          <p className="text-[16px] font-medium">Domain Name</p>
+          <TextInput
+            value={newDomain}
+            onChange={(e) => {
+              setNewDomain(e.target.value);
+            }}
+            className="w-[350px]"
+          />
+          <button
+            className="bg-primary text-[16px] font-medium w-full p-[12px_16px] text-white rounded-[8px] mt-[12px]"
+            type="button"
+            onClick={() => {
+              handleUpdateUserDomain();
+            }}
+          >
+            Update Domain
           </button>
         </div>
       </div>

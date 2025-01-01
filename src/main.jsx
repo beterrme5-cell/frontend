@@ -18,6 +18,7 @@ import {
   PreRecordingDataInputModal,
   ShareVideoModal,
   StartRecordingWarningModal,
+  UpdateUserDomainModal,
   // UploadVideoModal,
 } from "./components/ui/GlobalModals.jsx";
 import LoadingBackdrop from "./components/ui/LoadingBackdrop.jsx";
@@ -35,6 +36,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <ShareVideoModal />
     <PreRecordingDataInputModal />
     <StartRecordingWarningModal />
+    <UpdateUserDomainModal />
     {/* Modals */}
     <LoadingBackdrop />
     {/* REACT TOASTIFY - CONTAINER */}

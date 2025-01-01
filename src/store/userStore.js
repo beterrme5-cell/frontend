@@ -37,4 +37,7 @@ export const useUserStore = create((set) => ({
 
   videoDetail: {},
   setVideoDetail: (videoDetail) => set({ videoDetail }),
+
+  userDomain: "",
+  setUserDomain: (userDomain) => set({ userDomain }),
 }));
