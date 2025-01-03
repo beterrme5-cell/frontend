@@ -2344,7 +2344,7 @@ export const UpdateUserDomainModal = () => {
               handleUpdateUserDomain();
             }}
           >
-            Save
+            Save Domain
           </button>
           <button
             className="bg-red-600 text-[16px] font-medium w-full p-[12px_16px] text-white rounded-[8px] mt-[12px]"
