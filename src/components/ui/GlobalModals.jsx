@@ -1737,7 +1737,7 @@ export const ContactsSelectionModalEmail = () => {
                 Send To All Contacts
               </button>
               <p className="p-[8px_12px] text-gray-500 text-[14px]">
-                Total Contacts: {sortedContacts?.length}
+                Total Contacts: {userContactsData?.total}
               </p>
             </div>
           </div>
@@ -1960,8 +1960,6 @@ export const ContactsSelectionModalSMS = () => {
       });
 
       if (response.success) {
-        console.log("Initi", response.data.contacts);
-
         setUserContactsData(response.data.contacts);
       } else {
         console.log("Error while fetching contacts: ", response.error);
@@ -2054,7 +2052,7 @@ export const ContactsSelectionModalSMS = () => {
                 Send To All Contacts
               </button>
               <p className="p-[8px_12px] text-gray-500 text-[14px]">
-                Total Contacts: {sortedContacts?.length}
+                Total Contacts: {userContactsData?.total}
               </p>
             </div>
           </div>
