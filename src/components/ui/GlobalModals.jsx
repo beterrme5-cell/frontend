@@ -2246,14 +2246,45 @@ export const UpdateUserDomainModal = () => {
   const setUserDomain = useUserStore((state) => state.setUserDomain);
 
   const [newDomain, setNewDomain] = useState("");
-  const [showPopupAgain, setShowPopupAgain] = useState(false);
 
   const handleUpdateUserDomain = async () => {
     setModalLoadingOverlay(true);
 
     const response = await updateUserDomain({
       domain: newDomain,
-      showPopupAgain: showPopupAgain,
+      showPopupAgain: false,
+    });
+
+    if (response.success) {
+      setUpdateDomainModalOpen(false);
+      setUserDomain(newDomain);
+
+      toast.success("Domain updated successfully.", {
+        autoClose: 3000,
+        position: "bottom-right",
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+      });
+    } else {
+      toast.error(response.error || "Couldn't update domain.", {
+        autoClose: 3000,
+        position: "bottom-right",
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+      });
+    }
+
+    setModalLoadingOverlay(false);
+  };
+
+  const handleDontShowPopupAgain = async () => {
+    setModalLoadingOverlay(true);
+
+    const response = await updateUserDomain({
+      domain: "",
+      showPopupAgain: false,
     });
 
     if (response.success) {
@@ -2305,20 +2336,26 @@ export const UpdateUserDomainModal = () => {
             className="w-[350px]"
           />
         </div>
-        <Checkbox
-          checked={showPopupAgain}
-          onChange={(event) => setShowPopupAgain(event.currentTarget.checked)}
-          label="Don't show this popup again."
-        />
-        <button
-          className="bg-primary text-[16px] font-medium w-full p-[12px_16px] text-white rounded-[8px] mt-[12px]"
-          type="button"
-          onClick={() => {
-            handleUpdateUserDomain();
-          }}
-        >
-          Save
-        </button>
+        <div className="flex items-center gap-[24px]">
+          <button
+            className="bg-primary text-[16px] font-medium w-full p-[12px_16px] text-white rounded-[8px] mt-[12px]"
+            type="button"
+            onClick={() => {
+              handleUpdateUserDomain();
+            }}
+          >
+            Save
+          </button>
+          <button
+            className="bg-red-600 text-[16px] font-medium w-full p-[12px_16px] text-white rounded-[8px] mt-[12px]"
+            type="button"
+            onClick={() => {
+              handleDontShowPopupAgain();
+            }}
+          >
+            Don&apos;t show again
+          </button>
+        </div>
       </div>
     </ModalRoot>
   );
