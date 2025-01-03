@@ -2291,7 +2291,7 @@ export const UpdateUserDomainModal = () => {
       setUpdateDomainModalOpen(false);
       setUserDomain(newDomain);
 
-      toast.success("Domain updated successfully.", {
+      toast.success("Updated Domain Prefernces!", {
         autoClose: 3000,
         position: "bottom-right",
         hideProgressBar: false,
@@ -2299,7 +2299,7 @@ export const UpdateUserDomainModal = () => {
         pauseOnHover: true,
       });
     } else {
-      toast.error(response.error || "Couldn't update domain.", {
+      toast.error(response.error || "Couldn't update domain preferences.", {
         autoClose: 3000,
         position: "bottom-right",
         hideProgressBar: false,
