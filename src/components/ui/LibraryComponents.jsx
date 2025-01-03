@@ -36,10 +36,6 @@ export const LibraryHeader = ({ title }) => {
   const userLocationId = localStorage.getItem("userLocationId");
   const userDomain = useUserStore((state) => state.userDomain);
 
-  const setUpdateDomainModalOpen = useGlobalModals(
-    (state) => state.setUpdateDomainModalOpen
-  );
-
   const handleRedirectToMediaStorage = async () => {
     if (userDomain) {
       const newTab = window.open(
@@ -66,25 +62,6 @@ export const LibraryHeader = ({ title }) => {
     <header className="flex items-center justify-between">
       <h1 className="text-[28px] font-bold ">{title}</h1>
       <div className="flex items-center gap-[12px]">
-        {userDomain ? (
-          <div className="flex items-center gap-[8px]">
-            <p className="text-[14px] text-gray-500">{userDomain}</p>
-            <button
-              type="button"
-              onClick={() => setUpdateDomainModalOpen(true)}
-            >
-              <EDIT_ICON />
-            </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            className="p-[8px_16px] text-[14px] font-medium rounded-[8px] bg-white border border-gray-dark text-darkBlue"
-            onClick={() => setUpdateDomainModalOpen(true)}
-          >
-            Add Your Domain
-          </button>
-        )}
         <button
           type="button"
           className="p-[8px_16px] text-[14px] font-medium rounded-[8px] bg-white border border-gray-dark text-darkBlue"

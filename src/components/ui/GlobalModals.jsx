@@ -2246,11 +2246,15 @@ export const UpdateUserDomainModal = () => {
   const setUserDomain = useUserStore((state) => state.setUserDomain);
 
   const [newDomain, setNewDomain] = useState("");
+  const [showPopupAgain, setShowPopupAgain] = useState(false);
 
   const handleUpdateUserDomain = async () => {
     setModalLoadingOverlay(true);
 
-    const response = await updateUserDomain(newDomain);
+    const response = await updateUserDomain({
+      domain: newDomain,
+      showPopupAgain: showPopupAgain,
+    });
 
     if (response.success) {
       setUpdateDomainModalOpen(false);
@@ -2289,7 +2293,8 @@ export const UpdateUserDomainModal = () => {
         setNewDomain(userDomain);
       }}
     >
-      <div className="flex flex-col gap-[24px] w-fit">
+      <div className="flex flex-col gap-[16px] w-[500px]">
+        <h1 className="text-[24px] font-bold">Add Domain</h1>
         <div className="flex flex-col gap-[8px]">
           <p className="text-[16px] font-medium">Domain Name</p>
           <TextInput
@@ -2299,16 +2304,21 @@ export const UpdateUserDomainModal = () => {
             }}
             className="w-[350px]"
           />
-          <button
-            className="bg-primary text-[16px] font-medium w-full p-[12px_16px] text-white rounded-[8px] mt-[12px]"
-            type="button"
-            onClick={() => {
-              handleUpdateUserDomain();
-            }}
-          >
-            Update Domain
-          </button>
         </div>
+        <Checkbox
+          checked={showPopupAgain}
+          onChange={(event) => setShowPopupAgain(event.currentTarget.checked)}
+          label="Don't show this popup again."
+        />
+        <button
+          className="bg-primary text-[16px] font-medium w-full p-[12px_16px] text-white rounded-[8px] mt-[12px]"
+          type="button"
+          onClick={() => {
+            handleUpdateUserDomain();
+          }}
+        >
+          Save
+        </button>
       </div>
     </ModalRoot>
   );

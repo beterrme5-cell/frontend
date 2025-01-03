@@ -40,6 +40,10 @@ const RecordVideo = () => {
     (state) => state.setIsNewRecordingModalOpen
   );
 
+  const setUpdateDomainModalOpen = useGlobalModals(
+    (state) => state.setUpdateDomainModalOpen
+  );
+
   const setLoading = useLoadingBackdrop((state) => state.setLoading);
   const setUserDomain = useUserStore((state) => state.setUserDomain);
 
@@ -71,6 +75,15 @@ const RecordVideo = () => {
         setHistoryData(historyResponse.data.histories);
         setCustomFieldsData(customFieldsResponse.data.customFields || []);
         setUserDomain(userDomainResponse.data.userDomain || "");
+
+        if (
+          userDomainResponse.data.userDomain === "" &&
+          userDomainResponse.data.showDomainPopup
+        ) {
+          setUpdateDomainModalOpen(true);
+        } else {
+          setUpdateDomainModalOpen(false);
+        }
       } else {
         if (!videosResponse.success) {
           toast.error(videosResponse.error || "Error Fetching Videos", {

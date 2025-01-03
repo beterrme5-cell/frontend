@@ -35,6 +35,10 @@ const Dashboard = () => {
   const setCustomFieldsData = useGlobalModals(
     (state) => state.setCustomFieldsData
   );
+  const setUpdateDomainModalOpen = useGlobalModals(
+    (state) => state.setUpdateDomainModalOpen
+  );
+
   const setUserDomain = useUserStore((state) => state.setUserDomain);
   const [error, setError] = useState(false);
   // Function to Fetch all the Data
@@ -65,6 +69,14 @@ const Dashboard = () => {
         setHistoryData(historyResponse.data.histories);
         setCustomFieldsData(customFieldsResponse.data.customFields || []);
         setUserDomain(userDomainResponse.data.userDomain || "");
+        if (
+          userDomainResponse.data.userDomain === "" &&
+          userDomainResponse.data.showDomainPopup
+        ) {
+          setUpdateDomainModalOpen(true);
+        } else {
+          setUpdateDomainModalOpen(false);
+        }
       } else {
         if (!videosResponse.success) {
           toast.error(videosResponse.error || "Error Fetching Videos", {

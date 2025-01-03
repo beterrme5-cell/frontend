@@ -187,13 +187,14 @@ export const getUserDomain = async (accessToken) => {
 };
 
 // API to update the User Domain
-export const updateUserDomain = async (newDomain) => {
+export const updateUserDomain = async ({ domain, showPopupAgain }) => {
   const accessToken = localStorage.getItem("accessToken");
   try {
     const response = await axios.patch(
       `${BASE_URL}/user/updateUserDomain`,
       {
-        domain: newDomain,
+        domain: domain,
+        showPopupAgain: showPopupAgain,
       },
       {
         headers: {
