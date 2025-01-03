@@ -1737,7 +1737,7 @@ export const ContactsSelectionModalEmail = () => {
                 Send To All Contacts
               </button>
               <p className="p-[8px_12px] text-gray-500 text-[14px]">
-                Total Contacts: {sortedContacts?.length}
+                Total Contacts: {userContactsData?.total}
               </p>
             </div>
           </div>
@@ -1960,8 +1960,6 @@ export const ContactsSelectionModalSMS = () => {
       });
 
       if (response.success) {
-        console.log("Initi", response.data.contacts);
-
         setUserContactsData(response.data.contacts);
       } else {
         console.log("Error while fetching contacts: ", response.error);
@@ -2054,7 +2052,7 @@ export const ContactsSelectionModalSMS = () => {
                 Send To All Contacts
               </button>
               <p className="p-[8px_12px] text-gray-500 text-[14px]">
-                Total Contacts: {sortedContacts?.length}
+                Total Contacts: {userContactsData?.total}
               </p>
             </div>
           </div>
@@ -2291,7 +2289,7 @@ export const UpdateUserDomainModal = () => {
       setUpdateDomainModalOpen(false);
       setUserDomain(newDomain);
 
-      toast.success("Domain updated successfully.", {
+      toast.success("Updated Domain Prefernces!", {
         autoClose: 3000,
         position: "bottom-right",
         hideProgressBar: false,
@@ -2299,7 +2297,7 @@ export const UpdateUserDomainModal = () => {
         pauseOnHover: true,
       });
     } else {
-      toast.error(response.error || "Couldn't update domain.", {
+      toast.error(response.error || "Couldn't update domain preferences.", {
         autoClose: 3000,
         position: "bottom-right",
         hideProgressBar: false,
