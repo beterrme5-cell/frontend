@@ -975,13 +975,13 @@ const SelectCustomShortCodeDropDown = ({ quillRef }) => {
   const setCustomTagsDropDownOpen = useGlobalModals(
     (state) => state.setCustomTagsDropDownOpen
   );
-  const setCustomFieldsSelected = useGlobalModals(
-    (state) => state.setCustomFieldsSelected
-  );
+  // const setCustomFieldsSelected = useGlobalModals(
+  //   (state) => state.setCustomFieldsSelected
+  // );
 
-  const customFieldsSelected = useGlobalModals(
-    (state) => state.customFieldsSelected
-  );
+  // const customFieldsSelected = useGlobalModals(
+  //   (state) => state.customFieldsSelected
+  // );
   const dropDownRef = useRef(null);
 
   useEffect(() => {
@@ -1015,28 +1015,28 @@ const SelectCustomShortCodeDropDown = ({ quillRef }) => {
     const selectedShortCodeValue = customShortCodesData.find(
       (tag) => tag.name === selectedShortCode
     ).value;
-    const selectedShortCodeId = customShortCodesData.find(
-      (tag) => tag.name === selectedShortCode
-    ).id;
+    // const selectedShortCodeId = customShortCodesData.find(
+    //   (tag) => tag.name === selectedShortCode
+    // ).id;
 
     const quill = quillRef.current;
     const quillContent = quill.getContents();
     const textLength = quill.getLength();
     const shortCodeValue = selectedShortCodeValue;
 
-    const selectedShortCodeObject = {
-      id: selectedShortCodeId,
-      name: selectedShortCodeValue,
-    };
+    // const selectedShortCodeObject = {
+    //   id: selectedShortCodeId,
+    //   name: selectedShortCodeValue,
+    // };
 
-    const updatedShortCodes = [
-      ...customFieldsSelected,
-      selectedShortCodeObject,
-    ];
+    // const updatedShortCodes = [
+    //   ...customFieldsSelected,
+    //   selectedShortCodeObject,
+    // ];
     // remove duplicates
-    const uniqueShortCodes = [...new Set(updatedShortCodes)];
+    // const uniqueShortCodes = [...new Set(updatedShortCodes)];
 
-    setCustomFieldsSelected(uniqueShortCodes);
+    // setCustomFieldsSelected(uniqueShortCodes);
 
     if (quillContent.ops.length === 1 && quillContent.ops[0].insert === "\n") {
       quill.insertText(0, shortCodeValue);
