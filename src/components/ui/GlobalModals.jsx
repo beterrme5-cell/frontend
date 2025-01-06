@@ -625,6 +625,13 @@ export const ShareVideoModal = () => {
     setIsVideoLinkNotAttachedModalOpen(true);
     setIsShareVideoModalOpen(false);
   };
+  const handleSendWithoutVideoLink = () => {
+    if (activeTab === "email") {
+      return handleSubmitEmail(emailContent);
+    }
+
+    return handleSubmitSMS();
+  };
 
   const ValidateSMSSend = () => {
     // Validation Checks
@@ -660,7 +667,7 @@ export const ShareVideoModal = () => {
       API_DATA = {
         contactIds: sendToAllContacts ? [] : selectedContacts,
         tags: [],
-        message: emailContent || htmlContent, // added htmlContent here to take content from params if email content state is not set yet
+        message: htmlContent, // added htmlContent here to take content from params if email content state is not set yet
         subject: emailSubject,
         sendToAll: sendToAllContacts,
         videoId: videoToBeShared._id,
@@ -671,7 +678,7 @@ export const ShareVideoModal = () => {
       API_DATA = {
         contactIds: [],
         tags: selectedContactTags,
-        message: emailContent || htmlContent, // added htmlContent here to take content from params if email content state is not set yet
+        message: htmlContent, // added htmlContent here to take content from params if email content state is not set yet
         subject: emailSubject,
         sendToAll: false,
         videoId: videoToBeShared._id,
@@ -892,7 +899,7 @@ export const ShareVideoModal = () => {
     <>
       <VideoLinkNotAttachedModal
         onSendAnyway={() => {
-          activeTab === "email" ? handleSubmitEmail() : handleSubmitSMS();
+          handleSendWithoutVideoLink();
         }}
         onCancel={() => {
           setIsShareVideoModalOpen(true);
@@ -909,6 +916,12 @@ export const ShareVideoModal = () => {
           // setShortCodesSelected([]);
           // setCustomFieldsSelected([]);
           setEmailContent("");
+          setEmailSubject("");
+          setSendToAllContacts(false);
+          setSelectedContactTags([]);
+          setSelectedSMSContacts([]);
+          setContactsLinkedWithTags([]);
+          setSmsContent("");
           setEditorContent(null);
         }}
       >
@@ -991,6 +1004,9 @@ export const ShareVideoModal = () => {
                     value={activeSubTab}
                     onChange={(value) => {
                       setActiveSubTab(value);
+                      setSelectedContactTags([]);
+                      setContactsLinkedWithTags([]);
+                      setSelectedContacts([]);
                     }}
                   >
                     <Tabs.List>
@@ -1156,7 +1172,12 @@ export const ShareVideoModal = () => {
                     variant="pills"
                     radius="xl"
                     value={activeSubTab}
-                    onChange={setActiveSubTab}
+                    onChange={(value) => {
+                      setActiveSubTab(value);
+                      setSelectedContactTags([]);
+                      setContactsLinkedWithTags([]);
+                      setSelectedSMSContacts([]);
+                    }}
                   >
                     <Tabs.List>
                       <Tabs.Tab
