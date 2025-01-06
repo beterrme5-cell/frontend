@@ -551,20 +551,20 @@ export const ShareVideoModal = () => {
     (state) => state.setIsVideoLinkNotAttachedModalOpen
   );
 
-  const shortCodesSelected = useGlobalModals(
-    (state) => state.shortCodesSelected
-  );
+  // const shortCodesSelected = useGlobalModals(
+  //   (state) => state.shortCodesSelected
+  // );
 
-  const setShortCodesSelected = useGlobalModals(
-    (state) => state.setShortCodesSelected
-  );
-  const customFieldsSelected = useGlobalModals(
-    (state) => state.customFieldsSelected
-  );
+  // const setShortCodesSelected = useGlobalModals(
+  //   (state) => state.setShortCodesSelected
+  // );
+  // const customFieldsSelected = useGlobalModals(
+  //   (state) => state.customFieldsSelected
+  // );
 
-  const setCustomFieldsSelected = useGlobalModals(
-    (state) => state.setCustomFieldsSelected
-  );
+  // const setCustomFieldsSelected = useGlobalModals(
+  //   (state) => state.setCustomFieldsSelected
+  // );
 
   const [activeTab, setActiveTab] = useState("email");
   const [activeSubTab, setActiveSubTab] = useState("contacts");
@@ -625,6 +625,13 @@ export const ShareVideoModal = () => {
     setIsVideoLinkNotAttachedModalOpen(true);
     setIsShareVideoModalOpen(false);
   };
+  const handleSendWithoutVideoLink = () => {
+    if (activeTab === "email") {
+      return handleSubmitEmail(emailContent);
+    }
+
+    return handleSubmitSMS();
+  };
 
   const ValidateSMSSend = () => {
     // Validation Checks
@@ -660,23 +667,23 @@ export const ShareVideoModal = () => {
       API_DATA = {
         contactIds: sendToAllContacts ? [] : selectedContacts,
         tags: [],
-        message: emailContent || htmlContent, // added htmlContent here to take content from params if email content state is not set yet
+        message: htmlContent, // added htmlContent here to take content from params if email content state is not set yet
         subject: emailSubject,
         sendToAll: sendToAllContacts,
         videoId: videoToBeShared._id,
-        codesUsed: shortCodesSelected,
-        customFieldsUsed: customFieldsSelected,
+        // codesUsed: shortCodesSelected,
+        // customFieldsUsed: customFieldsSelected,
       };
     } else {
       API_DATA = {
         contactIds: [],
         tags: selectedContactTags,
-        message: emailContent || htmlContent, // added htmlContent here to take content from params if email content state is not set yet
+        message: htmlContent, // added htmlContent here to take content from params if email content state is not set yet
         subject: emailSubject,
         sendToAll: false,
         videoId: videoToBeShared._id,
-        codesUsed: shortCodesSelected,
-        customFieldsUsed: customFieldsSelected,
+        // codesUsed: shortCodesSelected,
+        // customFieldsUsed: customFieldsSelected,
       };
     }
 
@@ -684,8 +691,8 @@ export const ShareVideoModal = () => {
     const response = await sendEmailToSelectedContacts(API_DATA);
 
     if (response.success) {
-      setShortCodesSelected([]);
-      setCustomFieldsSelected([]);
+      // setShortCodesSelected([]);
+      // setCustomFieldsSelected([]);
       setEditorContent(null);
 
       toast.success(response.data.message, {
@@ -892,7 +899,7 @@ export const ShareVideoModal = () => {
     <>
       <VideoLinkNotAttachedModal
         onSendAnyway={() => {
-          activeTab === "email" ? handleSubmitEmail() : handleSubmitSMS();
+          handleSendWithoutVideoLink();
         }}
         onCancel={() => {
           setIsShareVideoModalOpen(true);
@@ -906,10 +913,21 @@ export const ShareVideoModal = () => {
           setIsShareVideoModalOpen(false);
           setActiveTab("email");
           setActiveSubTab("contacts");
-          setShortCodesSelected([]);
-          setCustomFieldsSelected([]);
+          // setShortCodesSelected([]);
+          // setCustomFieldsSelected([]);
           setEmailContent("");
+          setEmailSubject("");
+          setSendToAllContacts(false);
+          setSelectedContactTags([]);
+          setSelectedSMSContacts([]);
+          setSelectedContacts([]);
+          setContactsLinkedWithTags([]);
+          setSmsContent("");
           setEditorContent(null);
+          setNoSMSContentError("");
+          setNoSelectedContactsError("");
+          setNoEmailSubjectError("");
+          setNoEmailContentError("");
         }}
       >
         <div className="flex flex-col gap-[24px] w-[70vw]">
@@ -923,6 +941,16 @@ export const ShareVideoModal = () => {
                 setActiveSubTab("contacts");
                 setSendToAllContacts(false);
                 setSelectedContactTags([]);
+                setSelectedSMSContacts([]);
+                setSelectedContacts([]);
+                setSmsContent("");
+                setEditorContent(null);
+                setNoSMSContentError("");
+                setNoSelectedContactsError("");
+                setNoEmailSubjectError("");
+                setNoEmailContentError("");
+                setEmailContent("");
+                setEmailSubject("");
                 setContactsLinkedWithTags([]);
               }}
             >
@@ -991,6 +1019,9 @@ export const ShareVideoModal = () => {
                     value={activeSubTab}
                     onChange={(value) => {
                       setActiveSubTab(value);
+                      setSelectedContactTags([]);
+                      setContactsLinkedWithTags([]);
+                      setSelectedContacts([]);
                     }}
                   >
                     <Tabs.List>
@@ -1156,7 +1187,12 @@ export const ShareVideoModal = () => {
                     variant="pills"
                     radius="xl"
                     value={activeSubTab}
-                    onChange={setActiveSubTab}
+                    onChange={(value) => {
+                      setActiveSubTab(value);
+                      setSelectedContactTags([]);
+                      setContactsLinkedWithTags([]);
+                      setSelectedSMSContacts([]);
+                    }}
                   >
                     <Tabs.List>
                       <Tabs.Tab
@@ -1679,14 +1715,36 @@ export const ContactsSelectionModalEmail = () => {
 
   useEffect(() => {
     const filteredContacts = userContactsData?.contacts?.filter((contact) => {
-      return (
-        contact?.email !== null &&
-        contact?.email !== undefined &&
-        contact?.email !== ""
-      );
+      return contact?.email && contact?.email.trim() !== "";
     });
 
-    const sortedArray = [...(filteredContacts || [])]?.sort((a, b) => {
+    let updatedContacts;
+
+    if (searchQuery.length > 2) {
+      // Skip combining selectedContacts when searchQuery is greater than 2 characters
+      updatedContacts = filteredContacts;
+    } else {
+      // Create a map for deduplication
+      const contactMap = new Map();
+
+      // Add selectedContacts first to ensure they appear at the top
+      selectedContacts.forEach((contact) => {
+        contactMap.set(contact.id, contact);
+      });
+
+      // Add filteredContacts, avoiding duplicates
+      filteredContacts?.forEach((contact) => {
+        if (!contactMap.has(contact.id)) {
+          contactMap.set(contact.id, contact);
+        }
+      });
+
+      // Convert the map back to an array
+      updatedContacts = Array.from(contactMap.values());
+    }
+
+    // Sort the array: selected contacts on top
+    const sortedArray = updatedContacts.sort((a, b) => {
       const isSelectedA = selectedContacts.some((sel) => sel.id === a.id);
       const isSelectedB = selectedContacts.some((sel) => sel.id === b.id);
 
@@ -1696,7 +1754,7 @@ export const ContactsSelectionModalEmail = () => {
     });
 
     setSortedContacts(sortedArray);
-  }, [selectedContacts, userContactsData?.contacts]);
+  }, [selectedContacts, userContactsData?.contacts, searchQuery]);
 
   return (
     <ModalRoot
@@ -1724,22 +1782,17 @@ export const ContactsSelectionModalEmail = () => {
                 - Please add at least 3 characters to search by name or email.
               </p>
             </div>
-            <div className="flex items-center gap-[4px]">
-              <button
-                className="p-[10px_16px] bg-primary text-white rounded-[8px] text-[14px] font-medium w-fit min-w-[168.59px]"
-                type="button"
-                onClick={() => {
-                  setSendToAllContacts(true);
-                  setIsContactsSelectionModalOpen(false);
-                  setIsShareVideoModalOpen(true);
-                }}
-              >
-                Send To All Contacts
-              </button>
-              <p className="p-[8px_12px] text-gray-500 text-[14px]">
-                Total Contacts: {userContactsData?.total}
-              </p>
-            </div>
+            <button
+              className="p-[10px_16px] bg-primary text-white rounded-[8px] text-[14px] font-medium w-fit min-w-[168.59px]"
+              type="button"
+              onClick={() => {
+                setSendToAllContacts(true);
+                setIsContactsSelectionModalOpen(false);
+                setIsShareVideoModalOpen(true);
+              }}
+            >
+              Send To All Contacts
+            </button>
           </div>
 
           {sortedContacts?.length > 0 ? (
@@ -1806,23 +1859,18 @@ export const ContactsSelectionModalEmail = () => {
           >
             Load More
           </button>
-          <div className="flex flex-col items-center gap-[2px]">
-            <button
-              className={`p-[10px_16px] ${
-                selectedContacts.length === 0
-                  ? "bg-[#CBCBCB] text-white hover:cursor-not-allowed"
-                  : "bg-primary text-white"
-              } rounded-[8px] text-[14px] font-medium w-fit`}
-              type="button"
-              onClick={handleSaveSelectedContacts}
-              disabled={selectedContacts.length === 0}
-            >
-              Send To Selected Contacts
-            </button>
-            <p className="p-[8px_12px] text-gray-500 text-[14px]">
-              Selected Contacts: {selectedContacts?.length}
-            </p>
-          </div>
+          <button
+            className={`p-[10px_16px] ${
+              selectedContacts.length === 0
+                ? "bg-[#CBCBCB] text-white hover:cursor-not-allowed"
+                : "bg-primary text-white"
+            } rounded-[8px] text-[14px] font-medium w-fit`}
+            type="button"
+            onClick={handleSaveSelectedContacts}
+            disabled={selectedContacts.length === 0}
+          >
+            Send To Selected Contacts ({selectedContacts?.length})
+          </button>
         </div>
       </div>
     </ModalRoot>
@@ -1991,15 +2039,38 @@ export const ContactsSelectionModalSMS = () => {
   useEffect(() => {
     const allContacts = userContactsData?.contacts || [];
 
+    // Filter contacts with a valid phone number
     const filteredContacts = allContacts.filter((contact) => {
-      return (
-        contact?.phone !== null &&
-        contact?.phone !== undefined &&
-        contact?.phone !== ""
-      );
+      return contact?.phone && contact?.phone.trim() !== "";
     });
 
-    const sortedArray = [...filteredContacts].sort((a, b) => {
+    let updatedContacts;
+
+    if (searchQuery.length > 2) {
+      // Skip combining selectedContacts when searchQuery is greater than 2 characters
+      updatedContacts = filteredContacts;
+    } else {
+      // Create a map to ensure uniqueness
+      const contactMap = new Map();
+
+      // Add selectedSMSContacts first to prioritize them
+      selectedSMSContacts.forEach((contact) => {
+        contactMap.set(contact.id, contact);
+      });
+
+      // Add filteredContacts, avoiding duplicates
+      filteredContacts.forEach((contact) => {
+        if (!contactMap.has(contact.id)) {
+          contactMap.set(contact.id, contact);
+        }
+      });
+
+      // Convert map to array
+      updatedContacts = Array.from(contactMap.values());
+    }
+
+    // Sort the array: selected contacts appear at the top
+    const sortedArray = updatedContacts.sort((a, b) => {
       const isSelectedA = selectedSMSContacts.some((sel) => sel.id === a.id);
       const isSelectedB = selectedSMSContacts.some((sel) => sel.id === b.id);
 
@@ -2009,7 +2080,7 @@ export const ContactsSelectionModalSMS = () => {
     });
 
     setSortedContacts(sortedArray);
-  }, [selectedSMSContacts, userContactsData?.contacts]);
+  }, [selectedSMSContacts, userContactsData?.contacts, searchQuery]);
 
   return (
     <ModalRoot
@@ -2039,22 +2110,17 @@ export const ContactsSelectionModalSMS = () => {
               </p>
             </div>
 
-            <div className="flex items-center gap-[4px]">
-              <button
-                className="p-[10px_16px] bg-primary text-white rounded-[8px] text-[14px] font-medium w-fit min-w-[168.59px]"
-                type="button"
-                onClick={() => {
-                  setSendToAllContacts(true);
-                  setIsSMSContactsSelectionModalOpen(false);
-                  setIsShareVideoModalOpen(true);
-                }}
-              >
-                Send To All Contacts
-              </button>
-              <p className="p-[8px_12px] text-gray-500 text-[14px]">
-                Total Contacts: {userContactsData?.total}
-              </p>
-            </div>
+            <button
+              className="p-[10px_16px] bg-primary text-white rounded-[8px] text-[14px] font-medium w-fit min-w-[168.59px]"
+              type="button"
+              onClick={() => {
+                setSendToAllContacts(true);
+                setIsSMSContactsSelectionModalOpen(false);
+                setIsShareVideoModalOpen(true);
+              }}
+            >
+              Send To All Contacts
+            </button>
           </div>
           {sortedContacts?.length > 0 ? (
             <div className="selectContactsDiv h-[calc(70dvh-310px)] overflow-auto">
@@ -2127,23 +2193,19 @@ export const ContactsSelectionModalSMS = () => {
           >
             Load More
           </button>
-          <div className="flex flex-col items-center gap-[2px]">
-            <button
-              className={`p-[10px_16px] ${
-                selectedSMSContacts.length === 0
-                  ? "bg-[#CBCBCB] text-white hover:cursor-not-allowed"
-                  : "bg-primary text-white"
-              } rounded-[8px] text-[14px] font-medium w-fit`}
-              type="button"
-              onClick={handleSaveSelectedContacts}
-              disabled={selectedSMSContacts.length === 0}
-            >
-              Send To Selected Contacts
-            </button>
-            <p className="p-[8px_12px] text-gray-500 text-[14px]">
-              Selected Contacts: {selectedSMSContacts?.length}
-            </p>
-          </div>
+
+          <button
+            className={`p-[10px_16px] ${
+              selectedSMSContacts.length === 0
+                ? "bg-[#CBCBCB] text-white hover:cursor-not-allowed"
+                : "bg-primary text-white"
+            } rounded-[8px] text-[14px] font-medium w-fit`}
+            type="button"
+            onClick={handleSaveSelectedContacts}
+            disabled={selectedSMSContacts.length === 0}
+          >
+            Send To Selected Contacts ({selectedSMSContacts?.length})
+          </button>
         </div>
       </div>
     </ModalRoot>

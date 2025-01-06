@@ -48,7 +48,6 @@ export const sendEmailToSelectedContacts = async (params) => {
         videoId: params.videoId,
         tags: params.tags,
         subject: params.subject,
-        codesUsed: params.codesUsed,
       },
       {
         headers: {

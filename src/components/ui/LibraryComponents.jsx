@@ -533,24 +533,24 @@ export const TextEditor = forwardRef(
       (state) => state.setTagsDropDownOpen
     );
 
-    const shortCodesSelected = useGlobalModals(
-      (state) => state.shortCodesSelected
-    );
+    // const shortCodesSelected = useGlobalModals(
+    //   (state) => state.shortCodesSelected
+    // );
 
-    const setShortCodesSelected = useGlobalModals(
-      (state) => state.setShortCodesSelected
-    );
+    // const setShortCodesSelected = useGlobalModals(
+    //   (state) => state.setShortCodesSelected
+    // );
 
     const containerRef = useRef(null);
     const onTextChangeRef = useRef(onTextChange);
 
-    const handleShortCodeGlobalState = (shortCode) => {
-      const updatedShortCodes = [...shortCodesSelected, shortCode];
-      // remove duplicates
-      const uniqueShortCodes = [...new Set(updatedShortCodes)];
+    // const handleShortCodeGlobalState = (shortCode) => {
+    //   const updatedShortCodes = [...shortCodesSelected, shortCode];
+    //   // remove duplicates
+    //   const uniqueShortCodes = [...new Set(updatedShortCodes)];
 
-      setShortCodesSelected(uniqueShortCodes);
-    };
+    //   setShortCodesSelected(uniqueShortCodes);
+    // };
 
     useLayoutEffect(() => {
       onTextChangeRef.current = onTextChange;
@@ -594,17 +594,28 @@ export const TextEditor = forwardRef(
       pasteLinkButton.setAttribute("type", "button");
 
       pasteLinkButton.onclick = () => {
+        // Set the width and height
+        const width = "300px"; // You can modify this to any value or make it dynamic
+        const height = "200px"; // Modify this as well
+
+        // Create the image tag with width and height
+        const videoThumbnail = `<img src="${videoToBeShared.thumbnailURL}" width="${width}" height="${height}" />`;
+
         // Paste the video link into the editor
         const range = quill.getSelection();
 
         if (range === null) {
-          const updatedVideoLink = `${videoToBeShared?.shareableLink} `;
-
-          quill.insertText(0, updatedVideoLink, {
+          const videoLink = `${videoToBeShared?.shareableLink} `;
+          quill.insertText(0, videoLink, {
             bold: true,
           });
+          quill.insertText(videoLink.length, "\n"); // Add a new line
 
-          return quill.setSelection(range.index + updatedVideoLink.length);
+          quill.clipboard.dangerouslyPasteHTML(
+            videoLink.length + 1,
+            videoThumbnail
+          ); // Insert the image
+          return;
         }
 
         // Adding a space before and after the link
@@ -614,36 +625,44 @@ export const TextEditor = forwardRef(
         quill.insertText(range.index, updatedVideoLink, {
           bold: true,
         });
+        quill.insertText(range.index + updatedVideoLink.length, "\n");
+
+        quill.clipboard.dangerouslyPasteHTML(
+          range.index + updatedVideoLink.length + 1,
+          videoThumbnail
+        );
 
         // Move the cursor to the end of the inserted link
-        quill.setSelection(range.index + updatedVideoLink.length);
+        quill.setSelection(
+          range.index + updatedVideoLink.length + videoThumbnail.length + 1
+        );
       };
 
-      const pasteThumbnailButton = document.createElement("button");
-      pasteThumbnailButton.innerHTML = `<div style="display: flex; align-items: center; gap: 4px; white-space: nowrap;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="18" height="18"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M448 80c8.8 0 16 7.2 16 16l0 319.8-5-6.5-136-176c-4.5-5.9-11.6-9.3-19-9.3s-14.4 3.4-19 9.3L202 340.7l-30.5-42.7C167 291.7 159.8 288 152 288s-15 3.7-19.5 10.1l-80 112L48 416.3l0-.3L48 96c0-8.8 7.2-16 16-16l384 0zM64 32C28.7 32 0 60.7 0 96L0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64L64 32zm80 192a48 48 0 1 0 0-96 48 48 0 1 0 0 96z" fill="currentColor"/></svg><p style="margin: 0; line-height: normal;">Paste Thumbnail</p></div>`;
-      pasteThumbnailButton.setAttribute("type", "button");
+      // const pasteThumbnailButton = document.createElement("button");
+      // pasteThumbnailButton.innerHTML = `<div style="display: flex; align-items: center; gap: 4px; white-space: nowrap;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="18" height="18"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M448 80c8.8 0 16 7.2 16 16l0 319.8-5-6.5-136-176c-4.5-5.9-11.6-9.3-19-9.3s-14.4 3.4-19 9.3L202 340.7l-30.5-42.7C167 291.7 159.8 288 152 288s-15 3.7-19.5 10.1l-80 112L48 416.3l0-.3L48 96c0-8.8 7.2-16 16-16l384 0zM64 32C28.7 32 0 60.7 0 96L0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64L64 32zm80 192a48 48 0 1 0 0-96 48 48 0 1 0 0 96z" fill="currentColor"/></svg><p style="margin: 0; line-height: normal;">Paste Thumbnail</p></div>`;
+      // pasteThumbnailButton.setAttribute("type", "button");
 
-      pasteThumbnailButton.onclick = () => {
-        // Set the width and height
-        const width = "300px"; // You can modify this to any value or make it dynamic
-        const height = "200px"; // Modify this as well
+      // pasteThumbnailButton.onclick = () => {
+      //   // Set the width and height
+      //   const width = "300px"; // You can modify this to any value or make it dynamic
+      //   const height = "200px"; // Modify this as well
 
-        // Create the image tag with width and height
-        const imageTag = `<img src="${videoToBeShared.thumbnailURL}" width="${width}" height="${height}" />`;
+      //   // Create the image tag with width and height
+      //   const imageTag = `<img src="${videoToBeShared.thumbnailURL}" width="${width}" height="${height}" />`;
 
-        const range = quill.getSelection();
-        if (range === null) {
-          // Insert the image at the current cursor position
-          quill.clipboard.dangerouslyPasteHTML(0, imageTag);
-          // Move the cursor to the end of the inserted image
-          quill.setSelection(0 + imageTag.length);
-        }
+      //   const range = quill.getSelection();
+      //   if (range === null) {
+      //     // Insert the image at the current cursor position
+      //     quill.clipboard.dangerouslyPasteHTML(0, imageTag);
+      //     // Move the cursor to the end of the inserted image
+      //     quill.setSelection(0 + imageTag.length);
+      //   }
 
-        // Insert the image at the current cursor position
-        quill.clipboard.dangerouslyPasteHTML(range.index, imageTag);
-        // Move the cursor to the end of the inserted image
-        quill.setSelection(range.index + imageTag.length);
-      };
+      //   // Insert the image at the current cursor position
+      //   quill.clipboard.dangerouslyPasteHTML(range.index, imageTag);
+      //   // Move the cursor to the end of the inserted image
+      //   quill.setSelection(range.index + imageTag.length);
+      // };
 
       const firstNameShortCodeBtn = document.createElement("button");
       firstNameShortCodeBtn.innerHTML = `<p style="margin: 0 5px; line-height: normal;">Add First Name</p>`;
@@ -664,11 +683,38 @@ export const TextEditor = forwardRef(
         }
 
         // handle udpate the shortCodesSelected
-        handleShortCodeGlobalState(firstNameShortCode);
+        // handleShortCodeGlobalState(firstNameShortCode);
+      };
+
+      const userSignatureBtn = document.createElement("button");
+      userSignatureBtn.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" width="18" height="18"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M192 128c0-17.7 14.3-32 32-32s32 14.3 32 32l0 7.8c0 27.7-2.4 55.3-7.1 82.5l-84.4 25.3c-40.6 12.2-68.4 49.6-68.4 92l0 71.9c0 40 32.5 72.5 72.5 72.5c26 0 50-13.9 62.9-36.5l13.9-24.3c26.8-47 46.5-97.7 58.4-150.5l94.4-28.3-12.5 37.5c-3.3 9.8-1.6 20.5 4.4 28.8s15.7 13.3 26 13.3l128 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-83.6 0 18-53.9c3.8-11.3 .9-23.8-7.4-32.4s-20.7-11.8-32.2-8.4L316.4 198.1c2.4-20.7 3.6-41.4 3.6-62.3l0-7.8c0-53-43-96-96-96s-96 43-96 96l0 32c0 17.7 14.3 32 32 32s32-14.3 32-32l0-32zm-9.2 177l49-14.7c-10.4 33.8-24.5 66.4-42.1 97.2l-13.9 24.3c-1.5 2.6-4.3 4.3-7.4 4.3c-4.7 0-8.5-3.8-8.5-8.5l0-71.9c0-14.1 9.3-26.6 22.8-30.7zM24 368c-13.3 0-24 10.7-24 24s10.7 24 24 24l40.3 0c-.2-2.8-.3-5.6-.3-8.5L64 368l-40 0zm592 48c13.3 0 24-10.7 24-24s-10.7-24-24-24l-310.1 0c-6.7 16.3-14.2 32.3-22.3 48L616 416z" fill="currentColor"/></svg><p style="margin: 0 5px; line-height: normal;">Add Signature</p></div>`;
+      userSignatureBtn.setAttribute("type", "button");
+      userSignatureBtn.onclick = () => {
+        const userSignatureShortCode = "{{user.email_signature}}";
+        const range = quill.getSelection();
+        if (range === null) {
+          // Insert the image at the current cursor position
+          quill.clipboard.dangerouslyPasteHTML(0, userSignatureShortCode);
+          // Move the cursor to the end of the inserted image
+          quill.setSelection(0 + userSignatureShortCode.length);
+        } else {
+          // Insert the image at the current cursor position
+          quill.clipboard.dangerouslyPasteHTML(
+            range.index,
+            userSignatureShortCode
+          );
+          // Move the cursor to the end of the inserted image
+          quill.setSelection(range.index + userSignatureShortCode.length);
+        }
+
+        // handle udpate the shortCodesSelected
+        // handleShortCodeGlobalState(firstNameShortCode);
       };
 
       // Style and append custom buttons to the wrapper
-      [pasteLinkButton, pasteThumbnailButton].forEach((btn) => {
+      [pasteLinkButton].forEach((btn) => {
         btn.classList.add("ql-formats");
         customButtonsWrapper.appendChild(btn);
       });
@@ -678,9 +724,12 @@ export const TextEditor = forwardRef(
 
       const tagButton = document.createElement("button");
       tagButton.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="20" height="20" aria-hidden="true">
+      <div style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="18" height="18" aria-hidden="true">
             <path d="M0 80L0 229.5c0 17 6.7 33.3 18.7 45.3l176 176c25 25 65.5 25 90.5 0L418.7 317.3c25-25 25-65.5 0-90.5l-176-176c-12-12-28.3-18.7-45.3-18.7L48 32C21.5 32 0 53.5 0 80zm112 32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z" fill="currentColor"/>
           </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" width="10" height="10"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M137.4 374.6c12.5 12.5 32.8 12.5 45.3 0l128-128c9.2-9.2 11.9-22.9 6.9-34.9s-16.6-19.8-29.6-19.8L32 192c-12.9 0-24.6 7.8-29.6 19.8s-2.2 25.7 6.9 34.9l128 128z" fill="currentColor"/></svg>
+          </div>
         `;
       tagButton.onclick = () => {
         setTagsDropDownOpen(!tagsDropDownOpen);
@@ -688,7 +737,7 @@ export const TextEditor = forwardRef(
       tagButton.setAttribute("type", "button");
 
       // Style and append custom buttons to the wrapper
-      [tagButton, firstNameShortCodeBtn].forEach((btn) => {
+      [tagButton, firstNameShortCodeBtn, userSignatureBtn].forEach((btn) => {
         btn.classList.add("ql-formats");
         tagsButtonWrapper.appendChild(btn);
       });
@@ -926,13 +975,13 @@ const SelectCustomShortCodeDropDown = ({ quillRef }) => {
   const setCustomTagsDropDownOpen = useGlobalModals(
     (state) => state.setCustomTagsDropDownOpen
   );
-  const setCustomFieldsSelected = useGlobalModals(
-    (state) => state.setCustomFieldsSelected
-  );
+  // const setCustomFieldsSelected = useGlobalModals(
+  //   (state) => state.setCustomFieldsSelected
+  // );
 
-  const customFieldsSelected = useGlobalModals(
-    (state) => state.customFieldsSelected
-  );
+  // const customFieldsSelected = useGlobalModals(
+  //   (state) => state.customFieldsSelected
+  // );
   const dropDownRef = useRef(null);
 
   useEffect(() => {
@@ -966,28 +1015,28 @@ const SelectCustomShortCodeDropDown = ({ quillRef }) => {
     const selectedShortCodeValue = customShortCodesData.find(
       (tag) => tag.name === selectedShortCode
     ).value;
-    const selectedShortCodeId = customShortCodesData.find(
-      (tag) => tag.name === selectedShortCode
-    ).id;
+    // const selectedShortCodeId = customShortCodesData.find(
+    //   (tag) => tag.name === selectedShortCode
+    // ).id;
 
     const quill = quillRef.current;
     const quillContent = quill.getContents();
     const textLength = quill.getLength();
     const shortCodeValue = selectedShortCodeValue;
 
-    const selectedShortCodeObject = {
-      id: selectedShortCodeId,
-      name: selectedShortCodeValue,
-    };
+    // const selectedShortCodeObject = {
+    //   id: selectedShortCodeId,
+    //   name: selectedShortCodeValue,
+    // };
 
-    const updatedShortCodes = [
-      ...customFieldsSelected,
-      selectedShortCodeObject,
-    ];
+    // const updatedShortCodes = [
+    //   ...customFieldsSelected,
+    //   selectedShortCodeObject,
+    // ];
     // remove duplicates
-    const uniqueShortCodes = [...new Set(updatedShortCodes)];
+    // const uniqueShortCodes = [...new Set(updatedShortCodes)];
 
-    setCustomFieldsSelected(uniqueShortCodes);
+    // setCustomFieldsSelected(uniqueShortCodes);
 
     if (quillContent.ops.length === 1 && quillContent.ops[0].insert === "\n") {
       quill.insertText(0, shortCodeValue);
