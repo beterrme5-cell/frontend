@@ -920,9 +920,14 @@ export const ShareVideoModal = () => {
           setSendToAllContacts(false);
           setSelectedContactTags([]);
           setSelectedSMSContacts([]);
+          setSelectedContacts([]);
           setContactsLinkedWithTags([]);
           setSmsContent("");
           setEditorContent(null);
+          setNoSMSContentError("");
+          setNoSelectedContactsError("");
+          setNoEmailSubjectError("");
+          setNoEmailContentError("");
         }}
       >
         <div className="flex flex-col gap-[24px] w-[70vw]">
@@ -936,6 +941,16 @@ export const ShareVideoModal = () => {
                 setActiveSubTab("contacts");
                 setSendToAllContacts(false);
                 setSelectedContactTags([]);
+                setSelectedSMSContacts([]);
+                setSelectedContacts([]);
+                setSmsContent("");
+                setEditorContent(null);
+                setNoSMSContentError("");
+                setNoSelectedContactsError("");
+                setNoEmailSubjectError("");
+                setNoEmailContentError("");
+                setEmailContent("");
+                setEmailSubject("");
                 setContactsLinkedWithTags([]);
               }}
             >
