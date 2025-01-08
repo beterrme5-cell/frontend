@@ -163,6 +163,8 @@ const Dashboard = () => {
       // Send Data to the Backend API to Decrypt the code
       const response = await getDecryptedUserData({ tokenKey: key });
 
+      console.log("Decrypt Response: ", response);
+
       if (!response.success || response.data.accessToken === undefined) {
         setError(true);
         return setLoading(false);

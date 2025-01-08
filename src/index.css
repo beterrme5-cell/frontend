@@ -9,6 +9,19 @@ body {
   color: #212121;
 }
 
+/* Quill Fonts */
+.ql-font-arial {
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+}
+
+.ql-font-comic {
+  font-family: "Comic Sans MS", cursive;
+}
+
+.ql-font-times {
+  font-family: "Times New Roman", serif;
+}
+
 /* Customizing Mantine input fields style */
 .mantine-TextInput-input {
   border-color: #d7d5dd !important;

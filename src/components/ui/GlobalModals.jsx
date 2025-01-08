@@ -8,6 +8,7 @@ import {
   Table,
   Checkbox,
   Loader,
+  Divider,
 } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
 import { LoadingOverlay, MultiSelect } from "@mantine/core";
@@ -715,6 +716,7 @@ export const ShareVideoModal = () => {
           sendType: history.data.sendType,
           subject: history.data.subject,
           status: history.data.status,
+          createdAt: history.data.createdAt,
         };
       });
 
@@ -799,6 +801,7 @@ export const ShareVideoModal = () => {
           sendType: history.data.sendType,
           subject: history.data.subject,
           status: history.data.status,
+          createdAt: history.data.createdAt,
         };
       });
       setHistoryData([...historyData, ...newHistoryData]);
@@ -939,18 +942,23 @@ export const ShareVideoModal = () => {
               onChange={(value) => {
                 setActiveTab(value);
                 setActiveSubTab("contacts");
+                if (value === "email") {
+                  setSelectedSMSContacts([]);
+                  setSmsContent("");
+                  setNoSMSContentError("");
+                }
+                if (value === "sms") {
+                  setSmsContent(`${videoToBeShared?.shareableLink} `);
+                  setSelectedContacts([]);
+                  setEditorContent(null);
+                  setNoEmailContentError("");
+                  setNoEmailSubjectError("");
+                  setEmailContent("");
+                  setEmailSubject("");
+                }
+                setNoSelectedContactsError("");
                 setSendToAllContacts(false);
                 setSelectedContactTags([]);
-                setSelectedSMSContacts([]);
-                setSelectedContacts([]);
-                setSmsContent("");
-                setEditorContent(null);
-                setNoSMSContentError("");
-                setNoSelectedContactsError("");
-                setNoEmailSubjectError("");
-                setNoEmailContentError("");
-                setEmailContent("");
-                setEmailSubject("");
                 setContactsLinkedWithTags([]);
               }}
             >
@@ -1309,17 +1317,29 @@ export const ShareVideoModal = () => {
                 <div className="w-full">
                   <p className="text-[14px] mb-[8px]">Content</p>
                   <div className="relative rounded-[12px] w-full h-[250px] !bg-[#F7F7F8] border border-[#D7D5DD] overflow-hidden">
-                    <button
-                      type="button"
-                      className="bg-white p-[8px] text-darkBlue text-[14px] font-medium shadow-sm w-full text-start"
-                      onClick={() => {
-                        setSmsContent(
-                          `${smsContent} ${videoToBeShared?.shareableLink} `
-                        );
-                      }}
-                    >
-                      Paste Video Link
-                    </button>
+                    <div className="flex items-center gap-[4px] w-full bg-white py-[8px] shadow-sm">
+                      <button
+                        type="button"
+                        className="px-[8px] text-darkBlue text-[14px] font-medium w-fit text-start"
+                        onClick={() => {
+                          setSmsContent(`${smsContent} {{contact.name}}`);
+                        }}
+                      >
+                        Add First Name
+                      </button>
+                      <Divider orientation="vertical" className="!h-3/2" />
+                      <button
+                        type="button"
+                        className="px-[8px] text-darkBlue text-[14px] font-medium w-fit text-start"
+                        onClick={() => {
+                          setSmsContent(
+                            `${smsContent} ${videoToBeShared?.shareableLink} `
+                          );
+                        }}
+                      >
+                        Paste Video Link
+                      </button>
+                    </div>
 
                     <textarea
                       id="smsContent-container"
