@@ -468,36 +468,55 @@ export const HistoryTabSection = ({ children }) => {
 export const HistoryTableList = () => {
   const historyData = useUserStore((state) => state.historyData);
 
-  const rows = historyData.map((element) => (
-    <Table.Tr key={element._id}>
-      <Table.Td className=" text-[14px] font-medium">
-        {element?.videoTitle}
-      </Table.Td>
-      <Table.Td className=" text-[14px] font-medium">
-        {element?.contactName}
-      </Table.Td>
-      <Table.Td className=" text-[14px] font-medium">
-        {element?.contactAddress}
-      </Table.Td>
-      <Table.Td className=" text-[14px] font-medium">
-        {element?.sendType}
-      </Table.Td>
-      <Table.Td className=" text-[14px] font-medium">
-        {element?.subject}
-      </Table.Td>
-      <Table.Td>
-        <div
-          className={`${
-            element?.status === "sent"
-              ? "text-[#5AA63F] bg-[rgba(90,166,63,0.14)]"
-              : "text-[#FF613E] bg-[rgba(255,97,62,0.14)]"
-          } uppercase text-center text-[12px] font-medium py-[4px] px-[8px] rounded-[2px] w-fit`}
-        >
-          {element?.status}
-        </div>
-      </Table.Td>
-    </Table.Tr>
-  ));
+  // Sort the history data such that the most recent history is at the top
+  const sortedHistoryData = historyData.sort((a, b) => {
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+
+  const rows = sortedHistoryData.map((element) => {
+    const formattedDate = Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+    }).format(new Date(element?.createdAt));
+
+    return (
+      <Table.Tr key={element._id}>
+        <Table.Td className=" text-[14px] font-medium">
+          {element?.videoTitle}
+        </Table.Td>
+        <Table.Td className=" text-[14px] font-medium">
+          {element?.contactName}
+        </Table.Td>
+        <Table.Td className=" text-[14px] font-medium">
+          {element?.contactAddress}
+        </Table.Td>
+        <Table.Td className=" text-[14px] font-medium">
+          {element?.sendType}
+        </Table.Td>
+        <Table.Td className=" text-[14px] font-medium">
+          {element?.subject}
+        </Table.Td>{" "}
+        <Table.Td className=" text-[14px] font-medium">
+          {formattedDate}
+        </Table.Td>
+        <Table.Td>
+          <div
+            className={`${
+              element?.status === "sent"
+                ? "text-[#5AA63F] bg-[rgba(90,166,63,0.14)]"
+                : "text-[#FF613E] bg-[rgba(255,97,62,0.14)]"
+            } uppercase text-center text-[12px] font-medium py-[4px] px-[8px] rounded-[2px] w-fit`}
+          >
+            {element?.status}
+          </div>
+        </Table.Td>
+      </Table.Tr>
+    );
+  });
   return (
     <Table
       striped
@@ -514,6 +533,7 @@ export const HistoryTableList = () => {
           <Table.Th>Contact Address</Table.Th>
           <Table.Th>Type</Table.Th>
           <Table.Th>Subject</Table.Th>
+          <Table.Th>Date</Table.Th>
           <Table.Th>Status</Table.Th>
         </Table.Tr>
       </Table.Thead>
@@ -566,7 +586,8 @@ export const TextEditor = forwardRef(
       editorContainer.id = "text-editor-container";
 
       const toolbarOptions = [
-        [{ header: [1, 2, 3, 4, 5, 6, false] }],
+        // [{ header: [1, 2, 3, 4, 5, 6, false] }],
+        [{ font: [] }],
         [{ align: [] }],
         ["bold", "italic", "underline", "strike"], // toggled buttons
         [{ list: "ordered" }, { list: "bullet" }, { list: "check" }],
@@ -580,6 +601,24 @@ export const TextEditor = forwardRef(
           toolbar: toolbarOptions,
         },
       });
+
+      if (!editorContent) {
+        if (!editorContent) {
+          const videoLink = `${videoToBeShared?.shareableLink} `;
+
+          // Insert two line breaks at the beginning
+          quill.insertText(0, "\n\n");
+
+          // Insert "Video Link:" (not bold) after the line breaks
+          quill.insertText(2, "Video Link: ");
+
+          // Insert the video link (bold) after "Video Link:"
+          quill.insertText(13, videoLink, { bold: true, color: "blue" });
+
+          // Optionally, move the cursor to a new line after the video link
+          quill.insertText(13 + videoLink.length, "\n\n");
+        }
+      }
 
       // Toolbar Custom Options
       // Get the toolbar container
@@ -606,36 +645,48 @@ export const TextEditor = forwardRef(
 
         if (range === null) {
           const videoLink = `${videoToBeShared?.shareableLink} `;
+
+          // Insert the video link at the beginning with formatting
           quill.insertText(0, videoLink, {
             bold: true,
+            color: "blue",
           });
-          quill.insertText(videoLink.length, "\n"); // Add a new line
 
+          // Insert the image after the video link
           quill.clipboard.dangerouslyPasteHTML(
-            videoLink.length + 1,
+            videoLink.length,
             videoThumbnail
-          ); // Insert the image
-          return;
+          );
+
+          // Add a new line after the image for separation
+          quill.insertText(videoLink.length + videoThumbnail.length, "\n\n");
+        } else {
+          // Adding a space before and after the link
+          const updatedVideoLink = ` ${videoToBeShared?.shareableLink} `;
+
+          // Insert the link with formatting at the specified range
+          quill.insertText(range.index, updatedVideoLink, {
+            bold: true,
+            color: "blue",
+          });
+
+          // Insert the image after the video link
+          quill.clipboard.dangerouslyPasteHTML(
+            range.index + updatedVideoLink.length,
+            videoThumbnail
+          );
+
+          // Add a new line after the image for separation
+          quill.insertText(
+            range.index + updatedVideoLink.length + videoThumbnail.length,
+            "\n\n"
+          );
+
+          // Move the cursor to the end of the inserted link and image
+          quill.setSelection(
+            range.index + updatedVideoLink.length + videoThumbnail.length + 2
+          );
         }
-
-        // Adding a space before and after the link
-        const updatedVideoLink = ` ${videoToBeShared?.shareableLink} `;
-
-        // Insert the link with formatting
-        quill.insertText(range.index, updatedVideoLink, {
-          bold: true,
-        });
-        quill.insertText(range.index + updatedVideoLink.length, "\n");
-
-        quill.clipboard.dangerouslyPasteHTML(
-          range.index + updatedVideoLink.length + 1,
-          videoThumbnail
-        );
-
-        // Move the cursor to the end of the inserted link
-        quill.setSelection(
-          range.index + updatedVideoLink.length + videoThumbnail.length + 1
-        );
       };
 
       // const pasteThumbnailButton = document.createElement("button");
