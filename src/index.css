@@ -10,7 +10,7 @@ body {
 }
 
 /* Quill Fonts */
-.ql-font-arial {
+/* .ql-font-arial {
   font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
 }
 
@@ -20,7 +20,7 @@ body {
 
 .ql-font-times {
   font-family: "Times New Roman", serif;
-}
+} */
 
 /* Customizing Mantine input fields style */
 .mantine-TextInput-input {
@@ -151,6 +151,16 @@ body {
   max-height: 202px;
 }
 
+.contactsLinkedWithTagsModal::-webkit-scrollbar {
+  width: 5px !important;
+  border-radius: 5px !important;
+  background-color: #a5a5a52e !important;
+}
+
+.contactsLinkedWithTagsModal::-webkit-scrollbar-thumb {
+  background-color: #21212195;
+  border-radius: 5px !important;
+}
 #text-editor-container div.ql-editor::-webkit-scrollbar {
   width: 5px !important;
   border-radius: 5px !important;

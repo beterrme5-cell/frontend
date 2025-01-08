@@ -582,7 +582,12 @@ export const ShareVideoModal = () => {
   const [noEmailSubjectError, setNoEmailSubjectError] = useState("");
   const [noEmailContentError, setNoEmailContentError] = useState("");
   const [editorContent, setEditorContent] = useState(null);
-
+  const openContactsLinkedWithTagsModal = useGlobalModals(
+    (state) => state.openContactsLinkedWithTagsModal
+  );
+  const setOpenContactsLinkedWithTagsModal = useGlobalModals(
+    (state) => state.setOpenContactsLinkedWithTagsModal
+  );
   const [contactsLinkedWithTags, setContactsLinkedWithTags] = useState([]);
   const [fetchingContactsLinkedWithTags, setFetchingContactsLinkedWithTags] =
     useState(false);
@@ -909,6 +914,13 @@ export const ShareVideoModal = () => {
         }}
       />
 
+      {openContactsLinkedWithTagsModal && (
+        <ShowContactsWithTagsModal
+          contactsData={contactsLinkedWithTags}
+          contactType={activeTab}
+        />
+      )}
+
       <ShareModalRoot
         loadingOverlay={modalLoadingOverlay}
         showModal={isShareVideoModalOpen}
@@ -1130,6 +1142,18 @@ export const ShareVideoModal = () => {
                               ...
                             </p>
                           )}
+                          {contactsLinkedWithTags.length > 2 && (
+                            <button
+                              type="button"
+                              className="text-primary text-[12px] ms-[8px] font-medium hover:underline"
+                              onClick={() => {
+                                setOpenContactsLinkedWithTagsModal(true);
+                                setIsShareVideoModalOpen(false);
+                              }}
+                            >
+                              View all
+                            </button>
+                          )}
                         </div>
                       </div>
                     </Tabs.Panel>
@@ -1303,6 +1327,18 @@ export const ShareVideoModal = () => {
                             <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
                               ...
                             </p>
+                          )}
+                          {contactsLinkedWithTags.length > 2 && (
+                            <button
+                              type="button"
+                              className="text-primary text-[12px] ms-[8px] font-medium hover:underline"
+                              onClick={() => {
+                                setOpenContactsLinkedWithTagsModal(true);
+                                setIsShareVideoModalOpen(false);
+                              }}
+                            >
+                              View all
+                            </button>
                           )}
                         </div>
                       </div>
@@ -2436,6 +2472,78 @@ export const UpdateUserDomainModal = () => {
             Don&apos;t show again
           </button>
         </div>
+      </div>
+    </ModalRoot>
+  );
+};
+
+const ShowContactsWithTagsModal = ({ contactsData, contactType }) => {
+  const modalLoadingOverlay = useGlobalModals(
+    (state) => state.modalLoadingOverlay
+  );
+  const setIsShareVideoModalOpen = useGlobalModals(
+    (state) => state.setIsShareVideoModalOpen
+  );
+
+  const openContactsLinkedWithTagsModal = useGlobalModals(
+    (state) => state.openContactsLinkedWithTagsModal
+  );
+  const setOpenContactsLinkedWithTagsModal = useGlobalModals(
+    (state) => state.setOpenContactsLinkedWithTagsModal
+  );
+
+  const rows = contactsData.map((contact, index) => {
+    return (
+      <Table.Tr key={index}>
+        <Table.Td className=" text-[14px] capitalize">{contact?.name}</Table.Td>
+        <Table.Td className=" text-[14px]">
+          {contactType === "email" ? contact?.email : contact?.phone}
+        </Table.Td>
+      </Table.Tr>
+    );
+  });
+
+  return (
+    <ModalRoot
+      loadingOverlay={modalLoadingOverlay}
+      showModal={openContactsLinkedWithTagsModal}
+      onClose={() => {
+        setOpenContactsLinkedWithTagsModal(false);
+        setIsShareVideoModalOpen(true);
+      }}
+    >
+      <div className="flex flex-col gap-[24px] w-[70vw] lg:w-[50vw] overflow-hidden max-h-[500px]">
+        <h3 className="text-[24px] font-semibold">Selected Contacts</h3>
+        {contactsData.length > 0 ? (
+          <div className="h-[calc(100%-74.81px)] overflow-auto contactsLinkedWithTagsModal">
+            <Table
+              striped
+              highlightOnHover
+              withRowBorders={false}
+              stripedColor="#F4F9FF"
+              verticalSpacing="12px"
+              stickyHeader
+              stickyHeaderOffset={0}
+            >
+              <Table.Thead>
+                <Table.Tr>
+                  {/* <Table.Th>Serial No</Table.Th> */}
+                  <Table.Th>Contact Name</Table.Th>
+                  <Table.Th className="capitalize">
+                    Contact {contactType}
+                  </Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>{rows}</Table.Tbody>
+            </Table>
+          </div>
+        ) : (
+          <div className="h-[150px] flex items-center justify-center text-center">
+            <p className="text-[14px] text-gray-500 font-medium">
+              No Tag Selected!
+            </p>
+          </div>
+        )}
       </div>
     </ModalRoot>
   );

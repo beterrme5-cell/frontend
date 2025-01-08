@@ -97,4 +97,8 @@ export const useGlobalModals = create((set) => ({
 
   updateDomainModalOpen: false,
   setUpdateDomainModalOpen: (isOpen) => set({ updateDomainModalOpen: isOpen }),
+
+  openContactsLinkedWithTagsModal: false,
+  setOpenContactsLinkedWithTagsModal: (isOpen) =>
+    set({ openContactsLinkedWithTagsModal: isOpen }),
 }));
