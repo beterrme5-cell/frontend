@@ -25,6 +25,11 @@ import {
 } from "../../assets/icons/DynamicIcons";
 import { useLoadingBackdrop } from "./../../store/loadingBackdrop";
 
+// Customn Fonts - Quill Editor
+const FontAttributor = Quill.import("attributors/class/font");
+FontAttributor.whitelist = ["arial", "sansserif", "serif", "monospace"];
+Quill.register(FontAttributor, true);
+
 export const LibraryRoot = ({ children }) => {
   return (
     <section className="bg-white p-[32px] rounded-[12px]">{children}</section>
@@ -587,7 +592,11 @@ export const TextEditor = forwardRef(
 
       const toolbarOptions = [
         // [{ header: [1, 2, 3, 4, 5, 6, false] }],
-        [{ font: [] }],
+        [
+          {
+            font: ["arial", "sansserif", "serif", "monospace"],
+          },
+        ],
         [{ align: [] }],
         ["bold", "italic", "underline", "strike"], // toggled buttons
         [{ list: "ordered" }, { list: "bullet" }, { list: "check" }],
