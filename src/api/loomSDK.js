@@ -4,7 +4,7 @@ import axios from "axios";
 export const setupLoomSDK = async () => {
   try {
     const response = await axios.get(
-      `https://recording-app-backend.vercel.app/setup`
+      `https://konnectvid-backend.vercel.app/setup`
     );
     return {
       success: true,

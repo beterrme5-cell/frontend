@@ -615,17 +615,29 @@ export const TextEditor = forwardRef(
         if (!editorContent) {
           const videoLink = `${videoToBeShared?.shareableLink} `;
 
+          // Create the image tag with width and height
+          const width = "300px"; // You can modify this to any value or make it dynamic
+          const height = "200px"; // Modify this as well
+          const videoThumbnail = `<img src="${videoToBeShared.thumbnailURL}" width="${width}" height="${height}" />`;
+
           // Insert two line breaks at the beginning
           quill.insertText(0, "\n\n");
 
-          // Insert "Video Link:" (not bold) after the line breaks
-          quill.insertText(2, "Video Link: ");
-
           // Insert the video link (bold) after "Video Link:"
-          quill.insertText(13, videoLink, { bold: true, color: "blue" });
+          quill.insertText(2, videoLink, { bold: true, color: "blue" });
+          // Optionally, move the cursor to a new line after the video link
+          quill.insertText(2 + videoLink.length, "\n");
+
+          quill.clipboard.dangerouslyPasteHTML(
+            2 + videoLink.length + 1,
+            videoThumbnail
+          );
 
           // Optionally, move the cursor to a new line after the video link
-          quill.insertText(13 + videoLink.length, "\n\n");
+          quill.insertText(
+            3 + videoLink.length + videoThumbnail.length,
+            "\n\n"
+          );
         }
       }
 
@@ -653,7 +665,7 @@ export const TextEditor = forwardRef(
         const range = quill.getSelection();
 
         if (range === null) {
-          const videoLink = `${videoToBeShared?.shareableLink} `;
+          const videoLink = `${videoToBeShared?.shareableLink}`;
 
           // Insert the video link at the beginning with formatting
           quill.insertText(0, videoLink, {
@@ -663,12 +675,15 @@ export const TextEditor = forwardRef(
 
           // Insert the image after the video link
           quill.clipboard.dangerouslyPasteHTML(
-            videoLink.length,
+            videoLink.length + 1,
             videoThumbnail
           );
 
           // Add a new line after the image for separation
-          quill.insertText(videoLink.length + videoThumbnail.length, "\n\n");
+          quill.insertText(
+            videoLink.length + 1 + videoThumbnail.length,
+            "\n\n"
+          );
         } else {
           // Adding a space before and after the link
           const updatedVideoLink = ` ${videoToBeShared?.shareableLink} `;
@@ -679,9 +694,11 @@ export const TextEditor = forwardRef(
             color: "blue",
           });
 
+          quill.insertText(range.index + updatedVideoLink.length, "\n");
+
           // Insert the image after the video link
           quill.clipboard.dangerouslyPasteHTML(
-            range.index + updatedVideoLink.length,
+            range.index + updatedVideoLink.length + 1,
             videoThumbnail
           );
 
