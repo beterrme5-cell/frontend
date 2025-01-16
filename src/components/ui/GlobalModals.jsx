@@ -1456,7 +1456,7 @@ export const ShareVideoModal = () => {
                       </CopyButton>
                     )}
                   </div>
-                  <div className="relative rounded-[12px] w-full h-[350px] bg-[#F7F7F8] border border-[#D7D5DD] overflow-hidden">
+                  <div className="relative rounded-[12px] w-full min-h-[250px] h-fit bg-[#F7F7F8] border border-[#D7D5DD] overflow-hidden">
                     {pagePath === "recordings" && (
                       <CopyButton
                         value={videoToBeShared?.embeddedLink}
