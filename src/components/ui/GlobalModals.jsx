@@ -502,6 +502,7 @@ export const EditVideoModal = () => {
 
 // Modal to share the video
 export const ShareVideoModal = () => {
+  const pagePath = window.location.pathname.split("/")[1];
   const selectedContacts = useGlobalModals((state) => state.selectedContacts);
   const setSelectedContacts = useGlobalModals(
     (state) => state.setSelectedContacts
@@ -1414,65 +1415,80 @@ export const ShareVideoModal = () => {
                 className="pt-[24px] flex flex-col gap-[24px] items-end"
               >
                 <div className="w-full">
+                  {pagePath !== "recordings" && (
+                    <div className="mb-[24px] flex flex-col gap-[8px]">
+                      <h3 className="font-medium text-[16px]">
+                        Copy the video link below:
+                      </h3>
+                      <div className="w-full bg-gray-100 p-[8px] rounded-[8px]">
+                        {videoToBeShared.shareableLink}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="mb-[8px] flex gap-[100px] items-end">
                     <p className="text-[14px]">Embed Link</p>
-                    <CopyButton
-                      value={videoToBeShared.shareableLink}
-                      timeout={3000}
-                    >
-                      {({ copied, copy }) => (
-                        <ActionIcon
-                          onClick={copy}
-                          className="!w-fit !bg-gray-200 !p-[4px]"
-                        >
-                          {!copied ? (
-                            <div className="flex items-center gap-[8px]">
-                              <COPY_TEXT_ICON className="text-darkBlue" />
-                              <p className="text-[14px] text-darkBlue font-medium">
-                                Copy Video Link
-                              </p>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-[8px]">
-                              <COPY_TEXT_ICON className="text-green-500" />
-                              <p className="text-[14px] text-green-500 font-medium">
-                                Link Copied
-                              </p>
-                            </div>
-                          )}
-                        </ActionIcon>
-                      )}
-                    </CopyButton>
+                    {pagePath === "recordings" && (
+                      <CopyButton
+                        value={videoToBeShared.shareableLink}
+                        timeout={3000}
+                      >
+                        {({ copied, copy }) => (
+                          <ActionIcon
+                            onClick={copy}
+                            className="!w-fit !bg-gray-200 !p-[4px]"
+                          >
+                            {!copied ? (
+                              <div className="flex items-center gap-[8px]">
+                                <COPY_TEXT_ICON className="text-darkBlue" />
+                                <p className="text-[14px] text-darkBlue font-medium">
+                                  Copy Video Link
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-[8px]">
+                                <COPY_TEXT_ICON className="text-green-500" />
+                                <p className="text-[14px] text-green-500 font-medium">
+                                  Link Copied
+                                </p>
+                              </div>
+                            )}
+                          </ActionIcon>
+                        )}
+                      </CopyButton>
+                    )}
                   </div>
                   <div className="relative rounded-[12px] w-full h-[350px] bg-[#F7F7F8] border border-[#D7D5DD] overflow-hidden">
-                    <CopyButton
-                      value={videoToBeShared?.embeddedLink}
-                      timeout={3000}
-                    >
-                      {({ copied, copy }) => (
-                        <ActionIcon
-                          onClick={copy}
-                          className="!w-fit !bg-white rounded-tl-[12px] !p-[8px] !h-[35px]"
-                          timeout={3000}
-                        >
-                          {!copied ? (
-                            <div className="flex items-center gap-[8px]">
-                              <p className="text-[14px] text-darkBlue font-medium">
-                                Copy The Embed Link
-                              </p>
-                              <COPY_TEXT_ICON className="text-darkBlue" />
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-[8px]">
-                              <COPY_TEXT_ICON className="text-green-500" />
-                              <p className="text-[14px] text-green-500 font-medium">
-                                Link Copied
-                              </p>
-                            </div>
-                          )}
-                        </ActionIcon>
-                      )}
-                    </CopyButton>
+                    {pagePath === "recordings" && (
+                      <CopyButton
+                        value={videoToBeShared?.embeddedLink}
+                        timeout={3000}
+                      >
+                        {({ copied, copy }) => (
+                          <ActionIcon
+                            onClick={copy}
+                            className="!w-fit !bg-white rounded-tl-[12px] !p-[8px] !h-[35px]"
+                            timeout={3000}
+                          >
+                            {!copied ? (
+                              <div className="flex items-center gap-[8px]">
+                                <p className="text-[14px] text-darkBlue font-medium">
+                                  Copy The Embed Link
+                                </p>
+                                <COPY_TEXT_ICON className="text-darkBlue" />
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-[8px]">
+                                <COPY_TEXT_ICON className="text-green-500" />
+                                <p className="text-[14px] text-green-500 font-medium">
+                                  Link Copied
+                                </p>
+                              </div>
+                            )}
+                          </ActionIcon>
+                        )}
+                      </CopyButton>
+                    )}
                     <p className="px-[16px] py-[24px] w-[80%]">{`
                   <div
                     style={{
