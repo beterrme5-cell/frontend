@@ -1417,10 +1417,8 @@ export const ShareVideoModal = () => {
                 <div className="w-full">
                   {pagePath !== "recordings" && (
                     <div className="mb-[24px] flex flex-col gap-[8px]">
-                      <h3 className="font-medium text-[16px]">
-                        Copy the video link below:
-                      </h3>
-                      <div className="w-full bg-gray-100 p-[8px] rounded-[8px]">
+                      <h3 className="font-normal text-[14px]">Video Link</h3>
+                      <div className="w-full rounded-[8px] bg-[#F7F7F8] border border-[#D7D5DD] p-[16px]">
                         {videoToBeShared.shareableLink}
                       </div>
                     </div>
