@@ -330,6 +330,7 @@ export const VideoTabItemsList = ({ children }) => {
 
 export const VideoTabItem = ({ videoData }) => {
   // const pagePath = window.location.pathname.split("/")[1];
+  const pageLocation = useLocation();
 
   const setIsDeleteVideoModalOpen = useGlobalModals(
     (state) => state.setIsDeleteVideoModalOpen
@@ -411,19 +412,21 @@ export const VideoTabItem = ({ videoData }) => {
             </div>
           </Menu.Target>
           <Menu.Dropdown>
-            <Menu.Item>
-              <CopyButton value={videoData?.shareableLink}>
-                {({ copy }) => (
-                  <buttton
-                    onClick={copy}
-                    className="flex items-center gap-[8px]"
-                  >
-                    <COPY_ICON className="text-black" />
-                    <p className="text-[14px] font-medium">Copy Link</p>
-                  </buttton>
-                )}
-              </CopyButton>
-            </Menu.Item>
+            {pageLocation.pathname.split("/")[1] === "recordings" && (
+              <Menu.Item>
+                <CopyButton value={videoData?.shareableLink}>
+                  {({ copy }) => (
+                    <buttton
+                      onClick={copy}
+                      className="flex items-center gap-[8px]"
+                    >
+                      <COPY_ICON className="text-black" />
+                      <p className="text-[14px] font-medium">Copy Link</p>
+                    </buttton>
+                  )}
+                </CopyButton>
+              </Menu.Item>
+            )}
             <Menu.Item
               leftSection={<SHARE_ICON className="text-black" />}
               onClick={() => {
