@@ -50,11 +50,13 @@ const Dashboard = () => {
         historyResponse,
         customFieldsResponse,
         userDomainResponse,
+        contactTagsResponse,
       ] = await Promise.all([
         getAllVideos(accessToken),
         getHistoryOfMessages(accessToken),
         getCustomFields(accessToken),
         getUserDomain(accessToken),
+        getContactTags(accessToken),
       ]);
 
       // Check responses and set state only after all are resolved
@@ -62,7 +64,8 @@ const Dashboard = () => {
         videosResponse.success &&
         historyResponse.success &&
         customFieldsResponse.success &&
-        userDomainResponse.success
+        userDomainResponse.success &&
+        contactTagsResponse.success
       ) {
         // Update states
         setVideosData(videosResponse.data.videos);
@@ -77,6 +80,11 @@ const Dashboard = () => {
         } else {
           setUpdateDomainModalOpen(false);
         }
+
+        const tagsData = contactTagsResponse.data.userTags.map((tag) => {
+          return tag.name;
+        });
+        setContactTagsData(tagsData);
       } else {
         if (!videosResponse.success) {
           toast.error(videosResponse.error || "Error Fetching Videos", {
@@ -114,6 +122,19 @@ const Dashboard = () => {
         if (!userDomainResponse.success) {
           toast.error(
             customFieldsResponse.error || "Error Fetching User Domain",
+            {
+              position: "bottom-right",
+              autoClose: 5000,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+            }
+          );
+        }
+        if (!contactTagsResponse.success) {
+          toast.error(
+            contactTagsResponse.error || "Error Fetching Contact Tags",
             {
               position: "bottom-right",
               autoClose: 5000,
@@ -163,8 +184,6 @@ const Dashboard = () => {
       // Send Data to the Backend API to Decrypt the code
       const response = await getDecryptedUserData({ tokenKey: key });
 
-      console.log("Decrypt Response: ", response);
-
       if (!response.success || response.data.accessToken === undefined) {
         setError(true);
         return setLoading(false);
@@ -183,25 +202,6 @@ const Dashboard = () => {
     fetchLibraryData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [error]);
-
-  useEffect(() => {
-    const accessToken = localStorage.getItem("accessToken");
-
-    const fetchContactTags = async () => {
-      const response = await getContactTags(accessToken);
-
-      if (response.success) {
-        const tagsData = response.data.userTags.map((tag) => {
-          return tag.name;
-        });
-        setContactTagsData(tagsData);
-      } else {
-        console.log("Error while fetching Contact Tags: ", response.error);
-      }
-    };
-
-    fetchContactTags();
-  }, [setContactTagsData]);
 
   return (
     <LibraryRoot>
