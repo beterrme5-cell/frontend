@@ -20,7 +20,7 @@ export const getAllVideos = async (accessToken) => {
     console.error("Error while fetching all videos: ", error);
     return {
       success: false,
-      error: error.response?.data?.message || "An unexpected error occurred",
+      error: error.response?.data?.message || "Could not fetch videos!",
     };
   }
 };
@@ -46,7 +46,7 @@ export const getVideoById = async (videoId) => {
     console.error("Error while fetching video by id: ", error);
     return {
       success: false,
-      error: error.response?.data?.message || "An unexpected error occurred",
+      error: error.response?.data?.message || "Could not fetch video Details!",
     };
   }
 };
@@ -72,7 +72,7 @@ export const saveRecordedVideo = async (videoData) => {
     console.error("Error while saving recorded video: ", error);
     return {
       success: false,
-      error: error.response?.data?.message || "An unexpected error occurred",
+      error: error.response?.data?.message || "Could not save video!",
     };
   }
 };
@@ -103,7 +103,7 @@ export const updateVideo = async (params) => {
     console.error("Error while updating video: ", error);
     return {
       success: false,
-      error: error.response?.data?.message || "An unexpected error occurred",
+      error: error.response?.data?.message || "Could not update video!",
     };
   }
 };
@@ -129,7 +129,7 @@ export const deleteVideo = async (params) => {
     console.error("Error while deleting video: ", error);
     return {
       success: false,
-      error: error.response?.data?.message || "An unexpected error occurred",
+      error: error.response?.data?.message || "Could not delete video!",
     };
   }
 };
@@ -160,7 +160,7 @@ export const getContacts = async (params) => {
     console.error("Error while fetching all contacts: ", error);
     return {
       success: false,
-      error: error.response?.data?.message || "An unexpected error occurred",
+      error: error.response?.data?.message || "Could not fetch contacts!",
     };
   }
 };
@@ -181,7 +181,7 @@ export const getUserDomain = async (accessToken) => {
     console.error("Error while fetching user domain: ", error);
     return {
       success: false,
-      error: error.response?.data?.message || "An unexpected error occurred",
+      error: error.response?.data?.message || "Could not fetch user domain!",
     };
   }
 };
@@ -210,7 +210,7 @@ export const updateUserDomain = async ({ domain, showPopupAgain }) => {
     console.error("Error while updating user domain: ", error);
     return {
       success: false,
-      error: error.response?.data?.message || "An unexpected error occurred",
+      error: error.response?.data?.message || "Could not update user domain!",
     };
   }
 };

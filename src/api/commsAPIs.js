@@ -29,7 +29,7 @@ export const sendSMSToSelectedContacts = async (params) => {
     console.error("Error while sending SMS: ", error);
     return {
       success: false,
-      error: error.response?.data?.message || "An unexpected error occurred",
+      error: error.response?.data?.message || "Could not send SMS!",
     };
   }
 };
@@ -63,7 +63,7 @@ export const sendEmailToSelectedContacts = async (params) => {
     console.error("Error while sending Email: ", error);
     return {
       success: false,
-      error: error.response?.data?.message || "An unexpected error occurred",
+      error: error.response?.data?.message || "Could not send Email!",
     };
   }
 };
@@ -84,7 +84,8 @@ export const getHistoryOfMessages = async (accessToken) => {
     console.error("Error while getting History of Messages: ", error);
     return {
       success: false,
-      error: error.response?.data?.message || "An unexpected error occurred",
+      error:
+        error.response?.data?.message || "Could not get Messages' History!",
     };
   }
 };
@@ -108,7 +109,7 @@ export const getContactTags = async (accessToken) => {
     console.error("Error while getting Contact Tags: ", error);
     return {
       success: false,
-      error: error.response?.data?.message || "An unexpected error occurred",
+      error: error.response?.data?.message || "Could not get Contact Tags!",
     };
   }
 };
@@ -133,7 +134,8 @@ export const getContactsBasedOnTags = async (selectedTags) => {
     console.error("Error while getting Contact Tags: ", error);
     return {
       success: false,
-      error: error.response?.data?.message || "An unexpected error occurred",
+      error:
+        error.response?.data?.message || "Could not get Contact based on tags!",
     };
   }
 };
@@ -154,7 +156,7 @@ export const getCustomFields = async (accessToken) => {
     console.error("Error while getting custom fields: ", error);
     return {
       success: false,
-      error: error.response?.data?.message || "An unexpected error occurred",
+      error: error.response?.data?.message || "Could not get custom fields!",
     };
   }
 };

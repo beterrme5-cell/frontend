@@ -22,7 +22,7 @@ export const loginUser = async (params) => {
     console.error("Error while logging in user: ", error);
     return {
       success: false,
-      error: error.response?.data?.message || "An unexpected error occurred",
+      error: error.response?.data?.message || "Could not login user!",
     };
   }
 };
@@ -42,7 +42,8 @@ export const getDecryptedUserData = async (params) => {
     console.error("Error while getting user data: ", error);
     return {
       success: false,
-      error: error.response?.data?.message || "An unexpected error occurred",
+      error:
+        error.response?.data?.message || "Could not get user's decrypted data!",
     };
   }
 };
@@ -66,7 +67,7 @@ export const getUserLocationId = async () => {
     console.error("Error while getting user location: ", error);
     return {
       success: false,
-      error: error.response?.data?.message || "An unexpected error occurred",
+      error: error.response?.data?.message || "Could not get user locationId!",
     };
   }
 };
