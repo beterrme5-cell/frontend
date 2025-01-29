@@ -2049,10 +2049,11 @@ export const ContactsSelectionModalSMS = () => {
     setModalLoadingOverlay(true);
     // Fetch Contacts from the Database
     const response = await getContacts({
-      page: contactsPagination,
+      page: 1,
       pageLimit: 100,
       search: query,
     });
+
     if (response.success) {
       setUserContactsData(response.data.contacts);
     } else {
@@ -2176,7 +2177,7 @@ export const ContactsSelectionModalSMS = () => {
               />
               <p className="text-[#868e96] text-[14px] font-semibold max-w-[400px]">
                 - Please add at least 3 characters to search by name, or at
-                least 2 numbers after the country code. i.e, +1
+                least 5 numbers after the country code. i.e, +1
               </p>
             </div>
 
