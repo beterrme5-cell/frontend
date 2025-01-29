@@ -11,10 +11,10 @@ export const setupLoomSDK = async () => {
       data: response.data,
     };
   } catch (error) {
-    console.error("Error while fetching all videos: ", error);
+    console.error("Error setting up Loom SDK: ", error);
     return {
       success: false,
-      error: error.response?.data?.message || "An unexpected error occurred",
+      error: error.response?.data?.message || "Error setting up Loom SDK!",
     };
   }
 };
