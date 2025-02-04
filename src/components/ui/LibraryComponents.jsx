@@ -385,7 +385,7 @@ export const VideoTabItem = ({ videoData }) => {
       <div className="flex-grow px-[16px] py-[12px] flex items-center justify-between gap-[10px] border-t border-t-[#CFCED4]">
         <Link
           to={`video-detail/${videoData._id}`}
-          className="text-[14px] font-medium"
+          className="text-[14px] font-medium line-clamp-1"
         >
           {videoData.title}
         </Link>
