@@ -6,6 +6,7 @@ import {
   LibraryBody,
   LibraryHeader,
   LibraryRoot,
+  UploadedVideoTabItem,
   VideoTabItem,
   VideoTabItemsList,
   VideoTabSection,
@@ -71,7 +72,10 @@ const RecordVideo = () => {
         userDomainResponse.success
       ) {
         // Update states
-        setVideosData(videosResponse.data.videos);
+        setVideosData({
+          recordedVideos: videosResponse.data.recordedVideos,
+          uploadedVideos: videosResponse.data.uploadedVideos,
+        });
         setHistoryData(historyResponse.data.histories);
         setCustomFieldsData(customFieldsResponse.data.customFields || []);
         setUserDomain(userDomainResponse.data.userDomain || "");
@@ -195,10 +199,10 @@ const RecordVideo = () => {
           </Tabs.List>
 
           <Tabs.Panel value="videos">
-            <VideoTabSection heading="My Videos">
-              {videosData && videosData.length > 0 ? (
+            <VideoTabSection heading="Recorded Videos">
+              {videosData && videosData?.recordedVideos?.length > 0 ? (
                 <VideoTabItemsList>
-                  {videosData.map((video) => (
+                  {videosData?.recordedVideos?.map((video) => (
                     <VideoTabItem key={video._id} videoData={video} />
                   ))}
                 </VideoTabItemsList>
@@ -210,7 +214,23 @@ const RecordVideo = () => {
                   </p>
                 </div>
               )}
-            </VideoTabSection>{" "}
+            </VideoTabSection>
+            <VideoTabSection heading="Uploaded Videos">
+              {videosData && videosData?.uploadedVideos?.length > 0 ? (
+                <VideoTabItemsList>
+                  {videosData?.uploadedVideos?.map((video) => (
+                    <UploadedVideoTabItem key={video._id} videoData={video} />
+                  ))}
+                </VideoTabItemsList>
+              ) : (
+                <div className="py-[10px] max-w-[450px] mx-auto">
+                  <p className="text-center text-gray-500 text-[16px]">
+                    No Uploaded videos found in the Media Storage! Please upload
+                    a new Video by clicking on the upload button.
+                  </p>
+                </div>
+              )}
+            </VideoTabSection>
           </Tabs.Panel>
 
           <Tabs.Panel value="history">

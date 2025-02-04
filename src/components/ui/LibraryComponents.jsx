@@ -385,7 +385,147 @@ export const VideoTabItem = ({ videoData }) => {
       <div className="flex-grow px-[16px] py-[12px] flex items-center justify-between gap-[10px] border-t border-t-[#CFCED4]">
         <Link
           to={`video-detail/${videoData._id}`}
-          className="text-[14px] font-medium"
+          className="text-[14px] font-medium line-clamp-1"
+        >
+          {videoData.title}
+        </Link>
+        <Menu
+          shadow="md"
+          width={150}
+          position="bottom-end"
+          arrowPosition="center"
+          radius={12}
+          offset={-5}
+          styles={{
+            menu: {
+              padding: "8px 12px !important",
+            },
+            itemLabel: {
+              fontSize: "14px",
+              fontWeight: 500,
+            },
+          }}
+        >
+          <Menu.Target>
+            <div className="w-[24px] h-[24px] flex justify-center items-center">
+              <VIDEO_OPTIONS_ICON />
+            </div>
+          </Menu.Target>
+          <Menu.Dropdown>
+            {pageLocation.pathname.split("/")[1] === "recordings" && (
+              <Menu.Item>
+                <CopyButton value={videoData?.shareableLink}>
+                  {({ copy }) => (
+                    <buttton
+                      onClick={copy}
+                      className="flex items-center gap-[8px]"
+                    >
+                      <COPY_ICON className="text-black" />
+                      <p className="text-[14px] font-medium">Copy Link</p>
+                    </buttton>
+                  )}
+                </CopyButton>
+              </Menu.Item>
+            )}
+            <Menu.Item
+              leftSection={<SHARE_ICON className="text-black" />}
+              onClick={() => {
+                setVideoToBeShared(videoData);
+                setIsShareVideoModalOpen(true);
+              }}
+            >
+              Share
+            </Menu.Item>
+            <Menu.Item
+              leftSection={<EDIT_ICON className="text-black" />}
+              onClick={() => {
+                setVideoToBeEdited(videoData);
+                setIsEditVideoModalOpen(true);
+              }}
+            >
+              Edit
+            </Menu.Item>
+            <Menu.Item
+              color="red"
+              leftSection={<DELETE_ICON className="text-[#FF0000]" />}
+              onClick={() => {
+                setVideoToBeDeleted(videoData);
+                setIsDeleteVideoModalOpen(true);
+              }}
+            >
+              Delete
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
+      </div>
+    </div>
+  );
+};
+
+export const UploadedVideoTabItem = ({ videoData }) => {
+  // const pagePath = window.location.pathname.split("/")[1];
+  const pageLocation = useLocation();
+
+  const setIsDeleteVideoModalOpen = useGlobalModals(
+    (state) => state.setIsDeleteVideoModalOpen
+  );
+  const setIsEditVideoModalOpen = useGlobalModals(
+    (state) => state.setIsEditVideoModalOpen
+  );
+  const setIsShareVideoModalOpen = useGlobalModals(
+    (state) => state.setIsShareVideoModalOpen
+  );
+  const setVideoToBeDeleted = useGlobalModals(
+    (state) => state.setVideoToBeDeleted
+  );
+  const setVideoToBeEdited = useGlobalModals(
+    (state) => state.setVideoToBeEdited
+  );
+  const setVideoToBeShared = useGlobalModals(
+    (state) => state.setVideoToBeShared
+  );
+
+  return (
+    <div className="flex flex-col border border-[#CFCED4] rounded-[16px] relative min-w-[250px] h-[210px] overflow-hidden hover:cursor-pointer">
+      <div className={`h-[160px] relative`}>
+        {videoData?.embeddedLink && (
+          <iframe
+            width="100%"
+            height="100%"
+            src={videoData?.embeddedLink}
+            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          ></iframe>
+        )}
+        {!videoData?.embeddedLink && (
+          <img
+            src="./imagePlaceholder.jpeg"
+            alt="Video Thumbnail"
+            className="w-full h-full object-cover"
+          />
+        )}
+
+        <button
+          className="absolute top-[8px] right-[8px] cursor-pointer bg-primary rounded-full p-[4px_8px] hover:cursor-pointer flex gap-[4px] items-center text-white"
+          onClick={() => {
+            setVideoToBeShared(videoData);
+            setIsShareVideoModalOpen(true);
+          }}
+        >
+          <p className="text-[14px] font-medium">Share</p>
+          <SHAREVIDEO_ICON />
+        </button>
+      </div>
+      <div className="flex-grow px-[16px] py-[12px] flex items-center justify-between gap-[10px] border-t border-t-[#CFCED4]">
+        <Link
+          to="uploaded-video-detail"
+          className="text-[14px] font-medium line-clamp-1"
+          onClick={() => {
+            localStorage.setItem(
+              "uploadedVideoDetail",
+              JSON.stringify(videoData)
+            );
+          }}
         >
           {videoData.title}
         </Link>
@@ -615,28 +755,37 @@ export const TextEditor = forwardRef(
       });
 
       if (!editorContent) {
-        if (!editorContent) {
-          const videoLink = `${videoToBeShared?.shareableLink} `;
+        const videoLink = `${videoToBeShared?.shareableLink}`;
+        console.log("Video Details", videoToBeShared);
 
-          // Create the image tag with width and height
-          const width = "300px"; // You can modify this to any value or make it dynamic
-          const height = "200px"; // Modify this as well
-          const videoThumbnail = `<img src="${videoToBeShared.thumbnailURL}" width="${width}" height="${height}" />`;
+        // Create the image tag with width and height if thumbnailURL is not empty
+        const width = "300px"; // You can modify this to any value or make it dynamic
+        const height = "200px"; // Modify this as well
+        let videoThumbnail = "";
 
-          // Insert two line breaks at the beginning
-          quill.insertText(0, "\n\n");
+        // Check if thumbnailURL is not empty
+        if (
+          videoToBeShared?.thumbnailURL &&
+          videoToBeShared?.thumbnailURL !== ""
+        ) {
+          videoThumbnail = `<img src="${videoToBeShared.thumbnailURL}" width="${width}" height="${height}" />`;
+        }
 
-          // Insert the video link (bold) after "Video Link:"
-          quill.insertText(2, videoLink, { bold: true, color: "blue" });
-          // Optionally, move the cursor to a new line after the video link
-          quill.insertText(2 + videoLink.length, "\n");
+        // Insert two line breaks at the beginning
+        quill.insertText(0, "\n\n");
 
+        // Insert the video link (bold) after "Video Link:"
+        quill.insertText(2, videoLink, { bold: true, color: "blue" });
+        // Optionally, move the cursor to a new line after the video link
+        quill.insertText(2 + videoLink.length, "\n");
+
+        // Insert the thumbnail if it exists, otherwise just insert the link
+        if (videoThumbnail) {
           quill.clipboard.dangerouslyPasteHTML(
             2 + videoLink.length + 1,
             videoThumbnail
           );
-
-          // Optionally, move the cursor to a new line after the video link
+          // Optionally, move the cursor to a new line after the video link and thumbnail
           quill.insertText(
             3 + videoLink.length + videoThumbnail.length,
             "\n\n"
@@ -660,9 +809,15 @@ export const TextEditor = forwardRef(
         // Set the width and height
         const width = "300px"; // You can modify this to any value or make it dynamic
         const height = "200px"; // Modify this as well
+        let videoThumbnail = "";
 
-        // Create the image tag with width and height
-        const videoThumbnail = `<img src="${videoToBeShared.thumbnailURL}" width="${width}" height="${height}" />`;
+        if (
+          videoToBeShared?.thumbnailURL &&
+          videoToBeShared?.thumbnailURL !== ""
+        ) {
+          // Create the image tag with width and height
+          videoThumbnail = `<img src="${videoToBeShared.thumbnailURL}" width="${width}" height="${height}" />`;
+        }
 
         // Paste the video link into the editor
         const range = quill.getSelection();
@@ -670,26 +825,37 @@ export const TextEditor = forwardRef(
         if (range === null) {
           const videoLink = `${videoToBeShared?.shareableLink}`;
 
+          if (!videoLink) {
+            console.error("Video link is missing.");
+            return; // Exit early if the video link is not available
+          }
+
           // Insert the video link at the beginning with formatting
           quill.insertText(0, videoLink, {
             bold: true,
             color: "blue",
           });
 
-          // Insert the image after the video link
-          quill.clipboard.dangerouslyPasteHTML(
-            videoLink.length + 1,
-            videoThumbnail
-          );
+          if (videoThumbnail) {
+            quill.clipboard.dangerouslyPasteHTML(
+              videoLink.length + 1,
+              videoThumbnail
+            );
 
-          // Add a new line after the image for separation
-          quill.insertText(
-            videoLink.length + 1 + videoThumbnail.length,
-            "\n\n"
-          );
+            // Add a new line after the image for separation
+            quill.insertText(
+              videoLink.length + 1 + videoThumbnail?.length,
+              "\n\n"
+            );
+          }
         } else {
           // Adding a space before and after the link
           const updatedVideoLink = ` ${videoToBeShared?.shareableLink} `;
+
+          if (!updatedVideoLink.trim()) {
+            console.error("Updated video link is missing.");
+            return; // Exit early if the video link is not available
+          }
 
           // Insert the link with formatting at the specified range
           quill.insertText(range.index, updatedVideoLink, {
@@ -699,22 +865,24 @@ export const TextEditor = forwardRef(
 
           quill.insertText(range.index + updatedVideoLink.length, "\n");
 
-          // Insert the image after the video link
-          quill.clipboard.dangerouslyPasteHTML(
-            range.index + updatedVideoLink.length + 1,
-            videoThumbnail
-          );
+          if (videoThumbnail) {
+            // Insert the image after the video link
+            quill.clipboard.dangerouslyPasteHTML(
+              range.index + updatedVideoLink.length + 1,
+              videoThumbnail
+            );
 
-          // Add a new line after the image for separation
-          quill.insertText(
-            range.index + updatedVideoLink.length + videoThumbnail.length,
-            "\n\n"
-          );
+            // Add a new line after the image for separation
+            quill.insertText(
+              range.index + updatedVideoLink.length + videoThumbnail?.length,
+              "\n\n"
+            );
 
-          // Move the cursor to the end of the inserted link and image
-          quill.setSelection(
-            range.index + updatedVideoLink.length + videoThumbnail.length + 2
-          );
+            // Move the cursor to the end of the inserted link and image
+            quill.setSelection(
+              range.index + updatedVideoLink.length + videoThumbnail?.length + 2
+            );
+          }
         }
       };
 
