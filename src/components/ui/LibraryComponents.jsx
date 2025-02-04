@@ -463,24 +463,10 @@ export const VideoTabItem = ({ videoData }) => {
 };
 
 export const UploadedVideoTabItem = ({ videoData }) => {
-  // const pagePath = window.location.pathname.split("/")[1];
-  const pageLocation = useLocation();
-
-  const setIsDeleteVideoModalOpen = useGlobalModals(
-    (state) => state.setIsDeleteVideoModalOpen
-  );
-  const setIsEditVideoModalOpen = useGlobalModals(
-    (state) => state.setIsEditVideoModalOpen
-  );
   const setIsShareVideoModalOpen = useGlobalModals(
     (state) => state.setIsShareVideoModalOpen
   );
-  const setVideoToBeDeleted = useGlobalModals(
-    (state) => state.setVideoToBeDeleted
-  );
-  const setVideoToBeEdited = useGlobalModals(
-    (state) => state.setVideoToBeEdited
-  );
+
   const setVideoToBeShared = useGlobalModals(
     (state) => state.setVideoToBeShared
   );
@@ -529,74 +515,6 @@ export const UploadedVideoTabItem = ({ videoData }) => {
         >
           {videoData.title}
         </Link>
-        <Menu
-          shadow="md"
-          width={150}
-          position="bottom-end"
-          arrowPosition="center"
-          radius={12}
-          offset={-5}
-          styles={{
-            menu: {
-              padding: "8px 12px !important",
-            },
-            itemLabel: {
-              fontSize: "14px",
-              fontWeight: 500,
-            },
-          }}
-        >
-          <Menu.Target>
-            <div className="w-[24px] h-[24px] flex justify-center items-center">
-              <VIDEO_OPTIONS_ICON />
-            </div>
-          </Menu.Target>
-          <Menu.Dropdown>
-            {pageLocation.pathname.split("/")[1] === "recordings" && (
-              <Menu.Item>
-                <CopyButton value={videoData?.shareableLink}>
-                  {({ copy }) => (
-                    <buttton
-                      onClick={copy}
-                      className="flex items-center gap-[8px]"
-                    >
-                      <COPY_ICON className="text-black" />
-                      <p className="text-[14px] font-medium">Copy Link</p>
-                    </buttton>
-                  )}
-                </CopyButton>
-              </Menu.Item>
-            )}
-            <Menu.Item
-              leftSection={<SHARE_ICON className="text-black" />}
-              onClick={() => {
-                setVideoToBeShared(videoData);
-                setIsShareVideoModalOpen(true);
-              }}
-            >
-              Share
-            </Menu.Item>
-            <Menu.Item
-              leftSection={<EDIT_ICON className="text-black" />}
-              onClick={() => {
-                setVideoToBeEdited(videoData);
-                setIsEditVideoModalOpen(true);
-              }}
-            >
-              Edit
-            </Menu.Item>
-            <Menu.Item
-              color="red"
-              leftSection={<DELETE_ICON className="text-[#FF0000]" />}
-              onClick={() => {
-                setVideoToBeDeleted(videoData);
-                setIsDeleteVideoModalOpen(true);
-              }}
-            >
-              Delete
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
       </div>
     </div>
   );
