@@ -462,6 +462,146 @@ export const VideoTabItem = ({ videoData }) => {
   );
 };
 
+export const UploadedVideoTabItem = ({ videoData }) => {
+  // const pagePath = window.location.pathname.split("/")[1];
+  const pageLocation = useLocation();
+
+  const setIsDeleteVideoModalOpen = useGlobalModals(
+    (state) => state.setIsDeleteVideoModalOpen
+  );
+  const setIsEditVideoModalOpen = useGlobalModals(
+    (state) => state.setIsEditVideoModalOpen
+  );
+  const setIsShareVideoModalOpen = useGlobalModals(
+    (state) => state.setIsShareVideoModalOpen
+  );
+  const setVideoToBeDeleted = useGlobalModals(
+    (state) => state.setVideoToBeDeleted
+  );
+  const setVideoToBeEdited = useGlobalModals(
+    (state) => state.setVideoToBeEdited
+  );
+  const setVideoToBeShared = useGlobalModals(
+    (state) => state.setVideoToBeShared
+  );
+
+  return (
+    <div className="flex flex-col border border-[#CFCED4] rounded-[16px] relative min-w-[250px] h-[210px] overflow-hidden hover:cursor-pointer">
+      <div className={`h-[160px] relative`}>
+        {videoData?.embeddedLink && (
+          <iframe
+            width="100%"
+            height="100%"
+            src={videoData?.embeddedLink}
+            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          ></iframe>
+        )}
+        {!videoData?.embeddedLink && (
+          <img
+            src="./imagePlaceholder.jpeg"
+            alt="Video Thumbnail"
+            className="w-full h-full object-cover"
+          />
+        )}
+
+        <button
+          className="absolute top-[8px] right-[8px] cursor-pointer bg-primary rounded-full p-[4px_8px] hover:cursor-pointer flex gap-[4px] items-center text-white"
+          onClick={() => {
+            setVideoToBeShared(videoData);
+            setIsShareVideoModalOpen(true);
+          }}
+        >
+          <p className="text-[14px] font-medium">Share</p>
+          <SHAREVIDEO_ICON />
+        </button>
+      </div>
+      <div className="flex-grow px-[16px] py-[12px] flex items-center justify-between gap-[10px] border-t border-t-[#CFCED4]">
+        <Link
+          to="uploaded-video-detail"
+          className="text-[14px] font-medium line-clamp-1"
+          onClick={() => {
+            localStorage.setItem(
+              "uploadedVideoDetail",
+              JSON.stringify(videoData)
+            );
+          }}
+        >
+          {videoData.title}
+        </Link>
+        <Menu
+          shadow="md"
+          width={150}
+          position="bottom-end"
+          arrowPosition="center"
+          radius={12}
+          offset={-5}
+          styles={{
+            menu: {
+              padding: "8px 12px !important",
+            },
+            itemLabel: {
+              fontSize: "14px",
+              fontWeight: 500,
+            },
+          }}
+        >
+          <Menu.Target>
+            <div className="w-[24px] h-[24px] flex justify-center items-center">
+              <VIDEO_OPTIONS_ICON />
+            </div>
+          </Menu.Target>
+          <Menu.Dropdown>
+            {pageLocation.pathname.split("/")[1] === "recordings" && (
+              <Menu.Item>
+                <CopyButton value={videoData?.shareableLink}>
+                  {({ copy }) => (
+                    <buttton
+                      onClick={copy}
+                      className="flex items-center gap-[8px]"
+                    >
+                      <COPY_ICON className="text-black" />
+                      <p className="text-[14px] font-medium">Copy Link</p>
+                    </buttton>
+                  )}
+                </CopyButton>
+              </Menu.Item>
+            )}
+            <Menu.Item
+              leftSection={<SHARE_ICON className="text-black" />}
+              onClick={() => {
+                setVideoToBeShared(videoData);
+                setIsShareVideoModalOpen(true);
+              }}
+            >
+              Share
+            </Menu.Item>
+            <Menu.Item
+              leftSection={<EDIT_ICON className="text-black" />}
+              onClick={() => {
+                setVideoToBeEdited(videoData);
+                setIsEditVideoModalOpen(true);
+              }}
+            >
+              Edit
+            </Menu.Item>
+            <Menu.Item
+              color="red"
+              leftSection={<DELETE_ICON className="text-[#FF0000]" />}
+              onClick={() => {
+                setVideoToBeDeleted(videoData);
+                setIsDeleteVideoModalOpen(true);
+              }}
+            >
+              Delete
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
+      </div>
+    </div>
+  );
+};
+
 export const HistoryTabSection = ({ children }) => {
   return (
     <div

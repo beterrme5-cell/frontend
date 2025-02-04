@@ -6,6 +6,7 @@ import {
   LibraryBody,
   LibraryHeader,
   LibraryRoot,
+  UploadedVideoTabItem,
   VideoTabItem,
   VideoTabItemsList,
   VideoTabSection,
@@ -218,7 +219,7 @@ const RecordVideo = () => {
               {videosData && videosData?.uploadedVideos?.length > 0 ? (
                 <VideoTabItemsList>
                   {videosData?.uploadedVideos?.map((video) => (
-                    <VideoTabItem key={video._id} videoData={video} />
+                    <UploadedVideoTabItem key={video._id} videoData={video} />
                   ))}
                 </VideoTabItemsList>
               ) : (

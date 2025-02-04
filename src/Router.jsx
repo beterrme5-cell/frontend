@@ -4,6 +4,7 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import VideoDetail from "./pages/videoDetail/VideoDetail.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import RecordVideo from "./pages/recordVideo/RecordVideo";
+import UploadedVideoDetail from "./pages/uploadedVideoDetail/UploadedVideoDetail.jsx";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -24,6 +25,10 @@ export const router = createBrowserRouter([
       {
         path: "recordings/:accessToken/:userLocationId/video-detail/:videoId",
         element: <VideoDetail />,
+      },
+      {
+        path: "recordings/:accessToken/:userLocationId/uploaded-video-detail",
+        element: <UploadedVideoDetail />,
       },
       {
         path: "*",
