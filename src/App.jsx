@@ -1,8 +1,8 @@
 import { Outlet } from "react-router-dom";
 import { useGlobalModals } from "./store/globalModals";
 import {
-  ContactsSelectionModalEmail,
-  ContactsSelectionModalSMS,
+  // ContactsSelectionModalEmail,
+  // ContactsSelectionModalSMS,
   DeleteVideoConfirmationModal,
   EditVideoModal,
   PreRecordingDataInputModal,
@@ -12,13 +12,13 @@ import {
 } from "./components/ui/GlobalModals";
 
 function App() {
-  const isSMSContactsSelectionModalOpen = useGlobalModals(
-    (state) => state.isSMSContactsSelectionModalOpen
-  );
+  // const isSMSContactsSelectionModalOpen = useGlobalModals(
+  //   (state) => state.isSMSContactsSelectionModalOpen
+  // );
 
-  const isContactsSelectionModalOpen = useGlobalModals(
-    (state) => state.isContactsSelectionModalOpen
-  );
+  // const isContactsSelectionModalOpen = useGlobalModals(
+  //   (state) => state.isContactsSelectionModalOpen
+  // );
 
   const isShareVideoModalOpen = useGlobalModals(
     (state) => state.isShareVideoModalOpen
@@ -40,8 +40,8 @@ function App() {
   );
   return (
     <main className="App overflow-x-hidden md:p-[32px] p-[20px]">
-      {isContactsSelectionModalOpen && <ContactsSelectionModalEmail />}
-      {isSMSContactsSelectionModalOpen && <ContactsSelectionModalSMS />}
+      {/* {isContactsSelectionModalOpen && <ContactsSelectionModalEmail />}
+      {isSMSContactsSelectionModalOpen && <ContactsSelectionModalSMS />} */}
       {isShareVideoModalOpen && <ShareVideoModal />}
       {isEditVideoModalOpen && <EditVideoModal />}
       {isDeleteVideoModalOpen && <DeleteVideoConfirmationModal />}
