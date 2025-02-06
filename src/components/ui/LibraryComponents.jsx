@@ -426,10 +426,7 @@ export const VideoTabItem = ({ videoData }) => {
               <Menu.Item>
                 <CopyButton value={videoData?.shareableLink}>
                   {({ copy }) => (
-                    <div
-                      onClick={copy}
-                      className="flex items-center gap-[8px]"
-                    >
+                    <div onClick={copy} className="flex items-center gap-[8px]">
                       <COPY_ICON className="text-black" />
                       <p className="text-[14px] font-medium">Copy Link</p>
                     </div>
@@ -684,7 +681,6 @@ export const TextEditor = forwardRef(
 
       if (!editorContent) {
         const videoLink = `${videoToBeShared?.shareableLink}`;
-        console.log("Video Details", videoToBeShared);
 
         // Create the image tag with width and height if thumbnailURL is not empty
         const width = "300px"; // You can modify this to any value or make it dynamic

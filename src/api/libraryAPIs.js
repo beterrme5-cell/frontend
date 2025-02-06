@@ -135,33 +135,21 @@ export const deleteVideo = async (params) => {
 };
 
 // API to get the Contacts of the user
-export const getContacts = async (params) => {
+export const getContacts = async () => {
   const accessToken = localStorage.getItem("accessToken");
 
   try {
-    const response = await axios.post(
-      `${BASE_URL}/user/getUserContacts`,
-      {
-        page: params.page,
-        pageLimit: params.pageLimit,
-        search: params.search,
+    const response = await axios.get(`${BASE_URL}/user/getUserContacts`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
       },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-    return {
-      success: true,
-      data: response.data,
-    };
+    });
+    return response.data.contacts;
   } catch (error) {
     console.error("Error while fetching all contacts: ", error);
-    return {
-      success: false,
-      error: error.response?.data?.message || "Could not fetch contacts!",
-    };
+    throw new Error(
+      error.response?.data?.message || "Could not fetch contacts!"
+    );
   }
 };
 

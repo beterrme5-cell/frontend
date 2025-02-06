@@ -40,6 +40,7 @@ import {
 } from "../../api/commsAPIs";
 import { toast } from "react-toastify";
 import debounce from "lodash.debounce";
+import { useQuery } from "@tanstack/react-query";
 
 function quillGetHTML(inputDelta) {
   var tempCont = document.createElement("div");
@@ -531,13 +532,6 @@ export const ShareVideoModal = () => {
   const setIsShareVideoModalOpen = useGlobalModals(
     (state) => state.setIsShareVideoModalOpen
   );
-  const setIsContactsSelectionModalOpen = useGlobalModals(
-    (state) => state.setIsContactsSelectionModalOpen
-  );
-
-  const setIsSMSContactsSelectionModalOpen = useGlobalModals(
-    (state) => state.setIsSMSContactsSelectionModalOpen
-  );
 
   const setSendToAllContacts = useGlobalModals(
     (state) => state.setSendToAllContacts
@@ -556,12 +550,55 @@ export const ShareVideoModal = () => {
     (state) => state.setIsVideoLinkNotAttachedModalOpen
   );
 
+  const openContactsLinkedWithTagsModal = useGlobalModals(
+    (state) => state.openContactsLinkedWithTagsModal
+  );
+  const setOpenContactsLinkedWithTagsModal = useGlobalModals(
+    (state) => state.setOpenContactsLinkedWithTagsModal
+  );
+
   const [activeTab, setActiveTab] = useState("email");
   const [activeSubTab, setActiveSubTab] = useState("contacts");
 
   // State to store the content of Input Field of SMS
   const [smsContent, setSmsContent] = useState("");
   const [sendAttachmentWithSMS, setSendAttachmentWithSMS] = useState(true);
+
+  const emailForm = useForm({
+    initialValues: {
+      emailSubject: "",
+      selectedEmailContacts: [],
+    },
+
+    validate: {
+      emailSubject: (value) => {
+        if (value.length < 3) {
+          return "Email Subject must be at least 3 characters long";
+        }
+      },
+
+      selectedEmailContacts: (value) => {
+        if (value.length === 0) {
+          return "Please select at least one contact";
+        }
+      },
+    },
+  });
+
+  const smsForm = useForm({
+    initialValues: {
+      smsContent: "",
+      selectedSMSContacts: [],
+    },
+
+    validate: {
+      selectedSMSContacts: (value) => {
+        if (value.length === 0) {
+          return "Please select at least one contact";
+        }
+      },
+    },
+  });
 
   // State for Email Subject
   const [emailSubject, setEmailSubject] = useState("");
@@ -572,18 +609,24 @@ export const ShareVideoModal = () => {
   const [noEmailSubjectError, setNoEmailSubjectError] = useState("");
   const [noEmailContentError, setNoEmailContentError] = useState("");
   const [editorContent, setEditorContent] = useState(null);
-  const openContactsLinkedWithTagsModal = useGlobalModals(
-    (state) => state.openContactsLinkedWithTagsModal
-  );
-  const setOpenContactsLinkedWithTagsModal = useGlobalModals(
-    (state) => state.setOpenContactsLinkedWithTagsModal
-  );
+
   const [contactsLinkedWithTags, setContactsLinkedWithTags] = useState([]);
   const [fetchingContactsLinkedWithTags, setFetchingContactsLinkedWithTags] =
     useState(false);
 
+  const [emailContacts, setEmailContacts] = useState([]);
+  const [smsContacts, setSMSContacts] = useState([]);
   // Use a ref to access the quill instance directly
   const quillRef = useRef();
+
+  // Testing Query
+  const fetchContactsQuery = useQuery({
+    queryKey: ["fetchContactsQuery"],
+    queryFn: () => getContacts(),
+    retry: 3,
+  });
+
+  console.log("EmailForm Values", emailForm.values);
 
   // Function to handle Initail Email Send
   const ValidateEmailSend = () => {
@@ -853,34 +896,6 @@ export const ShareVideoModal = () => {
   };
 
   useEffect(() => {
-    if (
-      sendToAllContacts ||
-      selectedContacts.length > 0 ||
-      selectedContactTags.length > 0
-    ) {
-      setNoSelectedContactsError("");
-    }
-
-    if (emailSubject !== "") {
-      setNoEmailSubjectError("");
-    }
-  }, [selectedContacts, sendToAllContacts, selectedContactTags, emailSubject]);
-
-  useEffect(() => {
-    if (
-      sendToAllContacts ||
-      selectedSMSContacts.length > 0 ||
-      selectedContactTags.length > 0
-    ) {
-      setNoSelectedContactsError("");
-    }
-
-    if (smsContent !== "") {
-      setNoSMSContentError("");
-    }
-  }, [selectedSMSContacts, sendToAllContacts, selectedContactTags, smsContent]);
-
-  useEffect(() => {
     if (activeSubTab === "contacts") {
       setSelectedContactTags([]);
     } else {
@@ -888,12 +903,114 @@ export const ShareVideoModal = () => {
     }
   }, [activeSubTab, setSelectedSMSContacts, setSendToAllContacts]);
 
-  let quilRefContent = quillRef?.current?.getContents();
+  // UseEffect to set the Contacts States
   useEffect(() => {
-    if (quilRefContent?.ops[0]?.insert !== "\n") {
-      setNoEmailContentError("");
+    if (fetchContactsQuery.isSuccess && fetchContactsQuery.data) {
+      // Stop the Loading Overlay
+      setModalLoadingOverlay(false);
+
+      // Filter our the contacts that has email address
+      const filteredEmailContacts = fetchContactsQuery.data.filter(
+        (contact) => {
+          return contact?.email && contact?.email.trim() !== "";
+        }
+      );
+
+      // Filter our the contacts that has phone
+      const filteredPhoneContacts = fetchContactsQuery.data.filter(
+        (contact) => {
+          return contact?.phone && contact?.phone.trim() !== "";
+        }
+      );
+
+      // Create a new array containing objects with value and label
+      if (filteredEmailContacts.length > 0) {
+        const formattedContactsData = filteredEmailContacts.map((contact) => {
+          return {
+            value: contact.id,
+            label:
+              contact.firstNameLowerCase || contact.lastNameLowerCase
+                ? `${contact.firstNameLowerCase || ""} ${
+                    contact.lastNameLowerCase || ""
+                  }`.trim()
+                : contact.email,
+            email: contact.email,
+          };
+        });
+
+        setEmailContacts(formattedContactsData);
+      }
+
+      if (filteredPhoneContacts.length > 0) {
+        const formattedContactsData = filteredPhoneContacts.map((contact) => {
+          return {
+            value: contact.id,
+            label:
+              contact.firstNameLowerCase || contact.lastNameLowerCase
+                ? `${contact.firstNameLowerCase || ""} ${
+                    contact.lastNameLowerCase || ""
+                  }`.trim()
+                : contact.phone,
+            phone: contact.phone,
+          };
+        });
+
+        setSMSContacts(formattedContactsData);
+      }
     }
-  }, [quilRefContent]);
+
+    // clean up
+    return () => {};
+  }, [
+    fetchContactsQuery.data,
+    fetchContactsQuery.isSuccess,
+    setModalLoadingOverlay,
+  ]);
+
+  // Handle Search Functionality of Numbers
+  const handleSearchContact = ({ options, search }) => {
+    const splittedSearch = search?.toLowerCase().trim().split(" ");
+    if (activeTab === "email") {
+      return options.filter((option) => {
+        const words = option?.label?.toLowerCase().trim().split(" ");
+        const email = option?.email?.toLowerCase().trim();
+
+        return splittedSearch.every(
+          (searchWord) =>
+            words.some((word) => word.includes(searchWord)) ||
+            email.includes(searchWord)
+        );
+      });
+    }
+
+    if (activeTab === "sms") {
+      return options.filter((option) => {
+        const words = option.label?.toLowerCase().trim().split(" ");
+        const phone = option.phone?.toLowerCase().trim();
+
+        return splittedSearch.every(
+          (searchWord) =>
+            words.some((word) => word.includes(searchWord)) ||
+            phone.includes(searchWord)
+        );
+      });
+    }
+  };
+
+  if (fetchContactsQuery.isError) {
+    return toast.error("Couldn't fetch contacts", {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  }
+
+  if (fetchContactsQuery.isPending) {
+    setModalLoadingOverlay(true);
+  }
 
   return (
     <>
@@ -1062,40 +1179,24 @@ export const ShareVideoModal = () => {
                       value="contacts"
                       className="mt-[12px] flex gap-[8px] items-center"
                     >
-                      <button
-                        className="flex justify-center items-center border border-[##E9E8ED] rounded-[8px] p-[8px_12px] text-[14px] gap-[8px] font-medium text-darkBlue"
-                        type="button"
-                        onClick={() => {
-                          setIsContactsSelectionModalOpen(true);
-                          setIsShareVideoModalOpen(false);
-                        }}
-                      >
-                        <p>Select Contacts</p>
-                        <ARROW_RIGHT />
-                      </button>
-
-                      {sendToAllContacts ? (
-                        <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px] flex items-center h-fit">
-                          Sending to All Contacts...
-                        </p>
-                      ) : (
-                        <div className="flex items-center gap-[4px]">
-                          {selectedContacts.slice(0, 2).map((contact) => (
-                            <p
-                              key={contact.id}
-                              className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]"
-                            >
-                              {contact.email}
-                            </p>
-                          ))}
-
-                          {selectedContacts.length > 2 && (
-                            <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
-                              + {selectedContacts.length - 2} More
-                            </p>
-                          )}
-                        </div>
-                      )}
+                      <MultiSelect
+                        className="w-full max-w-[450px]"
+                        placeholder="Select Multiple Contacts..."
+                        data={emailContacts}
+                        maxDropdownHeight={200}
+                        searchable
+                        disabled={fetchContactsQuery.isPending}
+                        nothingFoundMessage="No Contact Found..."
+                        {...emailForm.getInputProps("selectedEmailContacts")}
+                        filter={handleSearchContact}
+                        // scrollAreaProps={{
+                        //   onScrollPositionChange: ({ y }) => {
+                        //     if (y > 80) {
+                        //       console.log("User has scrolled more than 80%");
+                        //     }
+                        //   },
+                        // }}
+                      />
                     </Tabs.Panel>
 
                     <Tabs.Panel value="tags" className="mt-[12px]">
@@ -1245,44 +1346,24 @@ export const ShareVideoModal = () => {
                       value="contacts"
                       className="mt-[12px] flex gap-[8px]"
                     >
-                      <button
-                        className="flex justify-center items-center border border-[##E9E8ED] rounded-[8px] p-[8px_12px] text-[14px] gap-[8px] font-medium text-darkBlue"
-                        type="button"
-                        onClick={() => {
-                          setIsSMSContactsSelectionModalOpen(true);
-                          setIsShareVideoModalOpen(false);
-                        }}
-                      >
-                        <p>Select Contacts</p>
-                        <ARROW_RIGHT />
-                      </button>
-                      <div className="flex items-center gap-[4px]">
-                        {sendToAllContacts ? (
-                          <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
-                            Sending to All Contacts...
-                          </p>
-                        ) : (
-                          selectedSMSContacts.slice(0, 2).map((contact) => (
-                            <p
-                              key={contact.id}
-                              className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px] capitalize"
-                            >
-                              {contact.firstNameLowerCase &&
-                              contact.firstNameLowerCase
-                                ? contact.firstNameLowerCase +
-                                  " " +
-                                  contact.lastNameLowerCase
-                                : contact.phone}
-                            </p>
-                          ))
-                        )}
-
-                        {selectedSMSContacts.length > 2 && (
-                          <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
-                            + {selectedSMSContacts.length - 2} More
-                          </p>
-                        )}
-                      </div>
+                      <MultiSelect
+                        className="w-full max-w-[450px]"
+                        placeholder="Select Multiple Contacts..."
+                        data={smsContacts}
+                        maxDropdownHeight={200}
+                        searchable
+                        disabled={fetchContactsQuery.isPending}
+                        nothingFoundMessage="No Contact Found..."
+                        {...smsForm.getInputProps("selectedSMSContacts")}
+                        filter={handleSearchContact}
+                        // scrollAreaProps={{
+                        //   onScrollPositionChange: ({ y }) => {
+                        //     if (y > 80) {
+                        //       console.log("User has scrolled more than 80%");
+                        //     }
+                        //   },
+                        // }}
+                      />
                     </Tabs.Panel>
 
                     <Tabs.Panel value="tags" className="mt-[12px]">
@@ -1758,6 +1839,7 @@ export const ContactsSelectionModalEmail = () => {
       });
 
       if (response.success) {
+        console.log("Contacts", response.data.contacts);
         setUserContactsData(response.data.contacts);
       } else {
         console.log("Error while fetching contacts: ", response.error);
