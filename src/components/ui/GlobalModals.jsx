@@ -561,6 +561,7 @@ export const ShareVideoModal = () => {
 
   // State to store the content of Input Field of SMS
   const [smsContent, setSmsContent] = useState("");
+  const [sendAttachmentWithSMS, setSendAttachmentWithSMS] = useState(true);
 
   // State for Email Subject
   const [emailSubject, setEmailSubject] = useState("");
@@ -760,6 +761,7 @@ export const ShareVideoModal = () => {
         message: smsContent,
         sendToAll: sendToAllContacts,
         videoId: videoToBeShared._id,
+        sendAttachment: sendAttachmentWithSMS,
       };
     } else {
       setSelectedContacts([]);
@@ -770,6 +772,7 @@ export const ShareVideoModal = () => {
         message: smsContent,
         sendToAll: false,
         videoId: videoToBeShared._id,
+        sendAttachment: sendAttachmentWithSMS,
       };
     }
 
@@ -1374,6 +1377,13 @@ export const ShareVideoModal = () => {
                       className="!bg-transparent h-[calc(100%-40px)] w-full text-[14px] outline-none p-[8px]"
                     />
                   </div>
+                  <Checkbox
+                    checked={sendAttachmentWithSMS}
+                    value={sendAttachmentWithSMS}
+                    onChange={(e) => setSendAttachmentWithSMS(e.target.checked)}
+                    label="Attach thumnail to SMS"
+                    className="mt-[8px]"
+                  />
                   {noSMSContentError !== "" && (
                     <p className="text-[12px] text-red-500 mt-[8px]">
                       {noSMSContentError}

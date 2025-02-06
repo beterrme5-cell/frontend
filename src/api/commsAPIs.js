@@ -14,6 +14,7 @@ export const sendSMSToSelectedContacts = async (params) => {
         message: params.message,
         sendToAll: params.sendToAll,
         videoId: params.videoId,
+        sendAttachment: params.sendAttachment,
       },
       {
         headers: {
