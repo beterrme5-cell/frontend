@@ -232,9 +232,19 @@ export const StartRecordingBtn = ({
         };
         try {
           const response = await saveRecordedVideo(videoData);
+
           if (response.success) {
-            const updatedVideosData = [...videosData, response.data.video];
-            setVideosData(updatedVideosData);
+            // Directly add the new video at the beginning of the array
+            const updatedVideosData = [
+              response.data.video,
+              ...videosData.recordedVideos,
+            ];
+
+            // Update the state with the new videos data
+            setVideosData({
+              ...videosData,
+              recordedVideos: updatedVideosData,
+            });
           } else {
             console.error(
               "Error saving video to Database:",

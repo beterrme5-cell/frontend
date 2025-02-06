@@ -41,6 +41,16 @@ const Dashboard = () => {
 
   const setUserDomain = useUserStore((state) => state.setUserDomain);
   const [error, setError] = useState(false);
+
+  // Function to sort the videos
+  const sortVideos = (videosData) => {
+    const sortedArray = videosData.sort((a, b) => {
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
+    return sortedArray;
+  };
+
   // Function to Fetch all the Data
   const fetchData = async (accessToken) => {
     try {
@@ -69,7 +79,7 @@ const Dashboard = () => {
       ) {
         // Update states
         setVideosData({
-          recordedVideos: videosResponse.data.recordedVideos,
+          recordedVideos: sortVideos(videosResponse.data.recordedVideos || []),
           uploadedVideos: videosResponse.data.uploadedVideos,
         });
         setHistoryData(historyResponse.data.histories);

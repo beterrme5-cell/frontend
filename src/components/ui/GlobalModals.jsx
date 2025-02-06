@@ -94,7 +94,7 @@ const ShareModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
       size="auto"
       withCloseButton={false}
       radius={12}
-      padding={32}
+      padding={24}
     >
       <LoadingOverlay
         visible={loadingOverlay ? loadingOverlay : false}

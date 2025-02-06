@@ -48,6 +48,15 @@ const RecordVideo = () => {
   const setLoading = useLoadingBackdrop((state) => state.setLoading);
   const setUserDomain = useUserStore((state) => state.setUserDomain);
 
+  // Function to sort the videos
+  const sortVideos = (videosData) => {
+    const sortedArray = videosData.sort((a, b) => {
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
+    return sortedArray;
+  };
+
   // Function to Fetch all the Videos and History of the User
   const fetchData = async (token) => {
     try {
@@ -73,7 +82,7 @@ const RecordVideo = () => {
       ) {
         // Update states
         setVideosData({
-          recordedVideos: videosResponse.data.recordedVideos,
+          recordedVideos: sortVideos(videosResponse.data.recordedVideos || []),
           uploadedVideos: videosResponse.data.uploadedVideos,
         });
         setHistoryData(historyResponse.data.histories);
