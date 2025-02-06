@@ -94,7 +94,7 @@ const ShareModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
       size="auto"
       withCloseButton={false}
       radius={12}
-      padding={32}
+      padding={24}
     >
       <LoadingOverlay
         visible={loadingOverlay ? loadingOverlay : false}
@@ -427,14 +427,17 @@ export const EditVideoModal = () => {
 
     // Find the Video in the Videos Data and update it
 
-    const updatedVideosData = videosData.map((video) => {
+    const updatedVideosData = videosData.recordedVideos.map((video) => {
       if (video._id === videoToBeEdited._id) {
         return response.data.video;
       }
       return video;
     });
 
-    setVideosData(updatedVideosData);
+    setVideosData({
+      ...videosData,
+      recordedVideos: updatedVideosData,
+    });
 
     setModalLoadingOverlay(false);
     setIsEditVideoModalOpen(false);
@@ -553,26 +556,12 @@ export const ShareVideoModal = () => {
     (state) => state.setIsVideoLinkNotAttachedModalOpen
   );
 
-  // const shortCodesSelected = useGlobalModals(
-  //   (state) => state.shortCodesSelected
-  // );
-
-  // const setShortCodesSelected = useGlobalModals(
-  //   (state) => state.setShortCodesSelected
-  // );
-  // const customFieldsSelected = useGlobalModals(
-  //   (state) => state.customFieldsSelected
-  // );
-
-  // const setCustomFieldsSelected = useGlobalModals(
-  //   (state) => state.setCustomFieldsSelected
-  // );
-
   const [activeTab, setActiveTab] = useState("email");
   const [activeSubTab, setActiveSubTab] = useState("contacts");
 
   // State to store the content of Input Field of SMS
   const [smsContent, setSmsContent] = useState("");
+  const [sendAttachmentWithSMS, setSendAttachmentWithSMS] = useState(true);
 
   // State for Email Subject
   const [emailSubject, setEmailSubject] = useState("");
@@ -772,6 +761,7 @@ export const ShareVideoModal = () => {
         message: smsContent,
         sendToAll: sendToAllContacts,
         videoId: videoToBeShared._id,
+        sendAttachment: sendAttachmentWithSMS,
       };
     } else {
       setSelectedContacts([]);
@@ -782,6 +772,7 @@ export const ShareVideoModal = () => {
         message: smsContent,
         sendToAll: false,
         videoId: videoToBeShared._id,
+        sendAttachment: sendAttachmentWithSMS,
       };
     }
 
@@ -1386,6 +1377,13 @@ export const ShareVideoModal = () => {
                       className="!bg-transparent h-[calc(100%-40px)] w-full text-[14px] outline-none p-[8px]"
                     />
                   </div>
+                  <Checkbox
+                    checked={sendAttachmentWithSMS}
+                    value={sendAttachmentWithSMS}
+                    onChange={(e) => setSendAttachmentWithSMS(e.target.checked)}
+                    label="Attach thumnail to SMS"
+                    className="mt-[8px]"
+                  />
                   {noSMSContentError !== "" && (
                     <p className="text-[12px] text-red-500 mt-[8px]">
                       {noSMSContentError}
@@ -1564,11 +1562,14 @@ export const DeleteVideoConfirmationModal = () => {
       });
 
       // Remove the Video from the Videos Data
-      const updatedVideosData = videosData.filter(
+      const updatedVideosData = videosData.recordedVideos.filter(
         (video) => video._id !== videoToBeDeleted._id
       );
 
-      setVideosData(updatedVideosData);
+      setVideosData({
+        ...videosData,
+        recordedVideos: updatedVideosData,
+      });
     } else {
       toast.error(response.error || "Error while deleting video", {
         position: "bottom-right",
@@ -1582,7 +1583,9 @@ export const DeleteVideoConfirmationModal = () => {
 
     setModalLoadingOverlay(false);
     setIsDeleteVideoModalOpen(false);
-    setVideoToBeDeleted({});
+    setTimeout(() => {
+      setVideoToBeDeleted({});
+    }, 1000);
   };
 
   return (
