@@ -1564,11 +1564,14 @@ export const DeleteVideoConfirmationModal = () => {
       });
 
       // Remove the Video from the Videos Data
-      const updatedVideosData = videosData.filter(
+      const updatedVideosData = videosData.recordedVideos.filter(
         (video) => video._id !== videoToBeDeleted._id
       );
 
-      setVideosData(updatedVideosData);
+      setVideosData({
+        ...videosData,
+        recordedVideos: updatedVideosData,
+      });
     } else {
       toast.error(response.error || "Error while deleting video", {
         position: "bottom-right",
@@ -1582,7 +1585,9 @@ export const DeleteVideoConfirmationModal = () => {
 
     setModalLoadingOverlay(false);
     setIsDeleteVideoModalOpen(false);
-    setVideoToBeDeleted({});
+    setTimeout(() => {
+      setVideoToBeDeleted({});
+    }, 1000);
   };
 
   return (
