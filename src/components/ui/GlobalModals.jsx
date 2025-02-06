@@ -556,21 +556,6 @@ export const ShareVideoModal = () => {
     (state) => state.setIsVideoLinkNotAttachedModalOpen
   );
 
-  // const shortCodesSelected = useGlobalModals(
-  //   (state) => state.shortCodesSelected
-  // );
-
-  // const setShortCodesSelected = useGlobalModals(
-  //   (state) => state.setShortCodesSelected
-  // );
-  // const customFieldsSelected = useGlobalModals(
-  //   (state) => state.customFieldsSelected
-  // );
-
-  // const setCustomFieldsSelected = useGlobalModals(
-  //   (state) => state.setCustomFieldsSelected
-  // );
-
   const [activeTab, setActiveTab] = useState("email");
   const [activeSubTab, setActiveSubTab] = useState("contacts");
 
