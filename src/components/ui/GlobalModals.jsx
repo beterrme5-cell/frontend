@@ -427,14 +427,17 @@ export const EditVideoModal = () => {
 
     // Find the Video in the Videos Data and update it
 
-    const updatedVideosData = videosData.map((video) => {
+    const updatedVideosData = videosData.recordedVideos.map((video) => {
       if (video._id === videoToBeEdited._id) {
         return response.data.video;
       }
       return video;
     });
 
-    setVideosData(updatedVideosData);
+    setVideosData({
+      ...videosData,
+      recordedVideos: updatedVideosData,
+    });
 
     setModalLoadingOverlay(false);
     setIsEditVideoModalOpen(false);
