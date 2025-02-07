@@ -926,6 +926,8 @@ export const ShareVideoModal = () => {
             phone.includes(searchWord)
         );
       });
+    } else {
+      return options;
     }
   };
 
@@ -1052,6 +1054,7 @@ export const ShareVideoModal = () => {
                   Embed
                 </Tabs.Tab>
               </Tabs.List>
+
               <Tabs.Panel
                 value="email"
                 className="pt-[24px]  flex flex-col gap-[24px]"
