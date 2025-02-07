@@ -943,7 +943,7 @@ export const ShareVideoModal = () => {
   }
 
   if (fetchContactsQuery.isPending) {
-    return setModalLoadingOverlay(true);
+    setModalLoadingOverlay(true);
   }
 
   return (
