@@ -12,16 +12,12 @@ import { ToastContainer } from "react-toastify";
 
 // Mantine Dev Styles
 import "@mantine/core/styles.css";
-import {
-  DeleteVideoConfirmationModal,
-  EditVideoModal,
-  PreRecordingDataInputModal,
-  ShareVideoModal,
-  StartRecordingWarningModal,
-  UpdateUserDomainModal,
-  // UploadVideoModal,
-} from "./components/ui/GlobalModals.jsx";
+
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import LoadingBackdrop from "./components/ui/LoadingBackdrop.jsx";
+
+// Create a client
+const queryClient = new QueryClient();
 
 const theme = createTheme({
   cursorType: "pointer",
@@ -29,18 +25,12 @@ const theme = createTheme({
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <MantineProvider theme={theme}>
-    {/* Modals */}
-    <DeleteVideoConfirmationModal />
-    {/* <UploadVideoModal /> */}
-    <EditVideoModal />
-    <ShareVideoModal />
-    <PreRecordingDataInputModal />
-    <StartRecordingWarningModal />
-    <UpdateUserDomainModal />
-    {/* Modals */}
+    {/* LOADING BACKDROP */}
     <LoadingBackdrop />
     {/* REACT TOASTIFY - CONTAINER */}
     <ToastContainer />
-    <RouterProvider router={router} />
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
   </MantineProvider>
 );

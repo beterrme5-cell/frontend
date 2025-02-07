@@ -40,6 +40,7 @@ import {
 } from "../../api/commsAPIs";
 import { toast } from "react-toastify";
 import debounce from "lodash.debounce";
+import { useQuery } from "@tanstack/react-query";
 
 function quillGetHTML(inputDelta) {
   var tempCont = document.createElement("div");
@@ -506,22 +507,10 @@ export const EditVideoModal = () => {
 // Modal to share the video
 export const ShareVideoModal = () => {
   const pagePath = window.location.pathname.split("/")[1];
-  const selectedContacts = useGlobalModals((state) => state.selectedContacts);
-  const setSelectedContacts = useGlobalModals(
-    (state) => state.setSelectedContacts
-  );
-
-  const selectedSMSContacts = useGlobalModals(
-    (state) => state.selectedSMSContacts
-  );
-  const setSelectedSMSContacts = useGlobalModals(
-    (state) => state.setSelectedSMSContacts
-  );
 
   const modalLoadingOverlay = useGlobalModals(
     (state) => state.modalLoadingOverlay
   );
-
   const setModalLoadingOverlay = useGlobalModals(
     (state) => state.setModalLoadingOverlay
   );
@@ -531,22 +520,9 @@ export const ShareVideoModal = () => {
   const setIsShareVideoModalOpen = useGlobalModals(
     (state) => state.setIsShareVideoModalOpen
   );
-  const setIsContactsSelectionModalOpen = useGlobalModals(
-    (state) => state.setIsContactsSelectionModalOpen
-  );
-
-  const setIsSMSContactsSelectionModalOpen = useGlobalModals(
-    (state) => state.setIsSMSContactsSelectionModalOpen
-  );
-
-  const setSendToAllContacts = useGlobalModals(
-    (state) => state.setSendToAllContacts
-  );
 
   const historyData = useUserStore((state) => state.historyData);
   const setHistoryData = useUserStore((state) => state.setHistoryData);
-
-  const sendToAllContacts = useGlobalModals((state) => state.sendToAllContacts);
 
   const videoToBeShared = useGlobalModals((state) => state.videoToBeShared);
 
@@ -556,34 +532,76 @@ export const ShareVideoModal = () => {
     (state) => state.setIsVideoLinkNotAttachedModalOpen
   );
 
-  const [activeTab, setActiveTab] = useState("email");
-  const [activeSubTab, setActiveSubTab] = useState("contacts");
-
-  // State to store the content of Input Field of SMS
-  const [smsContent, setSmsContent] = useState("");
-  const [sendAttachmentWithSMS, setSendAttachmentWithSMS] = useState(true);
-
-  // State for Email Subject
-  const [emailSubject, setEmailSubject] = useState("");
-  const [emailContent, setEmailContent] = useState("");
-  const [selectedContactTags, setSelectedContactTags] = useState([]);
-  const [noSelectedContactsError, setNoSelectedContactsError] = useState("");
-  const [noSMSContentError, setNoSMSContentError] = useState("");
-  const [noEmailSubjectError, setNoEmailSubjectError] = useState("");
-  const [noEmailContentError, setNoEmailContentError] = useState("");
-  const [editorContent, setEditorContent] = useState(null);
   const openContactsLinkedWithTagsModal = useGlobalModals(
     (state) => state.openContactsLinkedWithTagsModal
   );
   const setOpenContactsLinkedWithTagsModal = useGlobalModals(
     (state) => state.setOpenContactsLinkedWithTagsModal
   );
+
+  const [activeTab, setActiveTab] = useState("email");
+  const [activeSubTab, setActiveSubTab] = useState("contacts");
+
+  // State to store the content of Input Field of SMS
+  const [sendAttachmentWithSMS, setSendAttachmentWithSMS] = useState(true);
+
+  const emailForm = useForm({
+    initialValues: {
+      emailSubject: "",
+      selectedEmailContacts: [],
+    },
+
+    validate: {
+      emailSubject: (value) => {
+        if (value.length < 3) {
+          return "Email Subject must be at least 3 characters long";
+        }
+      },
+
+      selectedEmailContacts: (value) => {
+        if (activeSubTab === "contacts" && value.length === 0) {
+          return "Please select at least one contact";
+        }
+      },
+    },
+  });
+
+  const smsForm = useForm({
+    initialValues: {
+      smsContent: `${videoToBeShared?.shareableLink} `,
+      selectedSMSContacts: [],
+    },
+
+    validate: {
+      selectedSMSContacts: (value) => {
+        if (activeSubTab === "contacts" && value.length === 0) {
+          return "Please select at least one contact";
+        }
+      },
+    },
+  });
+
+  // State for Email Subject
+  const [emailContent, setEmailContent] = useState("");
+  const [selectedContactTags, setSelectedContactTags] = useState([]);
+  const [editorContent, setEditorContent] = useState(null);
+
   const [contactsLinkedWithTags, setContactsLinkedWithTags] = useState([]);
   const [fetchingContactsLinkedWithTags, setFetchingContactsLinkedWithTags] =
     useState(false);
 
+  //  States to store Contacts in the required Formate for MultiSelect
+  const [emailContacts, setEmailContacts] = useState([]);
+  const [smsContacts, setSMSContacts] = useState([]);
   // Use a ref to access the quill instance directly
   const quillRef = useRef();
+
+  // Testing Query
+  const fetchContactsQuery = useQuery({
+    queryKey: ["fetchContactsQuery"],
+    queryFn: () => getContacts(),
+    retry: 3,
+  });
 
   // Function to handle Initail Email Send
   const ValidateEmailSend = () => {
@@ -593,25 +611,10 @@ export const ShareVideoModal = () => {
     setEmailContent(quillHTML);
 
     // Validation Checks
-    if (
-      selectedContactTags.length === 0 &&
-      selectedContacts.length === 0 &&
-      !sendToAllContacts
-    ) {
-      setNoSelectedContactsError(
-        "Please select the contacts or tags to send the SMS!"
-      );
-      return;
-    }
+    const validation = emailForm.validate();
 
-    if (emailSubject === "") {
-      setNoEmailSubjectError("Please enter the Email Subject!");
-      return;
-    }
-
-    if (quillHTML === "<p><br></p>") {
-      setNoEmailContentError("Please enter the Email Content!");
-      return;
+    if (validation.hasErrors) {
+      return console.log("Email Form Validation Failed!");
     }
 
     if (quillHTML.includes(videoToBeShared?.shareableLink)) {
@@ -621,6 +624,7 @@ export const ShareVideoModal = () => {
     setIsVideoLinkNotAttachedModalOpen(true);
     setIsShareVideoModalOpen(false);
   };
+
   const handleSendWithoutVideoLink = () => {
     if (activeTab === "email") {
       return handleSubmitEmail(emailContent);
@@ -631,23 +635,13 @@ export const ShareVideoModal = () => {
 
   const ValidateSMSSend = () => {
     // Validation Checks
-    if (
-      selectedContactTags.length === 0 &&
-      selectedSMSContacts.length === 0 &&
-      !sendToAllContacts
-    ) {
-      setNoSelectedContactsError(
-        "Please select the contacts or tags to send the SMS!"
-      );
-      return;
+    const validation = smsForm.validate();
+
+    if (validation.hasErrors) {
+      return console.log("SMS Form Validation Failed!");
     }
 
-    if (smsContent === "") {
-      setNoSMSContentError("Please enter the SMS Content!");
-      return;
-    }
-
-    if (smsContent.includes(videoToBeShared?.shareableLink)) {
+    if (smsForm.values.smsContent.includes(videoToBeShared?.shareableLink)) {
       return handleSubmitSMS();
     }
 
@@ -659,36 +653,32 @@ export const ShareVideoModal = () => {
     setModalLoadingOverlay(true);
     let API_DATA;
 
-    if (selectedContacts.length > 0 || sendToAllContacts) {
+    const selectedContacts = fetchContactsQuery?.data?.filter((contact) =>
+      emailForm.values.selectedEmailContacts.includes(contact.id)
+    );
+
+    if (selectedContacts.length > 0) {
       API_DATA = {
-        contactIds: sendToAllContacts ? [] : selectedContacts,
+        contactIds: selectedContacts,
         tags: [],
-        message: htmlContent, // added htmlContent here to take content from params if email content state is not set yet
-        subject: emailSubject,
-        sendToAll: sendToAllContacts,
+        message: htmlContent,
+        subject: emailForm.values.emailSubject,
         videoId: videoToBeShared._id,
-        // codesUsed: shortCodesSelected,
-        // customFieldsUsed: customFieldsSelected,
       };
     } else {
       API_DATA = {
         contactIds: [],
         tags: selectedContactTags,
-        message: htmlContent, // added htmlContent here to take content from params if email content state is not set yet
-        subject: emailSubject,
-        sendToAll: false,
+        message: htmlContent,
+        subject: emailForm.values.emailSubject,
         videoId: videoToBeShared._id,
-        // codesUsed: shortCodesSelected,
-        // customFieldsUsed: customFieldsSelected,
       };
     }
 
-    // Send Email API
+    // // Send Email API
     const response = await sendEmailToSelectedContacts(API_DATA);
 
     if (response.success) {
-      // setShortCodesSelected([]);
-      // setCustomFieldsSelected([]);
       setEditorContent(null);
 
       toast.success(response.data.message, {
@@ -717,8 +707,7 @@ export const ShareVideoModal = () => {
 
       setHistoryData([...historyData, ...newHistoryData]);
 
-      // Clear the selected contacts
-      setSelectedContacts([]);
+      emailForm.reset();
 
       // Clear the Quill Editor
       // quillRef.current.setContents("");
@@ -727,11 +716,7 @@ export const ShareVideoModal = () => {
       setIsVideoLinkNotAttachedModalOpen(false);
       setModalLoadingOverlay(false);
       setIsShareVideoModalOpen(false);
-      setSendToAllContacts(false);
       setSelectedContactTags([]);
-      setEmailSubject("");
-      setNoEmailContentError("");
-      setNoEmailSubjectError("");
       setEmailContent("");
       setActiveTab("email");
       setActiveSubTab("contacts");
@@ -753,24 +738,25 @@ export const ShareVideoModal = () => {
 
     let API_DATA;
 
-    if (selectedSMSContacts.length > 0 || sendToAllContacts) {
+    // Filter the Contacts
+    const selectedContacts = fetchContactsQuery?.data?.filter((contact) =>
+      smsForm.values.selectedSMSContacts.includes(contact.id)
+    );
+
+    if (selectedContacts.length > 0) {
       setSelectedContactTags([]);
       API_DATA = {
-        contactIds: sendToAllContacts ? [] : selectedSMSContacts,
+        contactIds: selectedContacts,
         tags: [],
-        message: smsContent,
-        sendToAll: sendToAllContacts,
+        message: smsForm.values.smsContent,
         videoId: videoToBeShared._id,
         sendAttachment: sendAttachmentWithSMS,
       };
     } else {
-      setSelectedContacts([]);
-      setSendToAllContacts(false);
       API_DATA = {
         contactIds: [],
         tags: selectedContactTags,
-        message: smsContent,
-        sendToAll: false,
+        message: smsForm.values.smsContent,
         videoId: videoToBeShared._id,
         sendAttachment: sendAttachmentWithSMS,
       };
@@ -805,19 +791,16 @@ export const ShareVideoModal = () => {
 
       setIsVideoLinkNotAttachedModalOpen(false);
       setModalLoadingOverlay(false);
-      setSendToAllContacts(false);
-      // Clear the selected contacts
-      setSelectedSMSContacts([]);
+
       // Clear the Tags
       setSelectedContactTags([]);
-      // Clear the SMS Content
-      setSmsContent("");
+
+      smsForm.reset();
+
       // Close the Modal
       setIsShareVideoModalOpen(false);
       setActiveTab("email");
       setActiveSubTab("contacts");
-
-      setNoSMSContentError("");
     } else {
       console.log("Error while sending SMS: ", response.error);
       toast.error(response.error || "Error while sending SMS", {
@@ -852,48 +835,114 @@ export const ShareVideoModal = () => {
     setFetchingContactsLinkedWithTags(false);
   };
 
+  // UseEffect to set the Contacts States
   useEffect(() => {
-    if (
-      sendToAllContacts ||
-      selectedContacts.length > 0 ||
-      selectedContactTags.length > 0
-    ) {
-      setNoSelectedContactsError("");
+    if (fetchContactsQuery.isSuccess && fetchContactsQuery.data) {
+      // Stop the Loading Overlay
+      setModalLoadingOverlay(false);
+
+      // Filter our the contacts that has email address
+      const filteredEmailContacts = fetchContactsQuery.data.filter(
+        (contact) => {
+          return contact?.email && contact?.email.trim() !== "";
+        }
+      );
+
+      // Filter our the contacts that has phone
+      const filteredPhoneContacts = fetchContactsQuery.data.filter(
+        (contact) => {
+          return contact?.phone && contact?.phone.trim() !== "";
+        }
+      );
+
+      // Create a new array containing objects with value and label
+      if (filteredEmailContacts.length > 0) {
+        const formattedContactsData = filteredEmailContacts.map((contact) => {
+          return {
+            value: contact.id,
+            label:
+              contact.firstNameLowerCase || contact.lastNameLowerCase
+                ? `${contact.firstNameLowerCase || ""} ${
+                    contact.lastNameLowerCase || ""
+                  }`.trim()
+                : contact.email,
+            email: contact.email,
+          };
+        });
+
+        setEmailContacts(formattedContactsData);
+      }
+
+      if (filteredPhoneContacts.length > 0) {
+        const formattedContactsData = filteredPhoneContacts.map((contact) => {
+          return {
+            value: contact.id,
+            label:
+              contact.firstNameLowerCase || contact.lastNameLowerCase
+                ? `${contact.firstNameLowerCase || ""} ${
+                    contact.lastNameLowerCase || ""
+                  }`.trim()
+                : contact.phone,
+            phone: contact.phone,
+          };
+        });
+
+        setSMSContacts(formattedContactsData);
+      }
     }
 
-    if (emailSubject !== "") {
-      setNoEmailSubjectError("");
-    }
-  }, [selectedContacts, sendToAllContacts, selectedContactTags, emailSubject]);
+    // clean up
+    return () => {};
+  }, [
+    fetchContactsQuery.data,
+    fetchContactsQuery.isSuccess,
+    setModalLoadingOverlay,
+  ]);
 
-  useEffect(() => {
-    if (
-      sendToAllContacts ||
-      selectedSMSContacts.length > 0 ||
-      selectedContactTags.length > 0
-    ) {
-      setNoSelectedContactsError("");
+  // Handle Search Functionality of Numbers
+  const handleSearchContact = ({ options, search }) => {
+    const splittedSearch = search?.toLowerCase().trim().split(" ");
+    if (activeTab === "email") {
+      return options.filter((option) => {
+        const words = option?.label?.toLowerCase().trim().split(" ");
+        const email = option?.email?.toLowerCase().trim();
+
+        return splittedSearch.every(
+          (searchWord) =>
+            words.some((word) => word.includes(searchWord)) ||
+            email.includes(searchWord)
+        );
+      });
     }
 
-    if (smsContent !== "") {
-      setNoSMSContentError("");
-    }
-  }, [selectedSMSContacts, sendToAllContacts, selectedContactTags, smsContent]);
+    if (activeTab === "sms") {
+      return options.filter((option) => {
+        const words = option.label?.toLowerCase().trim().split(" ");
+        const phone = option.phone?.toLowerCase().trim();
 
-  useEffect(() => {
-    if (activeSubTab === "contacts") {
-      setSelectedContactTags([]);
-    } else {
-      setSelectedSMSContacts([]);
+        return splittedSearch.every(
+          (searchWord) =>
+            words.some((word) => word.includes(searchWord)) ||
+            phone.includes(searchWord)
+        );
+      });
     }
-  }, [activeSubTab, setSelectedSMSContacts, setSendToAllContacts]);
+  };
 
-  let quilRefContent = quillRef?.current?.getContents();
-  useEffect(() => {
-    if (quilRefContent?.ops[0]?.insert !== "\n") {
-      setNoEmailContentError("");
-    }
-  }, [quilRefContent]);
+  if (fetchContactsQuery.isError) {
+    return toast.error("Couldn't fetch contacts", {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  }
+
+  if (fetchContactsQuery.isPending) {
+    setModalLoadingOverlay(true);
+  }
 
   return (
     <>
@@ -923,18 +972,11 @@ export const ShareVideoModal = () => {
           // setShortCodesSelected([]);
           // setCustomFieldsSelected([]);
           setEmailContent("");
-          setEmailSubject("");
-          setSendToAllContacts(false);
+          emailForm.reset();
+          smsForm.reset();
           setSelectedContactTags([]);
-          setSelectedSMSContacts([]);
-          setSelectedContacts([]);
           setContactsLinkedWithTags([]);
-          setSmsContent("");
           setEditorContent(null);
-          setNoSMSContentError("");
-          setNoSelectedContactsError("");
-          setNoEmailSubjectError("");
-          setNoEmailContentError("");
         }}
       >
         <div className="flex flex-col gap-[24px] w-[70vw]">
@@ -947,21 +989,12 @@ export const ShareVideoModal = () => {
                 setActiveTab(value);
                 setActiveSubTab("contacts");
                 if (value === "email") {
-                  setSelectedSMSContacts([]);
-                  setSmsContent("");
-                  setNoSMSContentError("");
+                  smsForm.reset();
                 }
                 if (value === "sms") {
-                  setSmsContent(`${videoToBeShared?.shareableLink} `);
-                  setSelectedContacts([]);
                   setEditorContent(null);
-                  setNoEmailContentError("");
-                  setNoEmailSubjectError("");
-                  setEmailContent("");
-                  setEmailSubject("");
+                  emailForm.reset();
                 }
-                setNoSelectedContactsError("");
-                setSendToAllContacts(false);
                 setSelectedContactTags([]);
                 setContactsLinkedWithTags([]);
               }}
@@ -1023,166 +1056,126 @@ export const ShareVideoModal = () => {
                 value="email"
                 className="pt-[24px]  flex flex-col gap-[24px]"
               >
-                <div className="flex flex-col gap-[8px]">
-                  <Tabs
-                    color="#6C668526"
-                    variant="pills"
-                    radius="xl"
-                    value={activeSubTab}
-                    onChange={(value) => {
-                      setActiveSubTab(value);
-                      setSelectedContactTags([]);
-                      setContactsLinkedWithTags([]);
-                      setSelectedContacts([]);
-                    }}
-                  >
-                    <Tabs.List>
-                      <Tabs.Tab
-                        value="contacts"
-                        className={`${
-                          activeSubTab === "contacts"
-                            ? "!text-darkBlue font-bold"
-                            : "!text-[#6C6685] font-medium"
-                        } `}
-                      >
-                        Contacts
-                      </Tabs.Tab>
-                      <Tabs.Tab
-                        value="tags"
-                        className={`${
-                          activeSubTab === "tags"
-                            ? "!text-darkBlue font-bold"
-                            : "!text-[#6C6685] font-medium"
-                        } `}
-                      >
-                        Tags
-                      </Tabs.Tab>
-                    </Tabs.List>
-                    <Tabs.Panel
+                <Tabs
+                  color="#6C668526"
+                  variant="pills"
+                  radius="xl"
+                  value={activeSubTab}
+                  onChange={(value) => {
+                    setActiveSubTab(value);
+                    setSelectedContactTags([]);
+                    setContactsLinkedWithTags([]);
+                    emailForm.setFieldValue("selectedEmailContacts", []);
+                  }}
+                >
+                  <Tabs.List>
+                    <Tabs.Tab
                       value="contacts"
-                      className="mt-[12px] flex gap-[8px] items-center"
+                      className={`${
+                        activeSubTab === "contacts"
+                          ? "!text-darkBlue font-bold"
+                          : "!text-[#6C6685] font-medium"
+                      } `}
                     >
-                      <button
-                        className="flex justify-center items-center border border-[##E9E8ED] rounded-[8px] p-[8px_12px] text-[14px] gap-[8px] font-medium text-darkBlue"
-                        type="button"
-                        onClick={() => {
-                          setIsContactsSelectionModalOpen(true);
-                          setIsShareVideoModalOpen(false);
-                        }}
-                      >
-                        <p>Select Contacts</p>
-                        <ARROW_RIGHT />
-                      </button>
+                      Contacts
+                    </Tabs.Tab>
+                    <Tabs.Tab
+                      value="tags"
+                      className={`${
+                        activeSubTab === "tags"
+                          ? "!text-darkBlue font-bold"
+                          : "!text-[#6C6685] font-medium"
+                      } `}
+                    >
+                      Tags
+                    </Tabs.Tab>
+                  </Tabs.List>
+                  <Tabs.Panel
+                    value="contacts"
+                    className="mt-[12px] flex gap-[8px] items-center"
+                  >
+                    <MultiSelect
+                      className="w-full max-w-[450px] capitalize"
+                      placeholder="Select Multiple Contacts..."
+                      data={emailContacts}
+                      maxDropdownHeight={200}
+                      searchable
+                      disabled={fetchContactsQuery.isPending}
+                      nothingFoundMessage="No Contact Found..."
+                      {...emailForm.getInputProps("selectedEmailContacts")}
+                      filter={handleSearchContact}
+                      classNames={{
+                        pill: "text-transform: capitalize;",
+                        option: "text-transform: capitalize !important;",
+                      }}
+                      clearable
+                    />
+                  </Tabs.Panel>
 
-                      {sendToAllContacts ? (
-                        <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px] flex items-center h-fit">
-                          Sending to All Contacts...
-                        </p>
-                      ) : (
-                        <div className="flex items-center gap-[4px]">
-                          {selectedContacts.slice(0, 2).map((contact) => (
-                            <p
-                              key={contact.id}
-                              className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]"
-                            >
-                              {contact.email}
-                            </p>
-                          ))}
-
-                          {selectedContacts.length > 2 && (
-                            <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
-                              + {selectedContacts.length - 2} More
-                            </p>
-                          )}
-                        </div>
+                  <Tabs.Panel value="tags" className="mt-[12px]">
+                    <div className="flex lg:flex-row flex-col lg:items-center gap-[8px]">
+                      <MultiSelect
+                        className="lg:w-1/2 w-full"
+                        placeholder={
+                          selectedContactTags.length > 0
+                            ? ""
+                            : "Select one or Multiple Tags"
+                        }
+                        data={contactTagsData}
+                        value={selectedContactTags}
+                        onChange={(value) => handleSelectEmailTag(value)}
+                        maxDropdownHeight={200}
+                        clearable
+                        searchable
+                        nothingFoundMessage="Nothing found..."
+                        hidePickedOptions
+                      />
+                      {fetchingContactsLinkedWithTags && (
+                        <Loader color="#2A85FF" size="sm" />
                       )}
-                    </Tabs.Panel>
+                      <div className="flex items-center gap-[4px]">
+                        {contactsLinkedWithTags.slice(0, 2).map((contact) => (
+                          <p
+                            key={contact.id}
+                            className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]"
+                          >
+                            {contact.email}
+                          </p>
+                        ))}
 
-                    <Tabs.Panel value="tags" className="mt-[12px]">
-                      <div className="flex lg:flex-row flex-col lg:items-center gap-[8px]">
-                        <MultiSelect
-                          className="lg:w-1/2 w-full"
-                          placeholder={
-                            selectedContactTags.length > 0
-                              ? ""
-                              : "Select one or Multiple Tags"
-                          }
-                          data={contactTagsData}
-                          value={selectedContactTags}
-                          onChange={(value) => handleSelectEmailTag(value)}
-                          maxDropdownHeight={200}
-                          clearable
-                          searchable
-                          nothingFoundMessage="Nothing found..."
-                          hidePickedOptions
-                        />
-                        {fetchingContactsLinkedWithTags && (
-                          <Loader color="#2A85FF" size="sm" />
+                        {contactsLinkedWithTags.length > 2 && (
+                          <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
+                            ...
+                          </p>
                         )}
-                        <div className="flex items-center gap-[4px]">
-                          {contactsLinkedWithTags.slice(0, 2).map((contact) => (
-                            <p
-                              key={contact.id}
-                              className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]"
-                            >
-                              {contact.email}
-                            </p>
-                          ))}
-
-                          {contactsLinkedWithTags.length > 2 && (
-                            <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
-                              ...
-                            </p>
-                          )}
-                          {contactsLinkedWithTags.length > 2 && (
-                            <button
-                              type="button"
-                              className="text-primary text-[12px] ms-[8px] font-medium hover:underline"
-                              onClick={() => {
-                                setOpenContactsLinkedWithTagsModal(true);
-                                setIsShareVideoModalOpen(false);
-                              }}
-                            >
-                              View all
-                            </button>
-                          )}
-                        </div>
+                        {contactsLinkedWithTags.length > 2 && (
+                          <button
+                            type="button"
+                            className="text-primary text-[12px] ms-[8px] font-medium hover:underline"
+                            onClick={() => {
+                              setOpenContactsLinkedWithTagsModal(true);
+                              setIsShareVideoModalOpen(false);
+                            }}
+                          >
+                            View all
+                          </button>
+                        )}
                       </div>
-                    </Tabs.Panel>
-                  </Tabs>
-                  {noSelectedContactsError !== "" && (
-                    <p className="text-[12px] text-red-500">
-                      {noSelectedContactsError}
-                    </p>
-                  )}
-                </div>
-                <div className="flex flex-col gap-[8px]">
-                  <TextInput
-                    label="Email Subject"
-                    placeholder="Email Subject"
-                    className="w-full max-w-[350px]"
-                    id="emailSubject"
-                    value={emailSubject}
-                    onChange={(e) => setEmailSubject(e.target.value)}
-                  />
-                  {noEmailSubjectError !== "" && (
-                    <p className="text-[12px] text-red-500">
-                      {noEmailSubjectError}
-                    </p>
-                  )}
-                </div>
-                <div className="flex flex-col gap-[8px] relative">
-                  <TextEditor
-                    ref={quillRef}
-                    editorContent={editorContent}
-                    setEditorContent={setEditorContent}
-                  />
-                  {noEmailContentError !== "" && (
-                    <p className="text-[12px] text-red-500">
-                      {noEmailContentError}
-                    </p>
-                  )}
-                </div>
+                    </div>
+                  </Tabs.Panel>
+                </Tabs>
+                <TextInput
+                  label="Email Subject"
+                  placeholder="Email Subject"
+                  className="w-full max-w-[350px]"
+                  id="emailSubject"
+                  {...emailForm.getInputProps("emailSubject")}
+                />
+                <TextEditor
+                  ref={quillRef}
+                  editorContent={editorContent}
+                  setEditorContent={setEditorContent}
+                />
                 <div className="flex items-center gap-[16px]">
                   <CustomButton
                     label="Send Email"
@@ -1205,143 +1198,114 @@ export const ShareVideoModal = () => {
                 value="sms"
                 className="pt-[24px] flex flex-col gap-[24px]"
               >
-                <div className="flex flex-col gap-[8px]">
-                  <Tabs
-                    color="#6C668526"
-                    variant="pills"
-                    radius="xl"
-                    value={activeSubTab}
-                    onChange={(value) => {
-                      setActiveSubTab(value);
-                      setSelectedContactTags([]);
-                      setContactsLinkedWithTags([]);
-                      setSelectedSMSContacts([]);
-                    }}
-                  >
-                    <Tabs.List>
-                      <Tabs.Tab
-                        value="contacts"
-                        className={`${
-                          activeSubTab === "contacts"
-                            ? "!text-darkBlue font-bold"
-                            : "!text-[#6C6685] font-medium"
-                        } `}
-                      >
-                        Contacts
-                      </Tabs.Tab>
-                      <Tabs.Tab
-                        value="tags"
-                        className={`${
-                          activeSubTab === "tags"
-                            ? "!text-darkBlue font-bold"
-                            : "!text-[#6C6685] font-medium"
-                        } `}
-                      >
-                        Tags
-                      </Tabs.Tab>
-                    </Tabs.List>
-
-                    <Tabs.Panel
+                <Tabs
+                  color="#6C668526"
+                  variant="pills"
+                  radius="xl"
+                  value={activeSubTab}
+                  onChange={(value) => {
+                    setActiveSubTab(value);
+                    setSelectedContactTags([]);
+                    setContactsLinkedWithTags([]);
+                    smsForm.setFieldValue("selectedSMSContacts", []);
+                  }}
+                >
+                  <Tabs.List>
+                    <Tabs.Tab
                       value="contacts"
-                      className="mt-[12px] flex gap-[8px]"
+                      className={`${
+                        activeSubTab === "contacts"
+                          ? "!text-darkBlue font-bold"
+                          : "!text-[#6C6685] font-medium"
+                      } `}
                     >
-                      <button
-                        className="flex justify-center items-center border border-[##E9E8ED] rounded-[8px] p-[8px_12px] text-[14px] gap-[8px] font-medium text-darkBlue"
-                        type="button"
-                        onClick={() => {
-                          setIsSMSContactsSelectionModalOpen(true);
-                          setIsShareVideoModalOpen(false);
-                        }}
-                      >
-                        <p>Select Contacts</p>
-                        <ARROW_RIGHT />
-                      </button>
+                      Contacts
+                    </Tabs.Tab>
+                    <Tabs.Tab
+                      value="tags"
+                      className={`${
+                        activeSubTab === "tags"
+                          ? "!text-darkBlue font-bold"
+                          : "!text-[#6C6685] font-medium"
+                      } `}
+                    >
+                      Tags
+                    </Tabs.Tab>
+                  </Tabs.List>
+
+                  <Tabs.Panel
+                    value="contacts"
+                    className="mt-[12px] flex gap-[8px]"
+                  >
+                    <MultiSelect
+                      className="w-full max-w-[450px]"
+                      placeholder="Select Multiple Contacts..."
+                      data={smsContacts}
+                      maxDropdownHeight={200}
+                      searchable
+                      disabled={fetchContactsQuery.isPending}
+                      nothingFoundMessage="No Contact Found..."
+                      {...smsForm.getInputProps("selectedSMSContacts")}
+                      filter={handleSearchContact}
+                      classNames={{
+                        pill: "text-transform: capitalize;",
+                        option: "text-transform: capitalize !important;",
+                      }}
+                      clearable
+                    />
+                  </Tabs.Panel>
+
+                  <Tabs.Panel value="tags" className="mt-[12px]">
+                    <div className="flex lg:flex-row flex-col lg:items-center gap-[8px]">
+                      <MultiSelect
+                        className="lg:w-1/2 w-full"
+                        placeholder={
+                          selectedContactTags.length > 0
+                            ? ""
+                            : "Select one or Multiple Tags"
+                        }
+                        data={contactTagsData}
+                        value={selectedContactTags}
+                        onChange={(value) => handleSelectEmailTag(value)}
+                        clearable
+                        searchable
+                        nothingFoundMessage="Nothing found..."
+                        hidePickedOptions
+                      />
+                      {fetchingContactsLinkedWithTags && (
+                        <Loader color="#2A85FF" size="sm" />
+                      )}
                       <div className="flex items-center gap-[4px]">
-                        {sendToAllContacts ? (
-                          <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
-                            Sending to All Contacts...
+                        {contactsLinkedWithTags.slice(0, 2).map((contact) => (
+                          <p
+                            key={contact.id}
+                            className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]"
+                          >
+                            {contact.name}
                           </p>
-                        ) : (
-                          selectedSMSContacts.slice(0, 2).map((contact) => (
-                            <p
-                              key={contact.id}
-                              className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px] capitalize"
-                            >
-                              {contact.firstNameLowerCase &&
-                              contact.firstNameLowerCase
-                                ? contact.firstNameLowerCase +
-                                  " " +
-                                  contact.lastNameLowerCase
-                                : contact.phone}
-                            </p>
-                          ))
-                        )}
+                        ))}
 
-                        {selectedSMSContacts.length > 2 && (
+                        {contactsLinkedWithTags.length > 2 && (
                           <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
-                            + {selectedSMSContacts.length - 2} More
+                            ...
                           </p>
                         )}
-                      </div>
-                    </Tabs.Panel>
-
-                    <Tabs.Panel value="tags" className="mt-[12px]">
-                      <div className="flex lg:flex-row flex-col lg:items-center gap-[8px]">
-                        <MultiSelect
-                          className="lg:w-1/2 w-full"
-                          placeholder={
-                            selectedContactTags.length > 0
-                              ? ""
-                              : "Select one or Multiple Tags"
-                          }
-                          data={contactTagsData}
-                          value={selectedContactTags}
-                          onChange={(value) => handleSelectEmailTag(value)}
-                          clearable
-                          searchable
-                          nothingFoundMessage="Nothing found..."
-                          hidePickedOptions
-                        />
-                        {fetchingContactsLinkedWithTags && (
-                          <Loader color="#2A85FF" size="sm" />
+                        {contactsLinkedWithTags.length > 2 && (
+                          <button
+                            type="button"
+                            className="text-primary text-[12px] ms-[8px] font-medium hover:underline"
+                            onClick={() => {
+                              setOpenContactsLinkedWithTagsModal(true);
+                              setIsShareVideoModalOpen(false);
+                            }}
+                          >
+                            View all
+                          </button>
                         )}
-                        <div className="flex items-center gap-[4px]">
-                          {contactsLinkedWithTags.slice(0, 2).map((contact) => (
-                            <p
-                              key={contact.id}
-                              className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]"
-                            >
-                              {contact.name}
-                            </p>
-                          ))}
-
-                          {contactsLinkedWithTags.length > 2 && (
-                            <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
-                              ...
-                            </p>
-                          )}
-                          {contactsLinkedWithTags.length > 2 && (
-                            <button
-                              type="button"
-                              className="text-primary text-[12px] ms-[8px] font-medium hover:underline"
-                              onClick={() => {
-                                setOpenContactsLinkedWithTagsModal(true);
-                                setIsShareVideoModalOpen(false);
-                              }}
-                            >
-                              View all
-                            </button>
-                          )}
-                        </div>
                       </div>
-                    </Tabs.Panel>
-                  </Tabs>
-                  {noSelectedContactsError !== "" && (
-                    <p className="text-[12px] text-red-500">
-                      {noSelectedContactsError}
-                    </p>
-                  )}
-                </div>
+                    </div>
+                  </Tabs.Panel>
+                </Tabs>
                 <div className="w-full">
                   <p className="text-[14px] mb-[8px]">Content</p>
                   <div className="relative rounded-[12px] w-full h-[250px] !bg-[#F7F7F8] border border-[#D7D5DD] overflow-hidden">
@@ -1350,7 +1314,10 @@ export const ShareVideoModal = () => {
                         type="button"
                         className="px-[8px] text-darkBlue text-[14px] font-medium w-fit text-start"
                         onClick={() => {
-                          setSmsContent(`${smsContent} {{contact.name}}`);
+                          smsForm.setFieldValue(
+                            "smsContent",
+                            `${smsForm.values.smsContent} {{contact.name}}`
+                          );
                         }}
                       >
                         Add First Name
@@ -1360,8 +1327,9 @@ export const ShareVideoModal = () => {
                         type="button"
                         className="px-[8px] text-darkBlue text-[14px] font-medium w-fit text-start"
                         onClick={() => {
-                          setSmsContent(
-                            `${smsContent} ${videoToBeShared?.shareableLink} `
+                          smsForm.setFieldValue(
+                            "smsContent",
+                            `${smsForm.values.smsContent} ${videoToBeShared?.shareableLink} `
                           );
                         }}
                       >
@@ -1369,12 +1337,16 @@ export const ShareVideoModal = () => {
                       </button>
                     </div>
 
-                    <textarea
+                    <Textarea
                       id="smsContent-container"
                       placeholder="SMS Content"
-                      value={smsContent}
-                      onChange={(e) => setSmsContent(e.target.value)}
-                      className="!bg-transparent h-[calc(100%-40px)] w-full text-[14px] outline-none p-[8px]"
+                      {...smsForm.getInputProps("smsContent")}
+                      minRows={8}
+                      maxRows={8}
+                      autosize
+                      classNames={{
+                        input: "background: transparent!;",
+                      }}
                     />
                   </div>
                   <Checkbox
@@ -1384,11 +1356,6 @@ export const ShareVideoModal = () => {
                     label="Attach thumnail to SMS"
                     className="mt-[8px]"
                   />
-                  {noSMSContentError !== "" && (
-                    <p className="text-[12px] text-red-500 mt-[8px]">
-                      {noSMSContentError}
-                    </p>
-                  )}
                 </div>
                 <div className="flex items-center gap-[16px]">
                   <CustomButton
@@ -1758,6 +1725,7 @@ export const ContactsSelectionModalEmail = () => {
       });
 
       if (response.success) {
+        console.log("Contacts", response.data.contacts);
         setUserContactsData(response.data.contacts);
       } else {
         console.log("Error while fetching contacts: ", response.error);

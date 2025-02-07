@@ -289,3 +289,11 @@ span .em-lns-1do042d {
   background-color: #21212199;
   border-radius: 6px !important;
 }
+
+#smsContent-container {
+  border: none !important;
+}
+
+#smsContent-container:focus {
+  background-color: transparent !important;
+}
