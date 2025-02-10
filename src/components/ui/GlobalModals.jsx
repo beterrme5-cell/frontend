@@ -1356,7 +1356,7 @@ export const ShareVideoModal = () => {
                     checked={sendAttachmentWithSMS}
                     value={sendAttachmentWithSMS}
                     onChange={(e) => setSendAttachmentWithSMS(e.target.checked)}
-                    label="Attach thumnail to SMS"
+                    label="Attach thumbnail to SMS"
                     className="mt-[8px]"
                   />
                 </div>
