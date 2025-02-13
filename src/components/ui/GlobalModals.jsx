@@ -1319,7 +1319,7 @@ export const ShareVideoModal = () => {
                         onClick={() => {
                           smsForm.setFieldValue(
                             "smsContent",
-                            `${smsForm.values.smsContent} {{contact.name}}`
+                            `${smsForm.values.smsContent} {{contact.first_name}}`
                           );
                         }}
                       >
