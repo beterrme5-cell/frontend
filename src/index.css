@@ -297,3 +297,82 @@ span .em-lns-1do042d {
 #smsContent-container:focus {
   background-color: transparent !important;
 }
+
+/* Customization of the MultiSelect */
+.css-13cymwt-control {
+  min-height: 50px !important;
+  border-color: #d7d5dd !important;
+  background-color: #f7f7f8 !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-family: "Plus Jakarta Sans" !important;
+  cursor: pointer !important;
+}
+
+.css-t3ipsp-control {
+  min-height: 50px !important;
+  border-color: #2a85ff !important;
+  box-shadow: 0 0 0 1px #2a85ff !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-family: "Plus Jakarta Sans" !important;
+  cursor: pointer !important;
+}
+
+.css-16xfy0z-control {
+  min-height: 50px !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-family: "Plus Jakarta Sans" !important;
+}
+
+/* Customization of the MultiSelect Dropdown*/
+.css-1nmdiq5-menu {
+  border-radius: 12px !important;
+  padding: 4px 0px 4px 4px;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-family: "Plus Jakarta Sans" !important;
+  overflow: hidden !important;
+  border: 1px solid #d7d5dd !important;
+}
+
+/* Class Applied when some item is selected */
+.css-1dyz3mf {
+  padding: 8px !important;
+}
+
+/* Selected Item's class inside the Dropdown */
+.css-tr4s17-option {
+  background-color: #2a85ff !important;
+}
+
+/* Menu Dropdown Class */
+.css-qr46ko {
+  padding-right: 4px;
+  display: flex;
+  flex-direction: column;
+  row-gap: 2px;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.css-qr46ko div {
+  border-radius: 8px !important;
+}
+
+.css-qr46ko div:hover {
+  cursor: pointer !important;
+}
+
+/* MultiSelect Dropdown Scrollbar */
+.css-qr46ko::-webkit-scrollbar {
+  width: 5px !important;
+  border-radius: 5px !important;
+  background-color: #a5a5a51d !important;
+}
+
+.css-qr46ko::-webkit-scrollbar-thumb {
+  background-color: #39393992 !important;
+  border-radius: 6px !important;
+}

@@ -40,7 +40,8 @@ import {
 } from "../../api/commsAPIs";
 import { toast } from "react-toastify";
 import debounce from "lodash.debounce";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import CustomMultiSelect from "./CustomMultiSelect.jsx";
 
 function quillGetHTML(inputDelta) {
   var tempCont = document.createElement("div");
@@ -593,14 +594,18 @@ export const ShareVideoModal = () => {
   //  States to store Contacts in the required Formate for MultiSelect
   const [emailContacts, setEmailContacts] = useState([]);
   const [smsContacts, setSMSContacts] = useState([]);
+  const [contactsPage, setContactsPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+
   // Use a ref to access the quill instance directly
   const quillRef = useRef();
 
   // Testing Query
   const fetchContactsQuery = useQuery({
-    queryKey: ["fetchContactsQuery"],
-    queryFn: () => getContacts(),
-    retry: 3,
+    queryKey: ["fetchContactsQuery", contactsPage, searchQuery],
+    queryFn: () =>
+      getContacts({ page: contactsPage, pageLimit: 50, search: searchQuery }),
+    placeholderData: keepPreviousData,
   });
 
   // Function to handle Initail Email Send
@@ -842,14 +847,14 @@ export const ShareVideoModal = () => {
       setModalLoadingOverlay(false);
 
       // Filter our the contacts that has email address
-      const filteredEmailContacts = fetchContactsQuery.data.filter(
+      const filteredEmailContacts = fetchContactsQuery.data.contacts.filter(
         (contact) => {
           return contact?.email && contact?.email.trim() !== "";
         }
       );
 
       // Filter our the contacts that has phone
-      const filteredPhoneContacts = fetchContactsQuery.data.filter(
+      const filteredPhoneContacts = fetchContactsQuery.data.contacts.filter(
         (contact) => {
           return contact?.phone && contact?.phone.trim() !== "";
         }
@@ -861,16 +866,27 @@ export const ShareVideoModal = () => {
           return {
             value: contact.id,
             label:
-              contact.firstNameLowerCase || contact.lastNameLowerCase
-                ? `${contact.firstNameLowerCase || ""} ${
-                    contact.lastNameLowerCase || ""
-                  }`.trim()
-                : contact.email,
+              `${contact.firstNameLowerCase || ""} ${
+                contact.lastNameLowerCase || ""
+              }` + ` (${contact.email})`,
             email: contact.email,
           };
         });
 
-        setEmailContacts(formattedContactsData);
+        // Avoid duplicates by checking if the email already exists in the list
+        setEmailContacts((prevContacts) => {
+          const uniqueContacts = [
+            ...prevContacts,
+            ...formattedContactsData.filter(
+              (newContact) =>
+                !prevContacts.some(
+                  (existingContact) =>
+                    existingContact.email === newContact.email
+                )
+            ),
+          ];
+          return uniqueContacts;
+        });
       }
 
       if (filteredPhoneContacts.length > 0) {
@@ -878,16 +894,27 @@ export const ShareVideoModal = () => {
           return {
             value: contact.id,
             label:
-              contact.firstNameLowerCase || contact.lastNameLowerCase
-                ? `${contact.firstNameLowerCase || ""} ${
-                    contact.lastNameLowerCase || ""
-                  }`.trim()
-                : contact.phone,
+              `${contact.firstNameLowerCase || ""} ${
+                contact.lastNameLowerCase || ""
+              }` + ` (${contact.phone})`,
             phone: contact.phone,
           };
         });
 
-        setSMSContacts(formattedContactsData);
+        // Avoid duplicates by checking if the email already exists in the list
+        setSMSContacts((prevContacts) => {
+          const uniqueContacts = [
+            ...prevContacts,
+            ...formattedContactsData.filter(
+              (newContact) =>
+                !prevContacts.some(
+                  (existingContact) =>
+                    existingContact.phone === newContact.phone
+                )
+            ),
+          ];
+          return uniqueContacts;
+        });
       }
     }
 
@@ -898,38 +925,6 @@ export const ShareVideoModal = () => {
     fetchContactsQuery.isSuccess,
     setModalLoadingOverlay,
   ]);
-
-  // Handle Search Functionality of Numbers
-  const handleSearchContact = ({ options, search }) => {
-    const splittedSearch = search?.toLowerCase().trim().split(" ");
-    if (activeTab === "email") {
-      return options.filter((option) => {
-        const words = option?.label?.toLowerCase().trim().split(" ");
-        const email = option?.email?.toLowerCase().trim();
-
-        return splittedSearch.every(
-          (searchWord) =>
-            words.some((word) => word.includes(searchWord)) ||
-            email.includes(searchWord)
-        );
-      });
-    }
-
-    if (activeTab === "sms") {
-      return options.filter((option) => {
-        const words = option.label?.toLowerCase().trim().split(" ");
-        const phone = option.phone?.toLowerCase().trim();
-
-        return splittedSearch.every(
-          (searchWord) =>
-            words.some((word) => word.includes(searchWord)) ||
-            phone.includes(searchWord)
-        );
-      });
-    } else {
-      return options;
-    }
-  };
 
   if (fetchContactsQuery.isError) {
     return toast.error("Couldn't fetch contacts", {
@@ -945,6 +940,33 @@ export const ShareVideoModal = () => {
   if (fetchContactsQuery.isPending) {
     setModalLoadingOverlay(true);
   }
+
+  // Function to handle the Search of Contacts
+  const handleInputChange = (value) => {
+    if (
+      activeTab === "email" &&
+      value.length > 2 &&
+      !emailContacts.some((contact) =>
+        contact.email.toLowerCase().includes(value.toLowerCase())
+      )
+    ) {
+      debounce(() => {
+        setSearchQuery(value);
+      }, 500)();
+    } else if (
+      activeTab === "sms" &&
+      value.length > 2 &&
+      !smsContacts.some((contact) =>
+        contact.phone.toLowerCase().includes(value.toLowerCase())
+      )
+    ) {
+      debounce(() => {
+        setSearchQuery(value);
+      }, 500)();
+    } else {
+      setSearchQuery("");
+    }
+  };
 
   return (
     <>
@@ -1097,21 +1119,18 @@ export const ShareVideoModal = () => {
                     value="contacts"
                     className="mt-[12px] flex gap-[8px] items-center"
                   >
-                    <MultiSelect
-                      className="w-full max-w-[450px] capitalize"
-                      placeholder="Select Multiple Contacts..."
-                      data={emailContacts}
-                      maxDropdownHeight={200}
-                      searchable
-                      disabled={fetchContactsQuery.isPending}
-                      nothingFoundMessage="No Contact Found..."
-                      {...emailForm.getInputProps("selectedEmailContacts")}
-                      filter={handleSearchContact}
-                      classNames={{
-                        pill: "text-transform: capitalize;",
-                        option: "text-transform: capitalize !important;",
-                      }}
-                      clearable
+                    <CustomMultiSelect
+                      contactsData={emailContacts}
+                      totalContacts={fetchContactsQuery?.data?.total}
+                      currentPage={contactsPage}
+                      setCurrentPage={setContactsPage}
+                      isLoading={fetchContactsQuery?.isRefetching}
+                      isDisabled={fetchContactsQuery?.isPending}
+                      valueRef={emailForm.getInputProps(
+                        "selectedEmailContacts"
+                      )}
+                      onInputChange={(value) => handleInputChange(value)}
+                      currentTab="email"
                     />
                   </Tabs.Panel>
 
@@ -1240,21 +1259,16 @@ export const ShareVideoModal = () => {
                     value="contacts"
                     className="mt-[12px] flex gap-[8px]"
                   >
-                    <MultiSelect
-                      className="w-full max-w-[450px]"
-                      placeholder="Select Multiple Contacts..."
-                      data={smsContacts}
-                      maxDropdownHeight={200}
-                      searchable
-                      disabled={fetchContactsQuery.isPending}
-                      nothingFoundMessage="No Contact Found..."
-                      {...smsForm.getInputProps("selectedSMSContacts")}
-                      filter={handleSearchContact}
-                      classNames={{
-                        pill: "text-transform: capitalize;",
-                        option: "text-transform: capitalize !important;",
-                      }}
-                      clearable
+                    <CustomMultiSelect
+                      contactsData={smsContacts}
+                      totalContacts={fetchContactsQuery?.data?.total}
+                      currentPage={contactsPage}
+                      setCurrentPage={setContactsPage}
+                      isLoading={fetchContactsQuery?.isRefetching}
+                      isDisabled={fetchContactsQuery?.isPending}
+                      valueRef={smsForm.getInputProps("selectedSMSContacts")}
+                      onInputChange={(value) => handleInputChange(value)}
+                      currentTab="sms"
                     />
                   </Tabs.Panel>
 
