@@ -550,6 +550,7 @@ export const ShareVideoModal = () => {
     initialValues: {
       emailSubject: "",
       selectedEmailContacts: [],
+      selectedContactTags: [],
     },
 
     validate: {
@@ -564,6 +565,13 @@ export const ShareVideoModal = () => {
           return "Please select at least one contact";
         }
       },
+
+      // Validate contact tags if active sub tab is tags
+      selectedContactTags: (value) => {
+        if (activeSubTab === "tags" && value.length === 0) {
+          return "Please select at least one tag";
+        }
+      },
     },
   });
 
@@ -571,6 +579,7 @@ export const ShareVideoModal = () => {
     initialValues: {
       smsContent: `${videoToBeShared?.shareableLink} `,
       selectedSMSContacts: [],
+      selectedContactTags: [],
     },
 
     validate: {
@@ -579,12 +588,18 @@ export const ShareVideoModal = () => {
           return "Please select at least one contact";
         }
       },
+      // Validate contact tags if active sub tab is tags
+      selectedContactTags: (value) => {
+        if (activeSubTab === "tags" && value.length === 0) {
+          return "Please select at least one tag";
+        }
+      },
     },
   });
 
   // State for Email Subject
   const [emailContent, setEmailContent] = useState("");
-  const [selectedContactTags, setSelectedContactTags] = useState([]);
+  // const [selectedContactTags, setSelectedContactTags] = useState([]);
   const [editorContent, setEditorContent] = useState(null);
 
   const [contactsLinkedWithTags, setContactsLinkedWithTags] = useState([]);
@@ -596,6 +611,8 @@ export const ShareVideoModal = () => {
   const [smsContacts, setSMSContacts] = useState([]);
   const [contactsPage, setContactsPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const [noContactSelectedError, setNoContactSelectedError] = useState(false);
 
   // Use a ref to access the quill instance directly
   const quillRef = useRef();
@@ -617,6 +634,10 @@ export const ShareVideoModal = () => {
 
     // Validation Checks
     const validation = emailForm.validate();
+
+    if (validation.errors.selectedEmailContacts) {
+      return setNoContactSelectedError(true);
+    }
 
     if (validation.hasErrors) {
       return console.log("Email Form Validation Failed!");
@@ -643,7 +664,7 @@ export const ShareVideoModal = () => {
     const validation = smsForm.validate();
 
     if (validation.hasErrors) {
-      return console.log("SMS Form Validation Failed!");
+      return setNoContactSelectedError(true);
     }
 
     if (smsForm.values.smsContent.includes(videoToBeShared?.shareableLink)) {
@@ -658,11 +679,22 @@ export const ShareVideoModal = () => {
     setModalLoadingOverlay(true);
     let API_DATA;
 
-    const selectedContacts = fetchContactsQuery?.data?.filter((contact) =>
-      emailForm.values.selectedEmailContacts.includes(contact.id)
+    const selectedContacts = fetchContactsQuery?.data?.contacts?.filter(
+      (contact) => {
+        // emailForm.values.selectedEmailContacts.includes(contact.id);/
+
+        // Extracting IDs from selectedEmailContacts array
+        const selectedIds = emailForm.values.selectedEmailContacts.map(
+          (item) => item.value
+        );
+
+        // Check if the contact.id exists in the selectedIds array
+        return selectedIds.includes(contact.id);
+      }
     );
 
     if (selectedContacts.length > 0) {
+      emailForm.setFieldValue("selectedContactTags", []);
       API_DATA = {
         contactIds: selectedContacts,
         tags: [],
@@ -673,7 +705,7 @@ export const ShareVideoModal = () => {
     } else {
       API_DATA = {
         contactIds: [],
-        tags: selectedContactTags,
+        tags: emailForm.values.selectedContactTags,
         message: htmlContent,
         subject: emailForm.values.emailSubject,
         videoId: videoToBeShared._id,
@@ -721,7 +753,6 @@ export const ShareVideoModal = () => {
       setIsVideoLinkNotAttachedModalOpen(false);
       setModalLoadingOverlay(false);
       setIsShareVideoModalOpen(false);
-      setSelectedContactTags([]);
       setEmailContent("");
       setActiveTab("email");
       setActiveSubTab("contacts");
@@ -744,12 +775,23 @@ export const ShareVideoModal = () => {
     let API_DATA;
 
     // Filter the Contacts
-    const selectedContacts = fetchContactsQuery?.data?.filter((contact) =>
-      smsForm.values.selectedSMSContacts.includes(contact.id)
+    const selectedContacts = fetchContactsQuery?.data?.contacts?.filter(
+      (contact) => {
+        // emailForm.values.selectedEmailContacts.includes(contact.id);
+        // smsForm.values.selectedSMSContacts.includes(contact.id);
+
+        // Extracting IDs from selectedEmailContacts array
+        const selectedIds = smsForm.values.selectedSMSContacts.map(
+          (item) => item.value
+        );
+
+        // Check if the contact.id exists in the selectedIds array
+        return selectedIds.includes(contact.id);
+      }
     );
 
     if (selectedContacts.length > 0) {
-      setSelectedContactTags([]);
+      smsForm.setFieldValue("selectedContactTags", []);
       API_DATA = {
         contactIds: selectedContacts,
         tags: [],
@@ -760,14 +802,14 @@ export const ShareVideoModal = () => {
     } else {
       API_DATA = {
         contactIds: [],
-        tags: selectedContactTags,
+        tags: smsForm.values.selectedContactTags,
         message: smsForm.values.smsContent,
         videoId: videoToBeShared._id,
         sendAttachment: sendAttachmentWithSMS,
       };
     }
 
-    // Send Email API
+    // Send SMS API
     const response = await sendSMSToSelectedContacts(API_DATA);
     if (response.success) {
       toast.success(response.data.message, {
@@ -797,9 +839,6 @@ export const ShareVideoModal = () => {
       setIsVideoLinkNotAttachedModalOpen(false);
       setModalLoadingOverlay(false);
 
-      // Clear the Tags
-      setSelectedContactTags([]);
-
       smsForm.reset();
 
       // Close the Modal
@@ -821,7 +860,14 @@ export const ShareVideoModal = () => {
   };
 
   const handleSelectEmailTag = async (selectedTags) => {
-    setSelectedContactTags(selectedTags);
+    if (activeTab === "email") {
+      emailForm.setFieldValue("selectedContactTags", selectedTags);
+    }
+
+    if (activeTab === "sms") {
+      smsForm.setFieldValue("selectedContactTags", selectedTags);
+    }
+
     setFetchingContactsLinkedWithTags(true);
 
     if (selectedTags.length < 1) {
@@ -998,7 +1044,6 @@ export const ShareVideoModal = () => {
           setEmailContent("");
           emailForm.reset();
           smsForm.reset();
-          setSelectedContactTags([]);
           setContactsLinkedWithTags([]);
           setEditorContent(null);
         }}
@@ -1019,8 +1064,8 @@ export const ShareVideoModal = () => {
                   setEditorContent(null);
                   emailForm.reset();
                 }
-                setSelectedContactTags([]);
                 setContactsLinkedWithTags([]);
+                setNoContactSelectedError(false);
               }}
             >
               <Tabs.List>
@@ -1088,7 +1133,8 @@ export const ShareVideoModal = () => {
                   value={activeSubTab}
                   onChange={(value) => {
                     setActiveSubTab(value);
-                    setSelectedContactTags([]);
+                    emailForm.setFieldValue("selectedContactTags", []);
+
                     setContactsLinkedWithTags([]);
                     emailForm.setFieldValue("selectedEmailContacts", []);
                   }}
@@ -1117,21 +1163,32 @@ export const ShareVideoModal = () => {
                   </Tabs.List>
                   <Tabs.Panel
                     value="contacts"
-                    className="mt-[12px] flex gap-[8px] items-center"
+                    className="mt-[12px] flex flex-col gap-[8px]"
                   >
-                    <CustomMultiSelect
-                      contactsData={emailContacts}
-                      totalContacts={fetchContactsQuery?.data?.total}
-                      currentPage={contactsPage}
-                      setCurrentPage={setContactsPage}
-                      isLoading={fetchContactsQuery?.isRefetching}
-                      isDisabled={fetchContactsQuery?.isPending}
-                      valueRef={emailForm.getInputProps(
-                        "selectedEmailContacts"
+                    <div className="flex flex-col gap-[5px]">
+                      <CustomMultiSelect
+                        contactsData={emailContacts}
+                        totalContacts={fetchContactsQuery?.data?.total}
+                        currentPage={contactsPage}
+                        setCurrentPage={setContactsPage}
+                        isLoading={fetchContactsQuery?.isRefetching}
+                        isDisabled={fetchContactsQuery?.isPending}
+                        valueRef={emailForm.getInputProps(
+                          "selectedEmailContacts"
+                        )}
+                        onInputChange={(value) => handleInputChange(value)}
+                        currentTab="email"
+                      />
+                      {noContactSelectedError && (
+                        <p className="text-[#fa5252] text-[12px] ms-[2px]">
+                          {emailForm.errors.selectedEmailContacts}
+                        </p>
                       )}
-                      onInputChange={(value) => handleInputChange(value)}
-                      currentTab="email"
-                    />
+                    </div>
+                    <p className="text-[#868e96] text-[14px] font-semibold">
+                      - Please add at least 3 characters to search by name or
+                      email.
+                    </p>
                   </Tabs.Panel>
 
                   <Tabs.Panel value="tags" className="mt-[12px]">
@@ -1139,12 +1196,12 @@ export const ShareVideoModal = () => {
                       <MultiSelect
                         className="lg:w-1/2 w-full"
                         placeholder={
-                          selectedContactTags.length > 0
+                          emailForm.values.selectedContactTags?.length > 0
                             ? ""
                             : "Select one or Multiple Tags"
                         }
                         data={contactTagsData}
-                        value={selectedContactTags}
+                        value={emailForm.values.selectedContactTags}
                         onChange={(value) => handleSelectEmailTag(value)}
                         maxDropdownHeight={200}
                         clearable
@@ -1227,7 +1284,7 @@ export const ShareVideoModal = () => {
                   value={activeSubTab}
                   onChange={(value) => {
                     setActiveSubTab(value);
-                    setSelectedContactTags([]);
+                    smsForm.setFieldValue("selectedContactTags", []);
                     setContactsLinkedWithTags([]);
                     smsForm.setFieldValue("selectedSMSContacts", []);
                   }}
@@ -1257,19 +1314,30 @@ export const ShareVideoModal = () => {
 
                   <Tabs.Panel
                     value="contacts"
-                    className="mt-[12px] flex gap-[8px]"
+                    className="mt-[12px] flex flex-col gap-[8px]"
                   >
-                    <CustomMultiSelect
-                      contactsData={smsContacts}
-                      totalContacts={fetchContactsQuery?.data?.total}
-                      currentPage={contactsPage}
-                      setCurrentPage={setContactsPage}
-                      isLoading={fetchContactsQuery?.isRefetching}
-                      isDisabled={fetchContactsQuery?.isPending}
-                      valueRef={smsForm.getInputProps("selectedSMSContacts")}
-                      onInputChange={(value) => handleInputChange(value)}
-                      currentTab="sms"
-                    />
+                    <div className="flex flex-col gap-[5px]">
+                      <CustomMultiSelect
+                        contactsData={smsContacts}
+                        totalContacts={fetchContactsQuery?.data?.total}
+                        currentPage={contactsPage}
+                        setCurrentPage={setContactsPage}
+                        isLoading={fetchContactsQuery?.isRefetching}
+                        isDisabled={fetchContactsQuery?.isPending}
+                        valueRef={smsForm.getInputProps("selectedSMSContacts")}
+                        onInputChange={(value) => handleInputChange(value)}
+                        currentTab="sms"
+                      />
+                      {noContactSelectedError && (
+                        <p className="text-red-500 text-[12px] font-semibold">
+                          {smsForm.errors.selectedSMSContacts}
+                        </p>
+                      )}
+                    </div>
+                    <p className="text-[#868e96] text-[14px] font-semibold">
+                      - Please add at least 3 characters to search by name, or
+                      at least 5 numbers after the country code. i.e, +1
+                    </p>
                   </Tabs.Panel>
 
                   <Tabs.Panel value="tags" className="mt-[12px]">
@@ -1277,12 +1345,12 @@ export const ShareVideoModal = () => {
                       <MultiSelect
                         className="lg:w-1/2 w-full"
                         placeholder={
-                          selectedContactTags.length > 0
+                          smsForm.values.selectedContactTags.length > 0
                             ? ""
                             : "Select one or Multiple Tags"
                         }
                         data={contactTagsData}
-                        value={selectedContactTags}
+                        value={smsForm.values.selectedContactTags}
                         onChange={(value) => handleSelectEmailTag(value)}
                         clearable
                         searchable

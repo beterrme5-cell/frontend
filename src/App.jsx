@@ -23,6 +23,11 @@ function App() {
   const isShareVideoModalOpen = useGlobalModals(
     (state) => state.isShareVideoModalOpen
   );
+
+  const isVideoLinkNotAttachedModalOpen = useGlobalModals(
+    (state) => state.isVideoLinkNotAttachedModalOpen
+  );
+
   const isEditVideoModalOpen = useGlobalModals(
     (state) => state.isEditVideoModalOpen
   );
@@ -42,7 +47,9 @@ function App() {
     <main className="App overflow-x-hidden md:p-[32px] p-[20px]">
       {/* {isContactsSelectionModalOpen && <ContactsSelectionModalEmail />}
       {isSMSContactsSelectionModalOpen && <ContactsSelectionModalSMS />} */}
-      {isShareVideoModalOpen && <ShareVideoModal />}
+      {(isShareVideoModalOpen || isVideoLinkNotAttachedModalOpen) && (
+        <ShareVideoModal />
+      )}
       {isEditVideoModalOpen && <EditVideoModal />}
       {isDeleteVideoModalOpen && <DeleteVideoConfirmationModal />}
       {updateDomainModalOpen && <UpdateUserDomainModal />}
