@@ -860,6 +860,8 @@ export const ShareVideoModal = () => {
   };
 
   const handleSelectEmailTag = async (selectedTags) => {
+    console.log(selectedTags);
+
     if (activeTab === "email") {
       emailForm.setFieldValue("selectedContactTags", selectedTags);
     }
@@ -993,7 +995,7 @@ export const ShareVideoModal = () => {
       activeTab === "email" &&
       value.length > 2 &&
       !emailContacts.some((contact) =>
-        contact.email.toLowerCase().includes(value.toLowerCase())
+        contact?.email?.toLowerCase()?.includes(value?.toLowerCase())
       )
     ) {
       debounce(() => {
@@ -1003,7 +1005,7 @@ export const ShareVideoModal = () => {
       activeTab === "sms" &&
       value.length > 2 &&
       !smsContacts.some((contact) =>
-        contact.phone.toLowerCase().includes(value.toLowerCase())
+        contact?.phone?.toLowerCase()?.includes(value?.toLowerCase())
       )
     ) {
       debounce(() => {
