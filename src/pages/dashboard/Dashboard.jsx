@@ -95,7 +95,11 @@ const Dashboard = () => {
         }
 
         const tagsData = contactTagsResponse.data.userTags.map((tag) => {
-          return tag.name;
+          return {
+            key: tag.id,
+            label: tag.name,
+            value: tag.name,
+          };
         });
         setContactTagsData(tagsData);
       } else {

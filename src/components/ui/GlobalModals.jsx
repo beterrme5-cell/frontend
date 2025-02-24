@@ -40,7 +40,8 @@ import {
 } from "../../api/commsAPIs";
 import { toast } from "react-toastify";
 import debounce from "lodash.debounce";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import CustomMultiSelect from "./CustomMultiSelect.jsx";
 
 function quillGetHTML(inputDelta) {
   var tempCont = document.createElement("div");
@@ -549,6 +550,7 @@ export const ShareVideoModal = () => {
     initialValues: {
       emailSubject: "",
       selectedEmailContacts: [],
+      selectedContactTags: [],
     },
 
     validate: {
@@ -563,6 +565,13 @@ export const ShareVideoModal = () => {
           return "Please select at least one contact";
         }
       },
+
+      // Validate contact tags if active sub tab is tags
+      selectedContactTags: (value) => {
+        if (activeSubTab === "tags" && value.length === 0) {
+          return "Please select at least one tag";
+        }
+      },
     },
   });
 
@@ -570,6 +579,7 @@ export const ShareVideoModal = () => {
     initialValues: {
       smsContent: `${videoToBeShared?.shareableLink} `,
       selectedSMSContacts: [],
+      selectedContactTags: [],
     },
 
     validate: {
@@ -578,12 +588,18 @@ export const ShareVideoModal = () => {
           return "Please select at least one contact";
         }
       },
+      // Validate contact tags if active sub tab is tags
+      selectedContactTags: (value) => {
+        if (activeSubTab === "tags" && value.length === 0) {
+          return "Please select at least one tag";
+        }
+      },
     },
   });
 
   // State for Email Subject
   const [emailContent, setEmailContent] = useState("");
-  const [selectedContactTags, setSelectedContactTags] = useState([]);
+  // const [selectedContactTags, setSelectedContactTags] = useState([]);
   const [editorContent, setEditorContent] = useState(null);
 
   const [contactsLinkedWithTags, setContactsLinkedWithTags] = useState([]);
@@ -593,14 +609,20 @@ export const ShareVideoModal = () => {
   //  States to store Contacts in the required Formate for MultiSelect
   const [emailContacts, setEmailContacts] = useState([]);
   const [smsContacts, setSMSContacts] = useState([]);
+  const [contactsPage, setContactsPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [noContactSelectedError, setNoContactSelectedError] = useState(false);
+
   // Use a ref to access the quill instance directly
   const quillRef = useRef();
 
   // Testing Query
   const fetchContactsQuery = useQuery({
-    queryKey: ["fetchContactsQuery"],
-    queryFn: () => getContacts(),
-    retry: 3,
+    queryKey: ["fetchContactsQuery", contactsPage, searchQuery],
+    queryFn: () =>
+      getContacts({ page: contactsPage, pageLimit: 50, search: searchQuery }),
+    placeholderData: keepPreviousData,
   });
 
   // Function to handle Initail Email Send
@@ -612,6 +634,10 @@ export const ShareVideoModal = () => {
 
     // Validation Checks
     const validation = emailForm.validate();
+
+    if (validation.errors.selectedEmailContacts) {
+      return setNoContactSelectedError(true);
+    }
 
     if (validation.hasErrors) {
       return console.log("Email Form Validation Failed!");
@@ -638,7 +664,7 @@ export const ShareVideoModal = () => {
     const validation = smsForm.validate();
 
     if (validation.hasErrors) {
-      return console.log("SMS Form Validation Failed!");
+      return setNoContactSelectedError(true);
     }
 
     if (smsForm.values.smsContent.includes(videoToBeShared?.shareableLink)) {
@@ -653,11 +679,22 @@ export const ShareVideoModal = () => {
     setModalLoadingOverlay(true);
     let API_DATA;
 
-    const selectedContacts = fetchContactsQuery?.data?.filter((contact) =>
-      emailForm.values.selectedEmailContacts.includes(contact.id)
+    const selectedContacts = fetchContactsQuery?.data?.contacts?.filter(
+      (contact) => {
+        // emailForm.values.selectedEmailContacts.includes(contact.id);/
+
+        // Extracting IDs from selectedEmailContacts array
+        const selectedIds = emailForm.values.selectedEmailContacts.map(
+          (item) => item.value
+        );
+
+        // Check if the contact.id exists in the selectedIds array
+        return selectedIds.includes(contact.id);
+      }
     );
 
     if (selectedContacts.length > 0) {
+      emailForm.setFieldValue("selectedContactTags", []);
       API_DATA = {
         contactIds: selectedContacts,
         tags: [],
@@ -668,7 +705,7 @@ export const ShareVideoModal = () => {
     } else {
       API_DATA = {
         contactIds: [],
-        tags: selectedContactTags,
+        tags: emailForm.values.selectedContactTags,
         message: htmlContent,
         subject: emailForm.values.emailSubject,
         videoId: videoToBeShared._id,
@@ -716,7 +753,6 @@ export const ShareVideoModal = () => {
       setIsVideoLinkNotAttachedModalOpen(false);
       setModalLoadingOverlay(false);
       setIsShareVideoModalOpen(false);
-      setSelectedContactTags([]);
       setEmailContent("");
       setActiveTab("email");
       setActiveSubTab("contacts");
@@ -739,12 +775,23 @@ export const ShareVideoModal = () => {
     let API_DATA;
 
     // Filter the Contacts
-    const selectedContacts = fetchContactsQuery?.data?.filter((contact) =>
-      smsForm.values.selectedSMSContacts.includes(contact.id)
+    const selectedContacts = fetchContactsQuery?.data?.contacts?.filter(
+      (contact) => {
+        // emailForm.values.selectedEmailContacts.includes(contact.id);
+        // smsForm.values.selectedSMSContacts.includes(contact.id);
+
+        // Extracting IDs from selectedEmailContacts array
+        const selectedIds = smsForm.values.selectedSMSContacts.map(
+          (item) => item.value
+        );
+
+        // Check if the contact.id exists in the selectedIds array
+        return selectedIds.includes(contact.id);
+      }
     );
 
     if (selectedContacts.length > 0) {
-      setSelectedContactTags([]);
+      smsForm.setFieldValue("selectedContactTags", []);
       API_DATA = {
         contactIds: selectedContacts,
         tags: [],
@@ -755,14 +802,14 @@ export const ShareVideoModal = () => {
     } else {
       API_DATA = {
         contactIds: [],
-        tags: selectedContactTags,
+        tags: smsForm.values.selectedContactTags,
         message: smsForm.values.smsContent,
         videoId: videoToBeShared._id,
         sendAttachment: sendAttachmentWithSMS,
       };
     }
 
-    // Send Email API
+    // Send SMS API
     const response = await sendSMSToSelectedContacts(API_DATA);
     if (response.success) {
       toast.success(response.data.message, {
@@ -792,9 +839,6 @@ export const ShareVideoModal = () => {
       setIsVideoLinkNotAttachedModalOpen(false);
       setModalLoadingOverlay(false);
 
-      // Clear the Tags
-      setSelectedContactTags([]);
-
       smsForm.reset();
 
       // Close the Modal
@@ -816,7 +860,14 @@ export const ShareVideoModal = () => {
   };
 
   const handleSelectEmailTag = async (selectedTags) => {
-    setSelectedContactTags(selectedTags);
+    if (activeTab === "email") {
+      emailForm.setFieldValue("selectedContactTags", selectedTags);
+    }
+
+    if (activeTab === "sms") {
+      smsForm.setFieldValue("selectedContactTags", selectedTags);
+    }
+
     setFetchingContactsLinkedWithTags(true);
 
     if (selectedTags.length < 1) {
@@ -842,14 +893,14 @@ export const ShareVideoModal = () => {
       setModalLoadingOverlay(false);
 
       // Filter our the contacts that has email address
-      const filteredEmailContacts = fetchContactsQuery.data.filter(
+      const filteredEmailContacts = fetchContactsQuery.data.contacts.filter(
         (contact) => {
           return contact?.email && contact?.email.trim() !== "";
         }
       );
 
       // Filter our the contacts that has phone
-      const filteredPhoneContacts = fetchContactsQuery.data.filter(
+      const filteredPhoneContacts = fetchContactsQuery.data.contacts.filter(
         (contact) => {
           return contact?.phone && contact?.phone.trim() !== "";
         }
@@ -861,16 +912,27 @@ export const ShareVideoModal = () => {
           return {
             value: contact.id,
             label:
-              contact.firstNameLowerCase || contact.lastNameLowerCase
-                ? `${contact.firstNameLowerCase || ""} ${
-                    contact.lastNameLowerCase || ""
-                  }`.trim()
-                : contact.email,
+              `${contact.firstNameLowerCase || ""} ${
+                contact.lastNameLowerCase || ""
+              }` + ` (${contact.email})`,
             email: contact.email,
           };
         });
 
-        setEmailContacts(formattedContactsData);
+        // Avoid duplicates by checking if the email already exists in the list
+        setEmailContacts((prevContacts) => {
+          const uniqueContacts = [
+            ...prevContacts,
+            ...formattedContactsData.filter(
+              (newContact) =>
+                !prevContacts.some(
+                  (existingContact) =>
+                    existingContact.email === newContact.email
+                )
+            ),
+          ];
+          return uniqueContacts;
+        });
       }
 
       if (filteredPhoneContacts.length > 0) {
@@ -878,16 +940,27 @@ export const ShareVideoModal = () => {
           return {
             value: contact.id,
             label:
-              contact.firstNameLowerCase || contact.lastNameLowerCase
-                ? `${contact.firstNameLowerCase || ""} ${
-                    contact.lastNameLowerCase || ""
-                  }`.trim()
-                : contact.phone,
+              `${contact.firstNameLowerCase || ""} ${
+                contact.lastNameLowerCase || ""
+              }` + ` (${contact.phone})`,
             phone: contact.phone,
           };
         });
 
-        setSMSContacts(formattedContactsData);
+        // Avoid duplicates by checking if the email already exists in the list
+        setSMSContacts((prevContacts) => {
+          const uniqueContacts = [
+            ...prevContacts,
+            ...formattedContactsData.filter(
+              (newContact) =>
+                !prevContacts.some(
+                  (existingContact) =>
+                    existingContact.phone === newContact.phone
+                )
+            ),
+          ];
+          return uniqueContacts;
+        });
       }
     }
 
@@ -898,38 +971,6 @@ export const ShareVideoModal = () => {
     fetchContactsQuery.isSuccess,
     setModalLoadingOverlay,
   ]);
-
-  // Handle Search Functionality of Numbers
-  const handleSearchContact = ({ options, search }) => {
-    const splittedSearch = search?.toLowerCase().trim().split(" ");
-    if (activeTab === "email") {
-      return options.filter((option) => {
-        const words = option?.label?.toLowerCase().trim().split(" ");
-        const email = option?.email?.toLowerCase().trim();
-
-        return splittedSearch.every(
-          (searchWord) =>
-            words.some((word) => word.includes(searchWord)) ||
-            email.includes(searchWord)
-        );
-      });
-    }
-
-    if (activeTab === "sms") {
-      return options.filter((option) => {
-        const words = option.label?.toLowerCase().trim().split(" ");
-        const phone = option.phone?.toLowerCase().trim();
-
-        return splittedSearch.every(
-          (searchWord) =>
-            words.some((word) => word.includes(searchWord)) ||
-            phone.includes(searchWord)
-        );
-      });
-    } else {
-      return options;
-    }
-  };
 
   if (fetchContactsQuery.isError) {
     return toast.error("Couldn't fetch contacts", {
@@ -945,6 +986,33 @@ export const ShareVideoModal = () => {
   if (fetchContactsQuery.isPending) {
     setModalLoadingOverlay(true);
   }
+
+  // Function to handle the Search of Contacts
+  const handleInputChange = (value) => {
+    if (
+      activeTab === "email" &&
+      value.length > 2 &&
+      !emailContacts.some((contact) =>
+        contact?.email?.toLowerCase()?.includes(value?.toLowerCase())
+      )
+    ) {
+      debounce(() => {
+        setSearchQuery(value);
+      }, 500)();
+    } else if (
+      activeTab === "sms" &&
+      value.length > 2 &&
+      !smsContacts.some((contact) =>
+        contact?.phone?.toLowerCase()?.includes(value?.toLowerCase())
+      )
+    ) {
+      debounce(() => {
+        setSearchQuery(value);
+      }, 500)();
+    } else {
+      setSearchQuery("");
+    }
+  };
 
   return (
     <>
@@ -976,7 +1044,6 @@ export const ShareVideoModal = () => {
           setEmailContent("");
           emailForm.reset();
           smsForm.reset();
-          setSelectedContactTags([]);
           setContactsLinkedWithTags([]);
           setEditorContent(null);
         }}
@@ -997,8 +1064,8 @@ export const ShareVideoModal = () => {
                   setEditorContent(null);
                   emailForm.reset();
                 }
-                setSelectedContactTags([]);
                 setContactsLinkedWithTags([]);
+                setNoContactSelectedError(false);
               }}
             >
               <Tabs.List>
@@ -1066,7 +1133,8 @@ export const ShareVideoModal = () => {
                   value={activeSubTab}
                   onChange={(value) => {
                     setActiveSubTab(value);
-                    setSelectedContactTags([]);
+                    emailForm.setFieldValue("selectedContactTags", []);
+
                     setContactsLinkedWithTags([]);
                     emailForm.setFieldValue("selectedEmailContacts", []);
                   }}
@@ -1095,24 +1163,32 @@ export const ShareVideoModal = () => {
                   </Tabs.List>
                   <Tabs.Panel
                     value="contacts"
-                    className="mt-[12px] flex gap-[8px] items-center"
+                    className="mt-[12px] flex flex-col gap-[8px]"
                   >
-                    <MultiSelect
-                      className="w-full max-w-[450px] capitalize"
-                      placeholder="Select Multiple Contacts..."
-                      data={emailContacts}
-                      maxDropdownHeight={200}
-                      searchable
-                      disabled={fetchContactsQuery.isPending}
-                      nothingFoundMessage="No Contact Found..."
-                      {...emailForm.getInputProps("selectedEmailContacts")}
-                      filter={handleSearchContact}
-                      classNames={{
-                        pill: "text-transform: capitalize;",
-                        option: "text-transform: capitalize !important;",
-                      }}
-                      clearable
-                    />
+                    <div className="flex flex-col gap-[5px]">
+                      <CustomMultiSelect
+                        contactsData={emailContacts}
+                        totalContacts={fetchContactsQuery?.data?.total}
+                        currentPage={contactsPage}
+                        setCurrentPage={setContactsPage}
+                        isLoading={fetchContactsQuery?.isRefetching}
+                        isDisabled={fetchContactsQuery?.isPending}
+                        valueRef={emailForm.getInputProps(
+                          "selectedEmailContacts"
+                        )}
+                        onInputChange={(value) => handleInputChange(value)}
+                        currentTab="email"
+                      />
+                      {noContactSelectedError && (
+                        <p className="text-[#fa5252] text-[12px] ms-[2px]">
+                          {emailForm.errors.selectedEmailContacts}
+                        </p>
+                      )}
+                    </div>
+                    <p className="text-[#868e96] text-[14px] font-semibold">
+                      - Please add at least 3 characters to search by name or
+                      email.
+                    </p>
                   </Tabs.Panel>
 
                   <Tabs.Panel value="tags" className="mt-[12px]">
@@ -1120,12 +1196,12 @@ export const ShareVideoModal = () => {
                       <MultiSelect
                         className="lg:w-1/2 w-full"
                         placeholder={
-                          selectedContactTags.length > 0
+                          emailForm.values.selectedContactTags?.length > 0
                             ? ""
                             : "Select one or Multiple Tags"
                         }
                         data={contactTagsData}
-                        value={selectedContactTags}
+                        value={emailForm.values.selectedContactTags}
                         onChange={(value) => handleSelectEmailTag(value)}
                         maxDropdownHeight={200}
                         clearable
@@ -1137,14 +1213,16 @@ export const ShareVideoModal = () => {
                         <Loader color="#2A85FF" size="sm" />
                       )}
                       <div className="flex items-center gap-[4px]">
-                        {contactsLinkedWithTags.slice(0, 2).map((contact) => (
-                          <p
-                            key={contact.id}
-                            className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]"
-                          >
-                            {contact.email}
-                          </p>
-                        ))}
+                        {contactsLinkedWithTags
+                          .slice(0, 2)
+                          .map((contact, index) => (
+                            <p
+                              key={index}
+                              className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]"
+                            >
+                              {contact.email}
+                            </p>
+                          ))}
 
                         {contactsLinkedWithTags.length > 2 && (
                           <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
@@ -1208,7 +1286,7 @@ export const ShareVideoModal = () => {
                   value={activeSubTab}
                   onChange={(value) => {
                     setActiveSubTab(value);
-                    setSelectedContactTags([]);
+                    smsForm.setFieldValue("selectedContactTags", []);
                     setContactsLinkedWithTags([]);
                     smsForm.setFieldValue("selectedSMSContacts", []);
                   }}
@@ -1238,24 +1316,30 @@ export const ShareVideoModal = () => {
 
                   <Tabs.Panel
                     value="contacts"
-                    className="mt-[12px] flex gap-[8px]"
+                    className="mt-[12px] flex flex-col gap-[8px]"
                   >
-                    <MultiSelect
-                      className="w-full max-w-[450px]"
-                      placeholder="Select Multiple Contacts..."
-                      data={smsContacts}
-                      maxDropdownHeight={200}
-                      searchable
-                      disabled={fetchContactsQuery.isPending}
-                      nothingFoundMessage="No Contact Found..."
-                      {...smsForm.getInputProps("selectedSMSContacts")}
-                      filter={handleSearchContact}
-                      classNames={{
-                        pill: "text-transform: capitalize;",
-                        option: "text-transform: capitalize !important;",
-                      }}
-                      clearable
-                    />
+                    <div className="flex flex-col gap-[5px]">
+                      <CustomMultiSelect
+                        contactsData={smsContacts}
+                        totalContacts={fetchContactsQuery?.data?.total}
+                        currentPage={contactsPage}
+                        setCurrentPage={setContactsPage}
+                        isLoading={fetchContactsQuery?.isRefetching}
+                        isDisabled={fetchContactsQuery?.isPending}
+                        valueRef={smsForm.getInputProps("selectedSMSContacts")}
+                        onInputChange={(value) => handleInputChange(value)}
+                        currentTab="sms"
+                      />
+                      {noContactSelectedError && (
+                        <p className="text-red-500 text-[12px] font-semibold">
+                          {smsForm.errors.selectedSMSContacts}
+                        </p>
+                      )}
+                    </div>
+                    <p className="text-[#868e96] text-[14px] font-semibold">
+                      - Please add at least 3 characters to search by name, or
+                      at least 5 numbers after the country code. i.e, +1
+                    </p>
                   </Tabs.Panel>
 
                   <Tabs.Panel value="tags" className="mt-[12px]">
@@ -1263,12 +1347,12 @@ export const ShareVideoModal = () => {
                       <MultiSelect
                         className="lg:w-1/2 w-full"
                         placeholder={
-                          selectedContactTags.length > 0
+                          smsForm.values.selectedContactTags.length > 0
                             ? ""
                             : "Select one or Multiple Tags"
                         }
                         data={contactTagsData}
-                        value={selectedContactTags}
+                        value={smsForm.values.selectedContactTags}
                         onChange={(value) => handleSelectEmailTag(value)}
                         clearable
                         searchable
@@ -1279,14 +1363,16 @@ export const ShareVideoModal = () => {
                         <Loader color="#2A85FF" size="sm" />
                       )}
                       <div className="flex items-center gap-[4px]">
-                        {contactsLinkedWithTags.slice(0, 2).map((contact) => (
-                          <p
-                            key={contact.id}
-                            className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]"
-                          >
-                            {contact.name}
-                          </p>
-                        ))}
+                        {contactsLinkedWithTags
+                          .slice(0, 2)
+                          .map((contact, index) => (
+                            <p
+                              key={index}
+                              className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]"
+                            >
+                              {contact.name}
+                            </p>
+                          ))}
 
                         {contactsLinkedWithTags.length > 2 && (
                           <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">

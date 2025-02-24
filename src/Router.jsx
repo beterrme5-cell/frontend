@@ -5,6 +5,7 @@ import VideoDetail from "./pages/videoDetail/VideoDetail.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import RecordVideo from "./pages/recordVideo/RecordVideo";
 import UploadedVideoDetail from "./pages/uploadedVideoDetail/UploadedVideoDetail.jsx";
+
 export const router = createBrowserRouter([
   {
     path: "/",
