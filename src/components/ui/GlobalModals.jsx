@@ -860,8 +860,6 @@ export const ShareVideoModal = () => {
   };
 
   const handleSelectEmailTag = async (selectedTags) => {
-    console.log(selectedTags);
-
     if (activeTab === "email") {
       emailForm.setFieldValue("selectedContactTags", selectedTags);
     }
@@ -1215,14 +1213,16 @@ export const ShareVideoModal = () => {
                         <Loader color="#2A85FF" size="sm" />
                       )}
                       <div className="flex items-center gap-[4px]">
-                        {contactsLinkedWithTags.slice(0, 2).map((contact) => (
-                          <p
-                            key={contact.id}
-                            className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]"
-                          >
-                            {contact.email}
-                          </p>
-                        ))}
+                        {contactsLinkedWithTags
+                          .slice(0, 2)
+                          .map((contact, index) => (
+                            <p
+                              key={index}
+                              className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]"
+                            >
+                              {contact.email}
+                            </p>
+                          ))}
 
                         {contactsLinkedWithTags.length > 2 && (
                           <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
@@ -1363,14 +1363,16 @@ export const ShareVideoModal = () => {
                         <Loader color="#2A85FF" size="sm" />
                       )}
                       <div className="flex items-center gap-[4px]">
-                        {contactsLinkedWithTags.slice(0, 2).map((contact) => (
-                          <p
-                            key={contact.id}
-                            className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]"
-                          >
-                            {contact.name}
-                          </p>
-                        ))}
+                        {contactsLinkedWithTags
+                          .slice(0, 2)
+                          .map((contact, index) => (
+                            <p
+                              key={index}
+                              className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]"
+                            >
+                              {contact.name}
+                            </p>
+                          ))}
 
                         {contactsLinkedWithTags.length > 2 && (
                           <p className="font-medium bg-[#2a85ff24] p-[5px_12px] rounded-full text-[12px]">
