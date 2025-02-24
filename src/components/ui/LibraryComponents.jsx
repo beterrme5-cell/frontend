@@ -561,8 +561,18 @@ export const HistoryTableList = () => {
         <Table.Td className=" text-[14px] font-medium">
           {element?.videoTitle}
         </Table.Td>
-        <Table.Td className=" text-[14px] font-medium">
-          {element?.contactName}
+        <Table.Td className=" text-[14px] font-medium capitalize">
+          {(() => {
+            if (!element?.contactName) return "";
+
+            // Split the name into parts
+            const nameParts = element.contactName
+              .split(" ")
+              .filter((part) => part.toLowerCase() !== "null");
+
+            // Join the valid parts back or return an empty string if nothing is left
+            return nameParts.length > 0 ? nameParts.join(" ") : "";
+          })()}
         </Table.Td>
         <Table.Td className=" text-[14px] font-medium">
           {element?.contactAddress}
