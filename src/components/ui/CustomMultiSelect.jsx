@@ -54,7 +54,7 @@ const CustomMultiSelect = ({
       closeMenuOnSelect={false}
       hideSelectedOptions={false}
       onMenuScrollToBottom={() => {
-        const expectedPages = Math.ceil(totalContacts / 50);
+        const expectedPages = Math.ceil(totalContacts / 100);
         if (currentPage < expectedPages) {
           setCurrentPage((prev) => prev + 1);
         }

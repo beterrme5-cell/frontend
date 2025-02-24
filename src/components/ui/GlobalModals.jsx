@@ -621,7 +621,7 @@ export const ShareVideoModal = () => {
   const fetchContactsQuery = useQuery({
     queryKey: ["fetchContactsQuery", contactsPage, searchQuery],
     queryFn: () =>
-      getContacts({ page: contactsPage, pageLimit: 50, search: searchQuery }),
+      getContacts({ page: contactsPage, pageLimit: 100, search: searchQuery }),
     placeholderData: keepPreviousData,
   });
 
