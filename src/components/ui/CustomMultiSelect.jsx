@@ -4,7 +4,6 @@ const CustomMultiValue = (props) => {
   const MAX_DISPLAY = 3;
   const { index, data, selectProps } = props;
   const currentTab = selectProps.selectProps.currentTab;
-
   // Extract selected values from selectProps.value
   const selectedValues = selectProps.value || [];
 
@@ -38,7 +37,8 @@ const CustomMultiSelect = ({
   totalContacts,
   currentPage,
   setCurrentPage,
-  valueRef,
+  value,
+  onChange,
   isDisabled,
   isLoading,
   onInputChange,
@@ -47,7 +47,7 @@ const CustomMultiSelect = ({
   return (
     <Select
       isMulti
-      {...valueRef}
+      value={value}
       options={contactsData}
       components={{ MultiValue: CustomMultiValue }}
       placeholder="Select contacts..."
@@ -66,6 +66,10 @@ const CustomMultiSelect = ({
       isLoading={isLoading}
       isDisabled={isDisabled}
       selectProps={{ currentTab }}
+      onChange={(value) => {
+        console.log("udpated value", value);
+        onChange(value);
+      }}
     />
   );
 };

@@ -611,7 +611,8 @@ export const ShareVideoModal = () => {
   const [emailContacts, setEmailContacts] = useState([]);
   const [smsContacts, setSMSContacts] = useState([]);
   const [contactsPage, setContactsPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
+  // const [searchQuery, setSearchQuery] = useState("");
+  const [loadingSearchedContacts, setLoadingSearchedContacts] = useState(false);
 
   const [noContactSelectedError, setNoContactSelectedError] = useState(false);
 
@@ -620,9 +621,9 @@ export const ShareVideoModal = () => {
 
   // Testing Query
   const fetchContactsQuery = useQuery({
-    queryKey: ["fetchContactsQuery", contactsPage, searchQuery],
+    queryKey: ["fetchContactsQuery", contactsPage],
     queryFn: () =>
-      getContacts({ page: contactsPage, pageLimit: 100, search: searchQuery }),
+      getContacts({ page: contactsPage, pageLimit: 100, search: "" }),
     placeholderData: keepPreviousData,
   });
 
@@ -677,27 +678,27 @@ export const ShareVideoModal = () => {
   };
 
   const handleSubmitEmail = async (htmlContent) => {
-    setModalLoadingOverlay(true);
+    // setModalLoadingOverlay(true);
     let API_DATA;
 
-    const selectedContacts = fetchContactsQuery?.data?.contacts?.filter(
-      (contact) => {
-        // emailForm.values.selectedEmailContacts.includes(contact.id);/
+    // const selectedContacts = fetchContactsQuery?.data?.contacts?.filter(
+    //   (contact) => {
+    //     // emailForm.values.selectedEmailContacts.includes(contact.id);/
 
-        // Extracting IDs from selectedEmailContacts array
-        const selectedIds = emailForm.values.selectedEmailContacts.map(
-          (item) => item.value
-        );
+    //     // Extracting IDs from selectedEmailContacts array
+    //     const selectedIds = emailForm.values.selectedEmailContacts.map(
+    //       (item) => item.value
+    //     );
 
-        // Check if the contact.id exists in the selectedIds array
-        return selectedIds.includes(contact.id);
-      }
-    );
+    //     // Check if the contact.id exists in the selectedIds array
+    //     return selectedIds.includes(contact.id);
+    //   }
+    // );
 
-    if (selectedContacts.length > 0) {
+    if (emailForm.values.selectedEmailContacts.length > 0) {
       emailForm.setFieldValue("selectedContactTags", []);
       API_DATA = {
-        contactIds: selectedContacts,
+        contactIds: emailForm.values.selectedEmailContacts,
         tags: [],
         message: htmlContent,
         subject: emailForm.values.emailSubject,
@@ -782,25 +783,25 @@ export const ShareVideoModal = () => {
     let API_DATA;
 
     // Filter the Contacts
-    const selectedContacts = fetchContactsQuery?.data?.contacts?.filter(
-      (contact) => {
-        // emailForm.values.selectedEmailContacts.includes(contact.id);
-        // smsForm.values.selectedSMSContacts.includes(contact.id);
+    // const selectedContacts = fetchContactsQuery?.data?.contacts?.filter(
+    //   (contact) => {
+    //     // emailForm.values.selectedEmailContacts.includes(contact.id);
+    //     // smsForm.values.selectedSMSContacts.includes(contact.id);
 
-        // Extracting IDs from selectedEmailContacts array
-        const selectedIds = smsForm.values.selectedSMSContacts.map(
-          (item) => item.value
-        );
+    //     // Extracting IDs from selectedEmailContacts array
+    //     const selectedIds = smsForm.values.selectedSMSContacts.map(
+    //       (item) => item.value
+    //     );
 
-        // Check if the contact.id exists in the selectedIds array
-        return selectedIds.includes(contact.id);
-      }
-    );
+    //     // Check if the contact.id exists in the selectedIds array
+    //     return selectedIds.includes(contact.id);
+    //   }
+    // );
 
-    if (selectedContacts.length > 0) {
+    if (smsForm.values.selectedSMSContacts.length > 0) {
       smsForm.setFieldValue("selectedContactTags", []);
       API_DATA = {
-        contactIds: selectedContacts,
+        contactIds: smsForm.values.selectedSMSContacts,
         tags: [],
         message: smsForm.values.smsContent,
         videoId: videoToBeShared._id || "",
@@ -838,7 +839,7 @@ export const ShareVideoModal = () => {
       const newHistoryData = rawHistoryData.map((history) => {
         return {
           _id: history.data._id,
-          videoTitle: history.videoName,
+          uploadedVideoName: history.videoName,
           contactName: history.data.contactName,
           contactAddress: history.data.contactAddress,
           sendType: history.data.sendType,
@@ -925,12 +926,17 @@ export const ShareVideoModal = () => {
       if (filteredEmailContacts.length > 0) {
         const formattedContactsData = filteredEmailContacts.map((contact) => {
           return {
+            id: contact.id,
             value: contact.id,
             label:
               `${contact.firstNameLowerCase || ""} ${
                 contact.lastNameLowerCase || ""
               }` + ` (${contact.email})`,
             email: contact.email,
+            firstNameLowerCase: contact.firstNameLowerCase,
+            lastNameLowerCase: contact.lastNameLowerCase,
+            locationId: contact.locationId,
+            tags: contact.tags,
           };
         });
 
@@ -953,12 +959,17 @@ export const ShareVideoModal = () => {
       if (filteredPhoneContacts.length > 0) {
         const formattedContactsData = filteredPhoneContacts.map((contact) => {
           return {
+            id: contact.id,
             value: contact.id,
             label:
               `${contact.firstNameLowerCase || ""} ${
                 contact.lastNameLowerCase || ""
               }` + ` (${contact.phone})`,
             phone: contact.phone,
+            firstNameLowerCase: contact.firstNameLowerCase,
+            lastNameLowerCase: contact.lastNameLowerCase,
+            locationId: contact.locationId,
+            tags: contact.tags,
           };
         });
 
@@ -1002,8 +1013,92 @@ export const ShareVideoModal = () => {
     setModalLoadingOverlay(true);
   }
 
+  const fetchContactonSearch = async (query) => {
+    try {
+      const response = await getContacts({
+        page: 1,
+        pageLimit: 100,
+        search: query,
+      });
+
+      if (response.contacts.length > 0) {
+        // Filter our the contacts that has email address
+        const filteredEmailContacts = response.contacts.filter((contact) => {
+          return contact?.email && contact?.email.trim() !== "";
+        });
+
+        // Filter our the contacts that has phone
+        const filteredPhoneContacts = response.contacts.filter((contact) => {
+          return contact?.phone && contact?.phone.trim() !== "";
+        });
+
+        // Create a new array containing objects with value and label
+        if (filteredEmailContacts.length > 0) {
+          const formattedContactsData = filteredEmailContacts.map((contact) => {
+            return {
+              value: contact.id,
+              label:
+                `${contact.firstNameLowerCase || ""} ${
+                  contact.lastNameLowerCase || ""
+                }` + ` (${contact.email})`,
+              email: contact.email,
+            };
+          });
+
+          // Avoid duplicates by checking if the email already exists in the list
+          setEmailContacts((prevContacts) => {
+            const uniqueContacts = [
+              ...prevContacts,
+              ...formattedContactsData.filter(
+                (newContact) =>
+                  !prevContacts.some(
+                    (existingContact) =>
+                      existingContact.email === newContact.email
+                  )
+              ),
+            ];
+            return uniqueContacts;
+          });
+        }
+
+        if (filteredPhoneContacts.length > 0) {
+          const formattedContactsData = filteredPhoneContacts.map((contact) => {
+            return {
+              value: contact.id,
+              label:
+                `${contact.firstNameLowerCase || ""} ${
+                  contact.lastNameLowerCase || ""
+                }` + ` (${contact.phone})`,
+              phone: contact.phone,
+            };
+          });
+
+          // Avoid duplicates by checking if the email already exists in the list
+          setSMSContacts((prevContacts) => {
+            const uniqueContacts = [
+              ...prevContacts,
+              ...formattedContactsData.filter(
+                (newContact) =>
+                  !prevContacts.some(
+                    (existingContact) =>
+                      existingContact.phone === newContact.phone
+                  )
+              ),
+            ];
+            return uniqueContacts;
+          });
+        }
+      }
+      setLoadingSearchedContacts(false);
+    } catch (error) {
+      console.log("Error while fetching contacts: ", error);
+      setLoadingSearchedContacts(false);
+    }
+  };
+
   // Function to handle the Search of Contacts
   const handleInputChange = (value) => {
+    setLoadingSearchedContacts(true);
     if (
       activeTab === "email" &&
       value.length > 2 &&
@@ -1012,7 +1107,7 @@ export const ShareVideoModal = () => {
       )
     ) {
       debounce(() => {
-        setSearchQuery(value);
+        fetchContactonSearch(value);
       }, 500)();
     } else if (
       activeTab === "sms" &&
@@ -1022,10 +1117,10 @@ export const ShareVideoModal = () => {
       )
     ) {
       debounce(() => {
-        setSearchQuery(value);
+        fetchContactonSearch(value);
       }, 500)();
     } else {
-      setSearchQuery("");
+      setLoadingSearchedContacts(false);
     }
   };
 
@@ -1186,11 +1281,21 @@ export const ShareVideoModal = () => {
                         totalContacts={fetchContactsQuery?.data?.total}
                         currentPage={contactsPage}
                         setCurrentPage={setContactsPage}
-                        isLoading={fetchContactsQuery?.isRefetching}
+                        isLoading={
+                          fetchContactsQuery?.isRefetching ||
+                          loadingSearchedContacts
+                        }
                         isDisabled={fetchContactsQuery?.isPending}
-                        valueRef={emailForm.getInputProps(
-                          "selectedEmailContacts"
-                        )}
+                        // valueRef={emailForm.getInputProps(
+                        //   "selectedEmailContacts"
+                        // )}
+                        value={emailForm.values.selectedEmailContacts}
+                        onChange={(value) =>
+                          emailForm.setFieldValue(
+                            "selectedEmailContacts",
+                            value
+                          )
+                        }
                         onInputChange={(value) => handleInputChange(value)}
                         currentTab="email"
                       />
@@ -1344,9 +1449,16 @@ export const ShareVideoModal = () => {
                         totalContacts={fetchContactsQuery?.data?.total}
                         currentPage={contactsPage}
                         setCurrentPage={setContactsPage}
-                        isLoading={fetchContactsQuery?.isRefetching}
+                        isLoading={
+                          fetchContactsQuery?.isRefetching ||
+                          loadingSearchedContacts
+                        }
                         isDisabled={fetchContactsQuery?.isPending}
-                        valueRef={smsForm.getInputProps("selectedSMSContacts")}
+                        // valueRef={smsForm.getInputProps("selectedSMSContacts")}
+                        value={smsForm.values.selectedSMSContacts}
+                        onChange={(value) =>
+                          smsForm.setFieldValue("selectedSMSContacts", value)
+                        }
                         onInputChange={(value) => handleInputChange(value)}
                         currentTab="sms"
                       />
