@@ -678,7 +678,7 @@ export const ShareVideoModal = () => {
   };
 
   const handleSubmitEmail = async (htmlContent) => {
-    // setModalLoadingOverlay(true);
+    setModalLoadingOverlay(true);
     let API_DATA;
 
     // const selectedContacts = fetchContactsQuery?.data?.contacts?.filter(
@@ -698,7 +698,7 @@ export const ShareVideoModal = () => {
     if (emailForm.values.selectedEmailContacts.length > 0) {
       emailForm.setFieldValue("selectedContactTags", []);
       API_DATA = {
-        contactIds: emailForm.values.selectedEmailContacts,
+        contactIds: emailForm.values.selectedEmailContacts || [],
         tags: [],
         message: htmlContent,
         subject: emailForm.values.emailSubject,
@@ -801,7 +801,7 @@ export const ShareVideoModal = () => {
     if (smsForm.values.selectedSMSContacts.length > 0) {
       smsForm.setFieldValue("selectedContactTags", []);
       API_DATA = {
-        contactIds: smsForm.values.selectedSMSContacts,
+        contactIds: smsForm.values.selectedSMSContacts || [],
         tags: [],
         message: smsForm.values.smsContent,
         videoId: videoToBeShared._id || "",
