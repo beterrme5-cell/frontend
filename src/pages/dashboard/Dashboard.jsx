@@ -99,7 +99,7 @@ const Dashboard = () => {
           return {
             key: tag.id,
             label: tag.name,
-            value: tag.name,
+            value: tag.id,
           };
         });
         setContactTagsData(tagsData);

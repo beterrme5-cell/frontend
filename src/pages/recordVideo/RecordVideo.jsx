@@ -189,7 +189,7 @@ const RecordVideo = () => {
           return {
             key: tag.id,
             label: tag.name,
-            value: tag.name,
+            value: tag.id,
           };
         });
         setContactTagsData(tagsData);
@@ -200,6 +200,8 @@ const RecordVideo = () => {
 
     fetchContactTags();
   }, [setContactTagsData, accessToken]);
+
+  console.log("historyData", historyData);
 
   return (
     <LibraryRoot>
@@ -231,8 +233,8 @@ const RecordVideo = () => {
             <VideoTabSection heading="Uploaded Videos">
               {videosData && videosData?.uploadedVideos?.length > 0 ? (
                 <VideoTabItemsList>
-                  {videosData?.uploadedVideos?.map((video) => (
-                    <UploadedVideoTabItem key={video._id} videoData={video} />
+                  {videosData?.uploadedVideos?.map((video, index) => (
+                    <UploadedVideoTabItem key={index} videoData={video} />
                   ))}
                 </VideoTabItemsList>
               ) : (

@@ -14,6 +14,7 @@ export const sendSMSToSelectedContacts = async (params) => {
         message: params.message,
         videoId: params.videoId,
         sendAttachment: params.sendAttachment,
+        uploadedVideoName: params.uploadedVideoName,
       },
       {
         headers: {
@@ -47,6 +48,7 @@ export const sendEmailToSelectedContacts = async (params) => {
         message: params.message,
         subject: params.subject,
         videoId: params.videoId,
+        uploadedVideoName: params.uploadedVideoName,
       },
       {
         headers: {

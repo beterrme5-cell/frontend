@@ -11,7 +11,7 @@ import {
   Divider,
 } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
-import { LoadingOverlay, MultiSelect } from "@mantine/core";
+import { LoadingOverlay } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import CustomVideoInput from "./CustomVideoInput";
 import CustomButton from "./CustomButton";
@@ -42,6 +42,7 @@ import { toast } from "react-toastify";
 import debounce from "lodash.debounce";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import CustomMultiSelect from "./CustomMultiSelect.jsx";
+import CustomTagsSelect from "./CustomTagsSelect.jsx";
 
 function quillGetHTML(inputDelta) {
   var tempCont = document.createElement("div");
@@ -700,15 +701,21 @@ export const ShareVideoModal = () => {
         tags: [],
         message: htmlContent,
         subject: emailForm.values.emailSubject,
-        videoId: videoToBeShared._id,
+        videoId: videoToBeShared._id || "",
+        uploadedVideoName: videoToBeShared?.title,
       };
     } else {
+      const updatedTagsArray = emailForm.values.selectedContactTags.map(
+        (tag) => tag.label
+      );
+
       API_DATA = {
         contactIds: [],
-        tags: emailForm.values.selectedContactTags,
+        tags: updatedTagsArray,
         message: htmlContent,
         subject: emailForm.values.emailSubject,
-        videoId: videoToBeShared._id,
+        videoId: videoToBeShared._id || "",
+        uploadedVideoName: videoToBeShared?.title,
       };
     }
 
@@ -732,7 +739,7 @@ export const ShareVideoModal = () => {
       const newHistoryData = rawHistoryData.map((history) => {
         return {
           _id: history.data._id,
-          videoTitle: history.videoName,
+          uploadedVideoName: history.videoName,
           contactName: history.data.contactName,
           contactAddress: history.data.contactAddress,
           sendType: history.data.sendType,
@@ -796,16 +803,22 @@ export const ShareVideoModal = () => {
         contactIds: selectedContacts,
         tags: [],
         message: smsForm.values.smsContent,
-        videoId: videoToBeShared._id,
+        videoId: videoToBeShared._id || "",
         sendAttachment: sendAttachmentWithSMS,
+        uploadedVideoName: videoToBeShared?.title,
       };
     } else {
+      const updatedTagsArray = smsForm.values.selectedContactTags.map(
+        (tag) => tag.label
+      );
+
       API_DATA = {
         contactIds: [],
-        tags: smsForm.values.selectedContactTags,
+        tags: updatedTagsArray,
         message: smsForm.values.smsContent,
-        videoId: videoToBeShared._id,
+        videoId: videoToBeShared._id || "",
         sendAttachment: sendAttachmentWithSMS,
+        uploadedVideoName: videoToBeShared?.title,
       };
     }
 
@@ -870,12 +883,14 @@ export const ShareVideoModal = () => {
 
     setFetchingContactsLinkedWithTags(true);
 
-    if (selectedTags.length < 1) {
+    const updatedTagsArray = selectedTags.map((tag) => tag.label);
+
+    if (updatedTagsArray.length < 1) {
       setFetchingContactsLinkedWithTags(false);
       return setContactsLinkedWithTags([]);
     }
 
-    const response = await getContactsBasedOnTags(selectedTags);
+    const response = await getContactsBasedOnTags(updatedTagsArray);
 
     if (response.success) {
       setContactsLinkedWithTags(response.data.contacts);
@@ -1193,7 +1208,12 @@ export const ShareVideoModal = () => {
 
                   <Tabs.Panel value="tags" className="mt-[12px]">
                     <div className="flex lg:flex-row flex-col lg:items-center gap-[8px]">
-                      <MultiSelect
+                      <CustomTagsSelect
+                        tagsData={contactTagsData}
+                        value={emailForm.values.selectedContactTags}
+                        onChange={(value) => handleSelectEmailTag(value)}
+                      />
+                      {/* <MultiSelect
                         className="lg:w-1/2 w-full"
                         placeholder={
                           emailForm.values.selectedContactTags?.length > 0
@@ -1208,7 +1228,7 @@ export const ShareVideoModal = () => {
                         searchable
                         nothingFoundMessage="Nothing found..."
                         hidePickedOptions
-                      />
+                      /> */}
                       {fetchingContactsLinkedWithTags && (
                         <Loader color="#2A85FF" size="sm" />
                       )}
@@ -1344,7 +1364,13 @@ export const ShareVideoModal = () => {
 
                   <Tabs.Panel value="tags" className="mt-[12px]">
                     <div className="flex lg:flex-row flex-col lg:items-center gap-[8px]">
-                      <MultiSelect
+                      <CustomTagsSelect
+                        tagsData={contactTagsData}
+                        value={smsForm.values.selectedContactTags}
+                        onChange={(value) => handleSelectEmailTag(value)}
+                      />
+
+                      {/* <MultiSelect
                         className="lg:w-1/2 w-full"
                         placeholder={
                           smsForm.values.selectedContactTags.length > 0
@@ -1358,7 +1384,7 @@ export const ShareVideoModal = () => {
                         searchable
                         nothingFoundMessage="Nothing found..."
                         hidePickedOptions
-                      />
+                      /> */}
                       {fetchingContactsLinkedWithTags && (
                         <Loader color="#2A85FF" size="sm" />
                       )}
