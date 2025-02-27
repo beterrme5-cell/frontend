@@ -559,7 +559,7 @@ export const HistoryTableList = () => {
     return (
       <Table.Tr key={element._id}>
         <Table.Td className=" text-[14px] font-medium">
-          {element?.videoTitle}
+          {element?.uploadedVideoName}
         </Table.Td>
         <Table.Td className=" text-[14px] font-medium capitalize">
           {(() => {
