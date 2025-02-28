@@ -582,7 +582,7 @@ export const HistoryTableList = () => {
         </Table.Td>
         <Table.Td className=" text-[14px] font-medium">
           {element?.subject}
-        </Table.Td>{" "}
+        </Table.Td>
         <Table.Td className=" text-[14px] font-medium">
           {formattedDate}
         </Table.Td>

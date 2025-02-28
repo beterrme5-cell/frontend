@@ -686,48 +686,17 @@ export const ShareVideoModal = () => {
 
   const handleSubmitEmail = async (htmlContent) => {
     setModalLoadingOverlay(true);
-    let API_DATA;
 
-    // const selectedContacts = fetchContactsQuery?.data?.contacts?.filter(
-    //   (contact) => {
-    //     // emailForm.values.selectedEmailContacts.includes(contact.id);/
-
-    //     // Extracting IDs from selectedEmailContacts array
-    //     const selectedIds = emailForm.values.selectedEmailContacts.map(
-    //       (item) => item.value
-    //     );
-
-    //     // Check if the contact.id exists in the selectedIds array
-    //     return selectedIds.includes(contact.id);
-    //   }
-    // );
-
-    if (emailForm.values.selectedEmailContacts.length > 0) {
-      emailForm.setFieldValue("selectedContactTags", []);
-      API_DATA = {
-        contactIds: emailForm.values.selectedEmailContacts || [],
-        tags: [],
-        message: htmlContent,
-        subject: emailForm.values.emailSubject,
-        videoId: videoToBeShared._id || "",
-        uploadedVideoName: videoToBeShared?.title,
-      };
-    } else {
-      console.log("tags: ", emailForm.values.selectedContactTags);
-
-      const updatedTagsArray = emailForm.values.selectedContactTags.map(
-        (tag) => tag.label
-      );
-
-      API_DATA = {
-        contactIds: [],
-        tags: updatedTagsArray,
-        message: htmlContent,
-        subject: emailForm.values.emailSubject,
-        videoId: videoToBeShared._id || "",
-        uploadedVideoName: videoToBeShared?.title,
-      };
-    }
+    const API_DATA = {
+      contactIds:
+        activeTab === "email" && activeSubTab === "tags"
+          ? contactsLinkedWithTags || []
+          : emailForm.values.selectedEmailContacts || [],
+      message: htmlContent,
+      subject: emailForm.values.emailSubject,
+      videoId: videoToBeShared._id || "",
+      uploadedVideoName: videoToBeShared?.title,
+    };
 
     // // Send Email API
     const response = await sendEmailToSelectedContacts(API_DATA);
@@ -789,48 +758,16 @@ export const ShareVideoModal = () => {
   const handleSubmitSMS = async () => {
     setModalLoadingOverlay(true);
 
-    let API_DATA;
-
-    // Filter the Contacts
-    // const selectedContacts = fetchContactsQuery?.data?.contacts?.filter(
-    //   (contact) => {
-    //     // emailForm.values.selectedEmailContacts.includes(contact.id);
-    //     // smsForm.values.selectedSMSContacts.includes(contact.id);
-
-    //     // Extracting IDs from selectedEmailContacts array
-    //     const selectedIds = smsForm.values.selectedSMSContacts.map(
-    //       (item) => item.value
-    //     );
-
-    //     // Check if the contact.id exists in the selectedIds array
-    //     return selectedIds.includes(contact.id);
-    //   }
-    // );
-
-    if (smsForm.values.selectedSMSContacts.length > 0) {
-      smsForm.setFieldValue("selectedContactTags", []);
-      API_DATA = {
-        contactIds: smsForm.values.selectedSMSContacts || [],
-        tags: [],
-        message: smsForm.values.smsContent,
-        videoId: videoToBeShared._id || "",
-        sendAttachment: sendAttachmentWithSMS,
-        uploadedVideoName: videoToBeShared?.title,
-      };
-    } else {
-      const updatedTagsArray = smsForm.values.selectedContactTags.map(
-        (tag) => tag.label
-      );
-
-      API_DATA = {
-        contactIds: [],
-        tags: updatedTagsArray,
-        message: smsForm.values.smsContent,
-        videoId: videoToBeShared._id || "",
-        sendAttachment: sendAttachmentWithSMS,
-        uploadedVideoName: videoToBeShared?.title,
-      };
-    }
+    const API_DATA = {
+      contactIds:
+        activeTab === "sms" && activeSubTab === "tags"
+          ? contactsLinkedWithTags || []
+          : smsForm.values.selectedSMSContacts || [],
+      message: smsForm.values.smsContent,
+      videoId: videoToBeShared._id || "",
+      sendAttachment: sendAttachmentWithSMS,
+      uploadedVideoName: videoToBeShared?.title,
+    };
 
     // Send SMS API
     const response = await sendSMSToSelectedContacts(API_DATA);
