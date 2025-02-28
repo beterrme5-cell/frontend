@@ -969,6 +969,158 @@ export const TextEditor = forwardRef(
   }
 );
 
+export const SMSTextEditor = forwardRef(
+  ({ onTextChange, editorContent, setEditorContent }, ref) => {
+    const videoToBeShared = useGlobalModals((state) => state.videoToBeShared);
+
+    const containerRef = useRef(null);
+    const onTextChangeRef = useRef(onTextChange);
+
+    useLayoutEffect(() => {
+      onTextChangeRef.current = onTextChange;
+    });
+
+    useEffect(() => {
+      const container = containerRef.current;
+      const editorContainer = container.appendChild(
+        container.ownerDocument.createElement("div")
+      );
+
+      // Set the ID of the editorContainer
+      editorContainer.id = "sms-text-editor-container";
+
+      const quill = new Quill(editorContainer, {
+        theme: "snow",
+        placeholder: "Write something...",
+        modules: {
+          toolbar: [],
+        },
+      });
+
+      if (!editorContent) {
+        const videoLink = `${videoToBeShared?.shareableLink}`;
+
+        // Insert two line breaks at the beginning
+        quill.insertText(0, "\n\n");
+
+        // Insert the video link (bold) after "Video Link:"
+        quill.insertText(2, videoLink, { bold: true, color: "blue" });
+        // Optionally, move the cursor to a new line after the video link
+        quill.insertText(2 + videoLink.length, "\n");
+      }
+
+      // Toolbar Custom Options
+      // Get the toolbar container
+      const toolbar = quill.getModule("toolbar");
+
+      // Create a wrapper for custom buttons
+      const customButtonsWrapper = document.createElement("div");
+      customButtonsWrapper.id = "custom-buttons-wrapper";
+
+      const pasteLinkButton = document.createElement("button");
+      pasteLinkButton.innerHTML = `<div style="display: flex; align-items: center; gap: 4px; white-space: nowrap; margin: 0 5px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" width="20" height="20"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M579.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L422.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C206.5 251.2 213 330 263 380c56.5 56.5 148 56.5 204.5 0L579.8 267.7zM60.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C74 372 74 321 105.5 289.5L217.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C433.5 260.8 427 182 377 132c-56.5-56.5-148-56.5-204.5 0L60.2 244.3z" fill="currentColor"/></svg><p style="margin: 0; line-height: normal;">Paste Video Link</p></div>`;
+      pasteLinkButton.setAttribute("type", "button");
+
+      pasteLinkButton.onclick = () => {
+        // Paste the video link into the editor
+        const range = quill.getSelection();
+
+        if (range === null) {
+          const videoLink = `${videoToBeShared?.shareableLink}`;
+
+          if (!videoLink) {
+            console.error("Video link is missing.");
+            return; // Exit early if the video link is not available
+          }
+
+          // Insert the video link at the beginning with formatting
+          quill.insertText(0, videoLink, {
+            bold: true,
+            color: "blue",
+          });
+        } else {
+          // Adding a space before and after the link
+          const updatedVideoLink = ` ${videoToBeShared?.shareableLink} `;
+
+          if (!updatedVideoLink.trim()) {
+            console.error("Updated video link is missing.");
+            return; // Exit early if the video link is not available
+          }
+
+          // Insert the link with formatting at the specified range
+          quill.insertText(range.index, updatedVideoLink, {
+            bold: true,
+            color: "blue",
+          });
+
+          quill.insertText(range.index + updatedVideoLink.length, "\n");
+        }
+      };
+
+      const firstNameShortCodeBtn = document.createElement("button");
+      firstNameShortCodeBtn.innerHTML = `<p style="margin: 0 5px; line-height: normal;">Add First Name</p>`;
+      firstNameShortCodeBtn.setAttribute("type", "button");
+      firstNameShortCodeBtn.onclick = () => {
+        const firstNameShortCode = "{{contact.first_name}}";
+        const range = quill.getSelection();
+        if (range === null) {
+          // Insert the image at the current cursor position
+          quill.clipboard.dangerouslyPasteHTML(0, firstNameShortCode);
+          // Move the cursor to the end of the inserted image
+          quill.setSelection(0 + firstNameShortCode.length);
+        } else {
+          // Insert the image at the current cursor position
+          quill.clipboard.dangerouslyPasteHTML(range.index, firstNameShortCode);
+          // Move the cursor to the end of the inserted image
+          quill.setSelection(range.index + firstNameShortCode.length);
+        }
+
+        // handle udpate the shortCodesSelected
+        // handleShortCodeGlobalState(firstNameShortCode);
+      };
+
+      // Style and append custom buttons to the wrapper
+      [firstNameShortCodeBtn, pasteLinkButton].forEach((btn) => {
+        btn.classList.add("ql-formats");
+        btn.classList.add("sms-editor");
+        customButtonsWrapper.appendChild(btn);
+      });
+
+      // Append the wrapper to the toolbar
+      toolbar.container.appendChild(customButtonsWrapper);
+
+      // Restore editor content if available
+      if (editorContent) {
+        quill.setContents(editorContent);
+      }
+
+      ref.current = quill;
+
+      quill.on(Quill.events.TEXT_CHANGE, (...args) => {
+        setEditorContent(quill.getContents());
+        onTextChangeRef.current?.(...args);
+      });
+
+      return () => {
+        ref.current = null;
+        container.innerHTML = "";
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ref]);
+
+    return (
+      <div className="flex flex-col gap-[8px] relative">
+        <p className="text-[14px] font-medium">SMS Content</p>
+        <div
+          ref={containerRef}
+          className="h-[246px] overflow-hidden flex flex-col"
+          id="sms-text-editor-mainContainer"
+        ></div>
+      </div>
+    );
+  }
+);
+
 const SelectContactShortCodeDropDown = ({ quillRef }) => {
   const shortCodesData = [
     {
@@ -1292,3 +1444,4 @@ const SelectCustomShortCodeDropDown = ({ quillRef }) => {
 };
 
 TextEditor.displayName = "Editor";
+SMSTextEditor.displayName = "SMS-Editor";
