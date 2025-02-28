@@ -902,8 +902,6 @@ export const ShareVideoModal = () => {
     setFetchingContactsLinkedWithTags(false);
   };
 
-  console.log("fetchContactsQuery.data", fetchContactsQuery.data);
-
   // UseEffect to set the Contacts States
   useEffect(() => {
     if (fetchContactsQuery.isSuccess && fetchContactsQuery.data) {
