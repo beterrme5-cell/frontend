@@ -16,6 +16,10 @@ export const router = createBrowserRouter([
         element: <Dashboard />,
       },
       {
+        path: "uploaded-video-detail",
+        element: <UploadedVideoDetail />,
+      },
+      {
         path: "recordings/:accessToken/:userLocationId",
         element: <RecordVideo />,
       },
