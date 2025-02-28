@@ -902,6 +902,8 @@ export const ShareVideoModal = () => {
     setFetchingContactsLinkedWithTags(false);
   };
 
+  console.log("fetchContactsQuery.data", fetchContactsQuery.data);
+
   // UseEffect to set the Contacts States
   useEffect(() => {
     if (fetchContactsQuery.isSuccess && fetchContactsQuery.data) {
@@ -926,17 +928,12 @@ export const ShareVideoModal = () => {
       if (filteredEmailContacts.length > 0) {
         const formattedContactsData = filteredEmailContacts.map((contact) => {
           return {
-            id: contact.id,
             value: contact.id,
             label:
               `${contact.firstNameLowerCase || ""} ${
                 contact.lastNameLowerCase || ""
               }` + ` (${contact.email})`,
-            email: contact.email,
-            firstNameLowerCase: contact.firstNameLowerCase,
-            lastNameLowerCase: contact.lastNameLowerCase,
-            locationId: contact.locationId,
-            tags: contact.tags,
+            ...contact,
           };
         });
 
@@ -959,17 +956,12 @@ export const ShareVideoModal = () => {
       if (filteredPhoneContacts.length > 0) {
         const formattedContactsData = filteredPhoneContacts.map((contact) => {
           return {
-            id: contact.id,
             value: contact.id,
             label:
               `${contact.firstNameLowerCase || ""} ${
                 contact.lastNameLowerCase || ""
               }` + ` (${contact.phone})`,
-            phone: contact.phone,
-            firstNameLowerCase: contact.firstNameLowerCase,
-            lastNameLowerCase: contact.lastNameLowerCase,
-            locationId: contact.locationId,
-            tags: contact.tags,
+            ...contact,
           };
         });
 
@@ -1041,7 +1033,7 @@ export const ShareVideoModal = () => {
                 `${contact.firstNameLowerCase || ""} ${
                   contact.lastNameLowerCase || ""
                 }` + ` (${contact.email})`,
-              email: contact.email,
+              ...contact,
             };
           });
 
@@ -1069,7 +1061,7 @@ export const ShareVideoModal = () => {
                 `${contact.firstNameLowerCase || ""} ${
                   contact.lastNameLowerCase || ""
                 }` + ` (${contact.phone})`,
-              phone: contact.phone,
+              ...contact,
             };
           });
 
