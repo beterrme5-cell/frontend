@@ -201,8 +201,6 @@ const RecordVideo = () => {
     fetchContactTags();
   }, [setContactTagsData, accessToken]);
 
-  console.log("historyData", historyData);
-
   return (
     <LibraryRoot>
       <LibraryHeader title="My Library" />
