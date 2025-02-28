@@ -67,7 +67,6 @@ const CustomMultiSelect = ({
       isDisabled={isDisabled}
       selectProps={{ currentTab }}
       onChange={(value) => {
-        console.log("udpated value", value);
         onChange(value);
       }}
     />
