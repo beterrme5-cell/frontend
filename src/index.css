@@ -126,6 +126,28 @@ body {
   border-right: 2px solid rgba(100, 121, 143, 0.3) !important;
 }
 
+/* SMS Text editor */
+#sms-text-editor-mainContainer .ql-toolbar {
+  border-radius: 8px 8px 0px 0px !important;
+  display: flex;
+  column-gap: 5px;
+}
+
+#sms-text-editor-mainContainer .ql-toolbar .ql-formats {
+  margin-right: 0px !important;
+}
+
+#sms-text-editor-mainContainer .ql-toolbar span.ql-formats {
+  display: none;
+}
+
+#sms-text-editor-mainContainer
+  .ql-toolbar
+  #custom-buttons-wrapper
+  .ql-formats:first-child {
+  border-right: 2px solid rgba(100, 121, 143, 0.3) !important;
+}
+
 /* #text-editor-mainContainer
   .ql-toolbar
   #custom-buttons-wrapper
@@ -155,6 +177,11 @@ body {
 }
 
 #text-editor-container {
+  background-color: #f7f7f8 !important;
+  border-radius: 0px 0px 8px 8px !important;
+  max-height: 202px;
+}
+#sms-text-editor-container {
   background-color: #f7f7f8 !important;
   border-radius: 0px 0px 8px 8px !important;
   max-height: 202px;
