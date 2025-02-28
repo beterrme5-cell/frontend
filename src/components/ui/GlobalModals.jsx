@@ -616,6 +616,7 @@ export const ShareVideoModal = () => {
   const [smsContacts, setSMSContacts] = useState([]);
   const [contactsPage, setContactsPage] = useState(1);
   // const [searchQuery, setSearchQuery] = useState("");
+  const [cursorPos, setCursorPos] = useState(0);
   const [loadingSearchedContacts, setLoadingSearchedContacts] = useState(false);
   const [noContactSelectedError, setNoContactSelectedError] = useState(false);
 
@@ -910,16 +911,24 @@ export const ShareVideoModal = () => {
     setFetchingContactsLinkedWithTags(false);
   };
 
+  // Function to Find cursor position
+  const handleCursorPosition = () => {
+    if (textAreaRef.current) {
+      setCursorPos(textAreaRef.current.selectionStart);
+    }
+  };
+
   // Handle add Firstname w.r.t cursor position in SMS
   const insertFirstNameAtCursor = () => {
     if (textAreaRef.current) {
       const { value } = textAreaRef.current;
       const newValue =
-        value.slice(0, textAreaRef.current.selectionStart) +
+        value.slice(0, cursorPos) +
         " {{contact.first_name}} " +
-        value.slice(textAreaRef.current.selectionStart);
+        value.slice(cursorPos);
 
       smsForm.setFieldValue("smsContent", newValue);
+      setCursorPos(cursorPos + " {{contact.first_name}} ".length);
     }
   };
   // Handle add Video Link w.r.t cursor position in SMS
@@ -927,11 +936,12 @@ export const ShareVideoModal = () => {
     if (textAreaRef.current) {
       const { value } = textAreaRef.current;
       const newValue =
-        value.slice(0, textAreaRef.current.selectionStart) +
+        value.slice(0, cursorPos) +
         ` ${videoToBeShared?.shareableLink} ` +
-        value.slice(textAreaRef.current.selectionStart);
+        value.slice(cursorPos);
 
       smsForm.setFieldValue("smsContent", newValue);
+      setCursorPos(cursorPos + ` ${videoToBeShared?.shareableLink} `.length);
     }
   };
 
@@ -1596,6 +1606,8 @@ export const ShareVideoModal = () => {
                       ref={textAreaRef}
                       placeholder="SMS Content"
                       {...smsForm.getInputProps("smsContent")}
+                      onClick={handleCursorPosition}
+                      onKeyUp={handleCursorPosition}
                       minRows={8}
                       maxRows={8}
                       autosize
