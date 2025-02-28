@@ -25,7 +25,11 @@ import {
   EMBED_ICON,
   SMS_ICON,
 } from "../../assets/icons/DynamicIcons.jsx";
-import { StartRecordingBtn, TextEditor } from "./LibraryComponents";
+import {
+  // SMSTextEditor,
+  StartRecordingBtn,
+  TextEditor,
+} from "./LibraryComponents";
 import {
   deleteVideo,
   getContacts,
@@ -613,11 +617,13 @@ export const ShareVideoModal = () => {
   const [contactsPage, setContactsPage] = useState(1);
   // const [searchQuery, setSearchQuery] = useState("");
   const [loadingSearchedContacts, setLoadingSearchedContacts] = useState(false);
-
   const [noContactSelectedError, setNoContactSelectedError] = useState(false);
 
   // Use a ref to access the quill instance directly
   const quillRef = useRef();
+
+  // SMS Ref for finding cursor position
+  const textAreaRef = useRef();
 
   // Testing Query
   const fetchContactsQuery = useQuery({
@@ -706,6 +712,8 @@ export const ShareVideoModal = () => {
         uploadedVideoName: videoToBeShared?.title,
       };
     } else {
+      console.log("tags: ", emailForm.values.selectedContactTags);
+
       const updatedTagsArray = emailForm.values.selectedContactTags.map(
         (tag) => tag.label
       );
@@ -900,6 +908,31 @@ export const ShareVideoModal = () => {
     }
 
     setFetchingContactsLinkedWithTags(false);
+  };
+
+  // Handle add Firstname w.r.t cursor position in SMS
+  const insertFirstNameAtCursor = () => {
+    if (textAreaRef.current) {
+      const { value } = textAreaRef.current;
+      const newValue =
+        value.slice(0, textAreaRef.current.selectionStart) +
+        " {{contact.first_name}} " +
+        value.slice(textAreaRef.current.selectionStart);
+
+      smsForm.setFieldValue("smsContent", newValue);
+    }
+  };
+  // Handle add Video Link w.r.t cursor position in SMS
+  const insertVideoLinkAtCursor = () => {
+    if (textAreaRef.current) {
+      const { value } = textAreaRef.current;
+      const newValue =
+        value.slice(0, textAreaRef.current.selectionStart) +
+        ` ${videoToBeShared?.shareableLink} ` +
+        value.slice(textAreaRef.current.selectionStart);
+
+      smsForm.setFieldValue("smsContent", newValue);
+    }
   };
 
   // UseEffect to set the Contacts States
@@ -1523,6 +1556,7 @@ export const ShareVideoModal = () => {
                     </div>
                   </Tabs.Panel>
                 </Tabs>
+
                 <div className="w-full">
                   <p className="text-[14px] mb-[8px]">Content</p>
                   <div className="relative rounded-[12px] w-full h-[250px] !bg-[#F7F7F8] border border-[#D7D5DD] overflow-hidden">
@@ -1530,12 +1564,13 @@ export const ShareVideoModal = () => {
                       <button
                         type="button"
                         className="px-[8px] text-darkBlue text-[14px] font-medium w-fit text-start"
-                        onClick={() => {
-                          smsForm.setFieldValue(
-                            "smsContent",
-                            `${smsForm.values.smsContent} {{contact.first_name}}`
-                          );
-                        }}
+                        onClick={insertFirstNameAtCursor}
+                        // onClick={() => {
+                        //   smsForm.setFieldValue(
+                        //     "smsContent",
+                        //     `${smsForm.values.smsContent} {{contact.first_name}}`
+                        //   );
+                        // }}
                       >
                         Add First Name
                       </button>
@@ -1543,12 +1578,14 @@ export const ShareVideoModal = () => {
                       <button
                         type="button"
                         className="px-[8px] text-darkBlue text-[14px] font-medium w-fit text-start"
-                        onClick={() => {
-                          smsForm.setFieldValue(
-                            "smsContent",
-                            `${smsForm.values.smsContent} ${videoToBeShared?.shareableLink} `
-                          );
-                        }}
+                        // onClick={() => {
+                        //   smsForm.setFieldValue(
+                        //     "smsContent",
+                        //     `${smsForm.values.smsContent} ${videoToBeShared?.shareableLink} `
+                        //   );
+                        // }}
+
+                        onClick={insertVideoLinkAtCursor}
                       >
                         Paste Video Link
                       </button>
@@ -1556,6 +1593,7 @@ export const ShareVideoModal = () => {
 
                     <Textarea
                       id="smsContent-container"
+                      ref={textAreaRef}
                       placeholder="SMS Content"
                       {...smsForm.getInputProps("smsContent")}
                       minRows={8}
