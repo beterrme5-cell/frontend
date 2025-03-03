@@ -105,7 +105,7 @@ const Dashboard = () => {
         setContactTagsData(tagsData);
       } else {
         if (!videosResponse.success) {
-          toast.error(videosResponse.error || "Error Fetching Videos", {
+          toast.error("Error Fetching Videos", {
             position: "bottom-right",
             autoClose: 5000,
             closeOnClick: true,
@@ -115,7 +115,7 @@ const Dashboard = () => {
           });
         }
         if (!historyResponse.success) {
-          toast.error(historyResponse.error || "Error Fetching History", {
+          toast.error("Error Fetching History", {
             position: "bottom-right",
             autoClose: 5000,
             closeOnClick: true,
@@ -125,43 +125,34 @@ const Dashboard = () => {
           });
         }
         if (!customFieldsResponse.success) {
-          toast.error(
-            customFieldsResponse.error || "Error Fetching Custom Fields",
-            {
-              position: "bottom-right",
-              autoClose: 5000,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-            }
-          );
+          toast.error("Error Fetching Custom Fields", {
+            position: "bottom-right",
+            autoClose: 5000,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
         }
         if (!userDomainResponse.success) {
-          toast.error(
-            customFieldsResponse.error || "Error Fetching User Domain",
-            {
-              position: "bottom-right",
-              autoClose: 5000,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-            }
-          );
+          toast.error("Error Fetching User Domain", {
+            position: "bottom-right",
+            autoClose: 5000,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
         }
         if (!contactTagsResponse.success) {
-          toast.error(
-            contactTagsResponse.error || "Error Fetching Contact Tags",
-            {
-              position: "bottom-right",
-              autoClose: 5000,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-            }
-          );
+          toast.error("Error Fetching Contact Tags", {
+            position: "bottom-right",
+            autoClose: 5000,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
         }
       }
     } catch (error) {
