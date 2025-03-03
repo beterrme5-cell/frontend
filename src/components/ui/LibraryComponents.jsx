@@ -481,14 +481,27 @@ export const UploadedVideoTabItem = ({ videoData }) => {
   return (
     <div className="flex flex-col border border-[#CFCED4] rounded-[16px] relative min-w-[250px] h-[210px] overflow-hidden hover:cursor-pointer">
       <div className={`h-[160px] relative`}>
-        {videoData?.shareableLink && (
-          <iframe
-            width="100%"
-            height="100%"
-            src={videoData?.shareableLink}
-            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-          ></iframe>
+        {videoData?.embeddedLink && (
+          // <iframe
+          //   width="100%"
+          //   height="100%"
+          //   src={videoData?.embeddedLink}
+          //   allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          //   allowFullScreen
+          // ></iframe>
+
+          <video width="100%" controls className="max-h-[160px]">
+            <source src={videoData?.embeddedLink} type="video/mp4" />
+            <source
+              src={videoData?.embeddedLink.replace(".mp4", ".webm")}
+              type="video/webm"
+            />
+            <source
+              src={videoData?.embeddedLink.replace(".mp4", ".ogg")}
+              type="video/ogg"
+            />
+            Your browser does not support the video tag.
+          </video>
         )}
 
         <button

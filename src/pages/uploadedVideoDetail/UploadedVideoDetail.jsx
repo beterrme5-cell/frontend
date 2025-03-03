@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import {
-  VideoDetailPreview,
+  UploadedVideoDetailPreview,
   VideoDetailRoot,
   VideoDetailHeader,
   VideoDetailActions,
@@ -46,7 +46,7 @@ const UploadedVideoDetail = () => {
           videoDetail.title.lastIndexOf(".")
         )}
       />
-      <VideoDetailPreview videoUrl={videoDetail.shareableLink} />
+      <UploadedVideoDetailPreview videoUrl={videoDetail.shareableLink} />
       <VideoDetailActions>
         <VideoDetailActionBtn
           label="Share"
