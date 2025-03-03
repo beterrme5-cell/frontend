@@ -60,6 +60,21 @@ export const VideoDetailPreview = ({ videoUrl }) => {
     ></iframe>
   );
 };
+export const UploadedVideoDetailPreview = ({ videoUrl }) => {
+  return (
+    <video
+      width="100%"
+      height="450px"
+      controls
+      className="max-w-[711px] max-h-[450px] rounded-[12px]"
+    >
+      <source src={videoUrl} type="video/mp4" />
+      <source src={videoUrl.replace(".mp4", ".webm")} type="video/webm" />
+      <source src={videoUrl.replace(".mp4", ".ogg")} type="video/ogg" />
+      Your browser does not support the video tag.
+    </video>
+  );
+};
 
 export const VideoDetailActions = ({ children }) => {
   return <div className="flex items-center gap-[12px]">{children}</div>;
