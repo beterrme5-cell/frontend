@@ -481,21 +481,14 @@ export const UploadedVideoTabItem = ({ videoData }) => {
   return (
     <div className="flex flex-col border border-[#CFCED4] rounded-[16px] relative min-w-[250px] h-[210px] overflow-hidden hover:cursor-pointer">
       <div className={`h-[160px] relative`}>
-        {videoData?.embeddedLink && (
+        {videoData?.shareableLink && (
           <iframe
             width="100%"
             height="100%"
-            src={videoData?.embeddedLink}
+            src={videoData?.shareableLink}
             allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
           ></iframe>
-        )}
-        {!videoData?.embeddedLink && (
-          <img
-            src="./imagePlaceholder.jpeg"
-            alt="Video Thumbnail"
-            className="w-full h-full object-cover"
-          />
         )}
 
         <button
