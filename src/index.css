@@ -403,3 +403,10 @@ span .em-lns-1do042d {
   background-color: #39393992 !important;
   border-radius: 6px !important;
 }
+
+/* Customizing the thumbail Image in ql-editor */
+.ql-editor img {
+  width: 100% !important;
+  height: auto !important;
+  max-width: 300px !important;
+}
