@@ -696,11 +696,13 @@ export const TextEditor = forwardRef(
       });
 
       if (!editorContent) {
-        const videoLink = `${videoToBeShared?.shareableLink}`;
+        const videoLink = `<a href="${
+          videoToBeShared.shareableLink
+        }" target="_blank" style="color: blue; text-decoration: underline; font-weight: bold">${
+          videoToBeShared?.title || videoToBeShared?.shareableLink
+        }</a>`;
 
         // Create the image tag with width and height if thumbnailURL is not empty
-        const width = "300px"; // You can modify this to any value or make it dynamic
-        const height = "200px"; // Modify this as well
         let videoThumbnail = "";
 
         // Check if thumbnailURL is not empty
@@ -708,26 +710,27 @@ export const TextEditor = forwardRef(
           videoToBeShared?.thumbnailURL &&
           videoToBeShared?.thumbnailURL !== ""
         ) {
-          videoThumbnail = `<img src="${videoToBeShared.thumbnailURL}" width="${width}" height="${height}" />`;
+          videoThumbnail = `<a href="${videoToBeShared.shareableLink}" target="_blank"><img src="${videoToBeShared.thumbnailURL}" width="300px" height="200px"/></a>`;
         }
 
         // Insert two line breaks at the beginning
         quill.insertText(0, "\n\n");
 
-        // Insert the video link (bold) after "Video Link:"
-        quill.insertText(2, videoLink, { bold: true, color: "blue" });
+        // Insert the video link
+        quill.clipboard.dangerouslyPasteHTML(2, videoLink);
+
         // Optionally, move the cursor to a new line after the video link
-        quill.insertText(2 + videoLink.length, "\n");
+        quill.insertText(2 + videoToBeShared?.title?.length, "\n");
 
         // Insert the thumbnail if it exists, otherwise just insert the link
         if (videoThumbnail) {
           quill.clipboard.dangerouslyPasteHTML(
-            2 + videoLink.length + 1,
+            2 + videoToBeShared?.title?.length + 1,
             videoThumbnail
           );
           // Optionally, move the cursor to a new line after the video link and thumbnail
           quill.insertText(
-            3 + videoLink.length + videoThumbnail.length,
+            3 + videoToBeShared?.title?.length + videoThumbnail.length,
             "\n\n"
           );
         }
@@ -756,41 +759,46 @@ export const TextEditor = forwardRef(
           videoToBeShared?.thumbnailURL !== ""
         ) {
           // Create the image tag with width and height
-          videoThumbnail = `<img src="${videoToBeShared.thumbnailURL}" width="${width}" height="${height}" />`;
+          videoThumbnail = `<a href="${videoToBeShared.shareableLink}" target="_blank"> <img src="${videoToBeShared.thumbnailURL}" width="${width}" height="${height}" /></a>`;
         }
 
         // Paste the video link into the editor
         const range = quill.getSelection();
 
         if (range === null) {
-          const videoLink = `${videoToBeShared?.shareableLink}`;
+          const videoLink = `<a href="${
+            videoToBeShared.shareableLink
+          }" target="_blank" style="color: blue; text-decoration: underline; font-weight: bold">${
+            videoToBeShared?.title || videoToBeShared?.shareableLink
+          }</a>`;
 
           if (!videoLink) {
             console.error("Video link is missing.");
-            return; // Exit early if the video link is not available
+            return;
           }
 
           // Insert the video link at the beginning with formatting
-          quill.insertText(0, videoLink, {
-            bold: true,
-            color: "blue",
-          });
+          quill.clipboard.dangerouslyPasteHTML(0, videoLink);
 
           if (videoThumbnail) {
             quill.clipboard.dangerouslyPasteHTML(
-              videoLink.length + 1,
+              videoToBeShared?.title?.length + 1,
               videoThumbnail
             );
 
             // Add a new line after the image for separation
             quill.insertText(
-              videoLink.length + 1 + videoThumbnail?.length,
+              videoToBeShared?.title?.length + 1 + videoThumbnail?.length,
               "\n\n"
             );
           }
         } else {
           // Adding a space before and after the link
-          const updatedVideoLink = ` ${videoToBeShared?.shareableLink} `;
+          const updatedVideoLink = ` <a href="${
+            videoToBeShared.shareableLink
+          }" target="_blank" style="color: blue; text-decoration: underline; font-weight: bold">${
+            videoToBeShared?.title || videoToBeShared?.shareableLink
+          }</a>`;
 
           if (!updatedVideoLink.trim()) {
             console.error("Updated video link is missing.");
@@ -798,29 +806,29 @@ export const TextEditor = forwardRef(
           }
 
           // Insert the link with formatting at the specified range
-          quill.insertText(range.index, updatedVideoLink, {
-            bold: true,
-            color: "blue",
-          });
-
-          quill.insertText(range.index + updatedVideoLink.length, "\n");
+          quill.clipboard.dangerouslyPasteHTML(range.index, updatedVideoLink);
+          quill.insertText(range.index + videoToBeShared?.title?.length, "\n");
 
           if (videoThumbnail) {
             // Insert the image after the video link
             quill.clipboard.dangerouslyPasteHTML(
-              range.index + updatedVideoLink.length + 1,
+              range.index + videoToBeShared?.title?.length + 1,
               videoThumbnail
             );
 
             // Add a new line after the image for separation
             quill.insertText(
-              range.index + updatedVideoLink.length + videoThumbnail?.length,
+              range.index +
+                videoToBeShared?.title?.length +
+                videoThumbnail?.length,
               "\n\n"
             );
 
             // Move the cursor to the end of the inserted link and image
             quill.setSelection(
-              range.index + updatedVideoLink.length + videoThumbnail?.length + 2
+              range.index +
+                videoToBeShared?.title?.length +
+                videoThumbnail?.length
             );
           }
         }
