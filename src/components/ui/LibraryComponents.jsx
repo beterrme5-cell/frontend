@@ -697,7 +697,7 @@ export const TextEditor = forwardRef(
 
       if (!editorContent) {
         const videoLink = `<a href="${
-          videoToBeShared.shareableLink
+          videoToBeShared?.shareableLink
         }" target="_blank" style="color: blue; text-decoration: underline; font-weight: bold">${
           videoToBeShared?.title || videoToBeShared?.shareableLink
         }</a>`;
