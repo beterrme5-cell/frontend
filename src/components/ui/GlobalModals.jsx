@@ -2717,7 +2717,12 @@ const ShowContactsWithTagsModal = ({ contactsData, contactType }) => {
       }}
     >
       <div className="flex flex-col gap-[24px] w-[70vw] lg:w-[50vw] overflow-hidden max-h-[500px]">
-        <h3 className="text-[24px] font-semibold">Selected Contacts</h3>
+        <h3 className="text-[24px] font-semibold">
+          Selected Contacts{" "}
+          <span className="text-[18px] text-primary">
+            (Total: {contactsData.length})
+          </span>
+        </h3>
         {contactsData.length > 0 ? (
           <div className="h-[calc(100%-74.81px)] overflow-auto contactsLinkedWithTagsModal">
             <Table
