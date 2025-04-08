@@ -840,7 +840,21 @@ export const ShareVideoModal = () => {
     const response = await getContactsBasedOnTags(updatedTagsArray);
 
     if (response.success) {
-      setContactsLinkedWithTags(response.data.contacts);
+      if (activeTab === "email") {
+        // Filter out the contacts with no email address
+        const filteredContacts = response.data.contacts.filter(
+          (contact) => contact.email && contact.email.trim() !== ""
+        );
+
+        setContactsLinkedWithTags(filteredContacts);
+      } else {
+        // Filter out the contacts with no phone number
+        const filteredContacts = response.data.contacts.filter(
+          (contact) => contact.phone && contact.phone.trim() !== ""
+        );
+
+        setContactsLinkedWithTags(filteredContacts);
+      }
     } else {
       console.log("Error while getting Contact Tags: ", response.error);
     }
@@ -1333,7 +1347,7 @@ export const ShareVideoModal = () => {
                               setIsShareVideoModalOpen(false);
                             }}
                           >
-                            View all
+                            View all {contactsLinkedWithTags?.length} Contacts
                           </button>
                         )}
                       </div>
@@ -1496,7 +1510,7 @@ export const ShareVideoModal = () => {
                               setIsShareVideoModalOpen(false);
                             }}
                           >
-                            View all
+                            View all {contactsLinkedWithTags?.length} Contacts
                           </button>
                         )}
                       </div>
