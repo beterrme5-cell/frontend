@@ -582,7 +582,9 @@ export const ShareVideoModal = () => {
 
   const smsForm = useForm({
     initialValues: {
-      smsContent: `${videoToBeShared?.shareableLink} `,
+      smsContent: videoToBeShared?.shareableLink
+        ? `\n\n${videoToBeShared.shareableLink}`
+        : "",
       selectedSMSContacts: [],
       selectedContactTags: [],
     },
@@ -619,6 +621,9 @@ export const ShareVideoModal = () => {
   const [cursorPos, setCursorPos] = useState(0);
   const [loadingSearchedContacts, setLoadingSearchedContacts] = useState(false);
   const [noContactSelectedError, setNoContactSelectedError] = useState(false);
+  // For undo/redo functionality
+  const [undoStack, setUndoStack] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
 
   // Use a ref to access the quill instance directly
   const quillRef = useRef();
@@ -869,32 +874,68 @@ export const ShareVideoModal = () => {
     }
   };
 
-  // Handle add Firstname w.r.t cursor position in SMS
+  // ===============================================================
+  //===================================================================
   const insertFirstNameAtCursor = () => {
     if (textAreaRef.current) {
-      const { value } = textAreaRef.current;
+      const start = textAreaRef.current.selectionStart;
+      const end = textAreaRef.current.selectionEnd;
+      const value = textAreaRef.current.value;
+      const insertText = "{{contact.first_name}}";
+
+      // Add current value to undo stack before changing
+      setUndoStack([...undoStack, value]);
+      // Clear redo stack on new changes
+      setRedoStack([]);
+
       const newValue =
-        value.slice(0, cursorPos) +
-        " {{contact.first_name}} " +
-        value.slice(cursorPos);
+        value.substring(0, start) + insertText + value.substring(end);
 
       smsForm.setFieldValue("smsContent", newValue);
-      setCursorPos(cursorPos + " {{contact.first_name}} ".length);
+
+      // Focus and set cursor position after React updates DOM
+      setTimeout(() => {
+        if (textAreaRef.current) {
+          textAreaRef.current.focus();
+          const newPosition = start + insertText.length;
+          textAreaRef.current.setSelectionRange(newPosition, newPosition);
+          setCursorPos(newPosition);
+        }
+      }, 0);
     }
   };
-  // Handle add Video Link w.r.t cursor position in SMS
+
   const insertVideoLinkAtCursor = () => {
-    if (textAreaRef.current) {
-      const { value } = textAreaRef.current;
+    if (textAreaRef.current && videoToBeShared?.shareableLink) {
+      const start = textAreaRef.current.selectionStart;
+      const end = textAreaRef.current.selectionEnd;
+      const value = textAreaRef.current.value;
+      const insertText = videoToBeShared.shareableLink;
+
+      // Add current value to undo stack before changing
+      setUndoStack([...undoStack, value]);
+      // Clear redo stack on new changes
+      setRedoStack([]);
+
       const newValue =
-        value.slice(0, cursorPos) +
-        ` ${videoToBeShared?.shareableLink} ` +
-        value.slice(cursorPos);
+        value.substring(0, start) + insertText + value.substring(end);
 
       smsForm.setFieldValue("smsContent", newValue);
-      setCursorPos(cursorPos + ` ${videoToBeShared?.shareableLink} `.length);
+
+      // Focus and set cursor position after React updates DOM
+      setTimeout(() => {
+        if (textAreaRef.current) {
+          textAreaRef.current.focus();
+          const newPosition = start + insertText.length;
+          textAreaRef.current.setSelectionRange(newPosition, newPosition);
+          setCursorPos(newPosition);
+        }
+      }, 0);
     }
   };
+
+  // ===============================================================
+  //===================================================================
 
   // UseEffect to set the Contacts States
   useEffect(() => {
@@ -1108,6 +1149,47 @@ export const ShareVideoModal = () => {
     }
   };
 
+  //====================================================================
+
+  //=======================================================================
+
+  // Updated cursor tracking function - no changes needed if you're already using this
+
+  // Add this effect to set up keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Make sure we only handle events when our textarea is focused
+      if (document.activeElement !== textAreaRef.current) return;
+
+      // Undo: Ctrl/Cmd + Z
+      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        if (undoStack.length > 0) {
+          const prevValue = undoStack.pop();
+          setRedoStack([...redoStack, smsForm.values.smsContent]);
+          smsForm.setFieldValue("smsContent", prevValue);
+        }
+      }
+
+      // Redo: Ctrl/Cmd + Y
+      if ((e.ctrlKey || e.metaKey) && e.key === "y") {
+        e.preventDefault();
+        if (redoStack.length > 0) {
+          const nextValue = redoStack.pop();
+          setUndoStack([...undoStack, smsForm.values.smsContent]);
+          smsForm.setFieldValue("smsContent", nextValue);
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [undoStack, redoStack, smsForm.values.smsContent]);
+
+  //=========================================================================
+
   return (
     <>
       <VideoLinkNotAttachedModal
@@ -1162,7 +1244,9 @@ export const ShareVideoModal = () => {
                 setNoContactSelectedError(false);
               }}
             >
-              <Tabs.List>
+              <Tabs.List className="flex items-center">
+                {" "}
+                {/* Ensure flex is enabled */}
                 <Tabs.Tab
                   value="email"
                   leftSection={
@@ -1214,6 +1298,41 @@ export const ShareVideoModal = () => {
                 >
                   Embed
                 </Tabs.Tab>
+                {/*  ml-auto here to push buttons to the right */}
+                {/* Right-aligned buttons (conditionally rendered) */}
+                <div className="flex items-center gap-[16px] ml-auto">
+                  {activeTab === "email" ? (
+                    <>
+                      <CustomButton
+                        label="Send Email"
+                        varient="filled"
+                        className="w-fit"
+                        onClick={ValidateEmailSend}
+                      />
+                      <CustomButton
+                        label="Cancel"
+                        varient="outlined"
+                        className="w-fit"
+                        onClick={() => setIsShareVideoModalOpen(false)}
+                      />
+                    </>
+                  ) : activeTab === "sms" ? (
+                    <>
+                      <CustomButton
+                        label="Send SMS"
+                        varient="filled"
+                        className="w-fit"
+                        onClick={ValidateSMSSend}
+                      />
+                      <CustomButton
+                        label="Cancel"
+                        varient="outlined"
+                        className="w-fit"
+                        onClick={() => setIsShareVideoModalOpen(false)}
+                      />
+                    </>
+                  ) : null}
+                </div>
               </Tabs.List>
 
               <Tabs.Panel
@@ -1366,22 +1485,6 @@ export const ShareVideoModal = () => {
                   editorContent={editorContent}
                   setEditorContent={setEditorContent}
                 />
-                <div className="flex items-center gap-[16px]">
-                  <CustomButton
-                    label="Send Email"
-                    varient="filled"
-                    className="w-fit"
-                    onClick={ValidateEmailSend}
-                  />
-                  <CustomButton
-                    label="Cancel"
-                    varient="outlined"
-                    className="w-fit"
-                    onClick={() => {
-                      setIsShareVideoModalOpen(false);
-                    }}
-                  />
-                </div>
               </Tabs.Panel>
 
               <Tabs.Panel
@@ -1519,7 +1622,7 @@ export const ShareVideoModal = () => {
                 </Tabs>
 
                 <div className="w-full">
-                  <p className="text-[14px] mb-[8px]">Content</p>
+                  {/* <p className="text-[14px] mb-[8px]">Content</p>
                   <div className="relative rounded-[12px] w-full h-[250px] !bg-[#F7F7F8] border border-[#D7D5DD] overflow-hidden">
                     <div className="flex items-center gap-[4px] w-full bg-white py-[8px] shadow-sm">
                       <button
@@ -1566,29 +1669,181 @@ export const ShareVideoModal = () => {
                         input: "background: transparent!;",
                       }}
                     />
+                  </div> */}
+
+                  {/* This is the updated div element to replace your existing one */}
+                  <p className="text-[14px] mb-[8px]">Content</p>
+                  <div className="relative rounded-[12px] w-full h-[250px] !bg-[#F7F7F8] border border-[#D7D5DD] overflow-hidden">
+                    <div className="flex items-center gap-[4px] w-full bg-white py-[8px] shadow-sm">
+                      <button
+                        type="button"
+                        className="px-[8px] text-darkBlue text-[14px] font-medium w-fit text-start"
+                        onClick={() => {
+                          if (textAreaRef.current) {
+                            const start = textAreaRef.current.selectionStart;
+                            const end = textAreaRef.current.selectionEnd;
+                            const value = textAreaRef.current.value;
+                            const insertText = "{{contact.first_name}}";
+
+                            const newValue =
+                              value.substring(0, start) +
+                              insertText +
+                              value.substring(end);
+
+                            smsForm.setFieldValue("smsContent", newValue);
+
+                            // Focus and set cursor position after React updates DOM
+                            setTimeout(() => {
+                              if (textAreaRef.current) {
+                                textAreaRef.current.focus();
+                                const newPosition = start + insertText.length;
+                                textAreaRef.current.setSelectionRange(
+                                  newPosition,
+                                  newPosition
+                                );
+                                setCursorPos(newPosition);
+                              }
+                            }, 0);
+                          }
+                        }}
+                      >
+                        Add First Name
+                      </button>
+                      <Divider orientation="vertical" className="!h-3/2" />
+                      <button
+                        type="button"
+                        className="px-[8px] text-darkBlue text-[14px] font-medium w-fit text-start"
+                        onClick={() => {
+                          if (textAreaRef.current) {
+                            const start = textAreaRef.current.selectionStart;
+                            const end = textAreaRef.current.selectionEnd;
+                            const value = textAreaRef.current.value;
+                            const insertText =
+                              videoToBeShared?.shareableLink || "";
+
+                            const newValue =
+                              value.substring(0, start) +
+                              insertText +
+                              value.substring(end);
+
+                            smsForm.setFieldValue("smsContent", newValue);
+
+                            // Focus and set cursor position after React updates DOM
+                            setTimeout(() => {
+                              if (textAreaRef.current) {
+                                textAreaRef.current.focus();
+                                const newPosition = start + insertText.length;
+                                textAreaRef.current.setSelectionRange(
+                                  newPosition,
+                                  newPosition
+                                );
+                                setCursorPos(newPosition);
+                              }
+                            }, 0);
+                          }
+                        }}
+                      >
+                        Paste Video Link
+                      </button>
+                      <Divider orientation="vertical" className="!h-3/2" />
+                      <button
+                        type="button"
+                        className="px-[8px] text-darkBlue text-[14px] font-medium w-fit text-start"
+                        onClick={() => {
+                          // Simple undo functionality
+                          if (
+                            textAreaRef.current &&
+                            undoStack &&
+                            undoStack.length > 0
+                          ) {
+                            const prevValue = undoStack.pop();
+                            redoStack.push(smsForm.values.smsContent);
+                            smsForm.setFieldValue("smsContent", prevValue);
+
+                            setTimeout(() => {
+                              if (textAreaRef.current) {
+                                textAreaRef.current.focus();
+                              }
+                            }, 0);
+                          }
+                        }}
+                      >
+                        Undo
+                      </button>
+                      <button
+                        type="button"
+                        className="px-[8px] text-darkBlue text-[14px] font-medium w-fit text-start"
+                        onClick={() => {
+                          // Simple redo functionality
+                          if (
+                            textAreaRef.current &&
+                            redoStack &&
+                            redoStack.length > 0
+                          ) {
+                            const nextValue = redoStack.pop();
+                            undoStack.push(smsForm.values.smsContent);
+                            smsForm.setFieldValue("smsContent", nextValue);
+
+                            setTimeout(() => {
+                              if (textAreaRef.current) {
+                                textAreaRef.current.focus();
+                              }
+                            }, 0);
+                          }
+                        }}
+                      >
+                        Redo
+                      </button>
+                    </div>
+
+                    <Textarea
+                      id="smsContent-container"
+                      ref={textAreaRef}
+                      placeholder="SMS Content"
+                      {...smsForm.getInputProps("smsContent")}
+                      onClick={handleCursorPosition}
+                      onKeyUp={handleCursorPosition}
+                      onChange={(e) => {
+                        // Store current value in undo stack before changing
+                        if (typeof undoStack !== "undefined") {
+                          undoStack.push(smsForm.values.smsContent);
+                          // Clear redo stack on new changes
+                          if (typeof redoStack !== "undefined") {
+                            redoStack.length = 0;
+                          }
+                        }
+                        // Process normal onChange behavior
+                        smsForm.getInputProps("smsContent").onChange(e);
+                        handleCursorPosition();
+                      }}
+                      onKeyDown={(e) => {
+                        // Add keyboard shortcuts for undo/redo
+                        if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+                          e.preventDefault();
+                          // Trigger undo button click
+                          document.querySelector("button:nth-child(5)").click();
+                        }
+                        if ((e.ctrlKey || e.metaKey) && e.key === "y") {
+                          e.preventDefault();
+                          // Trigger redo button click
+                          document.querySelector("button:nth-child(6)").click();
+                        }
+                      }}
+                      minRows={8}
+                      maxRows={8}
+                      autosize
+                      classNames={{
+                        input: "background: transparent!;",
+                      }}
+                    />
                   </div>
+
                   <Checkbox
                     checked={sendAttachmentWithSMS}
                     value={sendAttachmentWithSMS}
                     onChange={(e) => setSendAttachmentWithSMS(e.target.checked)}
                     label="Attach thumbnail to SMS"
                     className="mt-[8px]"
-                  />
-                </div>
-                <div className="flex items-center gap-[16px]">
-                  <CustomButton
-                    label="Send SMS"
-                    varient="filled"
-                    className="w-fit"
-                    onClick={ValidateSMSSend}
-                  />
-                  <CustomButton
-                    label="Cancel"
-                    varient="outlined"
-                    className="w-fit"
-                    onClick={() => {
-                      setIsShareVideoModalOpen(false);
-                    }}
                   />
                 </div>
               </Tabs.Panel>
