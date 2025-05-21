@@ -1792,7 +1792,7 @@ export const ShareVideoModal = () => {
                         Paste Video Link
                       </button>
                       <Divider orientation="vertical" className="!h-3/2" />
-                      {/* <button
+                      <button
                         type="button"
                         className="px-[8px] text-darkBlue text-[14px] font-medium w-fit text-start"
                         // Updated Undo button handler
@@ -1827,7 +1827,7 @@ export const ShareVideoModal = () => {
                         }}
                       >
                         ⮫
-                      </button> */}
+                      </button>
                     </div>
 
                     <Textarea
