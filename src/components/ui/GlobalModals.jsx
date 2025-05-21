@@ -1808,7 +1808,7 @@ export const ShareVideoModal = () => {
                           }
                         }}
                       >
-                        ⮪
+                        ⮪ Undo
                       </button>
                       <button
                         type="button"
@@ -1826,7 +1826,7 @@ export const ShareVideoModal = () => {
                           }
                         }}
                       >
-                        ⮫
+                        ⮫ Redo
                       </button>
                     </div>
 
