@@ -47,6 +47,11 @@ import debounce from "lodash.debounce";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import CustomMultiSelect from "./CustomMultiSelect.jsx";
 import CustomTagsSelect from "./CustomTagsSelect.jsx";
+import {
+  ArrowPathIcon,
+  ArrowUturnLeftIcon,
+  ArrowUturnRightIcon,
+} from "@heroicons/react/24/outline";
 
 function quillGetHTML(inputDelta) {
   var tempCont = document.createElement("div");
@@ -1792,7 +1797,7 @@ export const ShareVideoModal = () => {
                         Paste Video Link
                       </button>
                       <Divider orientation="vertical" className="!h-3/2" />
-                      <button
+                      {/* <button
                         type="button"
                         className="px-[8px] text-darkBlue text-[14px] font-medium w-fit text-start"
                         // Updated Undo button handler
@@ -1827,6 +1832,42 @@ export const ShareVideoModal = () => {
                         }}
                       >
                         ⮫ Redo
+                      </button> */}
+                      <button
+                        type="button"
+                        className="px-[8px] text-darkBlue text-[14px] font-medium w-fit text-start flex items-center gap-1"
+                        onClick={() => {
+                          if (undoStack.length > 0) {
+                            const prevValue = undoStack[undoStack.length - 1];
+                            setRedoStack((prev) => [
+                              ...prev,
+                              smsForm.values.smsContent,
+                            ]);
+                            setUndoStack((prev) => prev.slice(0, -1));
+                            smsForm.setFieldValue("smsContent", prevValue);
+                          }
+                        }}
+                      >
+                        <ArrowUturnLeftIcon className="h-4 w-4" />
+                        Undo
+                      </button>
+                      <button
+                        type="button"
+                        className="px-[8px] text-darkBlue text-[14px] font-medium w-fit text-start flex items-center gap-1"
+                        onClick={() => {
+                          if (redoStack.length > 0) {
+                            const nextValue = redoStack[redoStack.length - 1];
+                            setUndoStack((prev) => [
+                              ...prev,
+                              smsForm.values.smsContent,
+                            ]);
+                            setRedoStack((prev) => prev.slice(0, -1));
+                            smsForm.setFieldValue("smsContent", nextValue);
+                          }
+                        }}
+                      >
+                        <ArrowUturnRightIcon className="h-4 w-4" />
+                        Redo
                       </button>
                     </div>
 
