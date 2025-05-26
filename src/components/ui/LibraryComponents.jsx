@@ -424,7 +424,7 @@ export const VideoTabItem = ({ videoData }) => {
             </div>
           </Menu.Target>
           <Menu.Dropdown>
-            {pageLocation.pathname.split("/")[1] === "recordings" && (
+            {/* {pageLocation.pathname.split("/")[1] === "recordings" && (
               <Menu.Item>
                 <CopyButton value={videoData?.shareableLink}>
                   {({ copy }) => (
@@ -435,7 +435,7 @@ export const VideoTabItem = ({ videoData }) => {
                   )}
                 </CopyButton>
               </Menu.Item>
-            )}
+            )} */}
 
             <Menu.Item>
               <div
@@ -447,11 +447,11 @@ export const VideoTabItem = ({ videoData }) => {
                 className="flex items-center gap-[8px]"
               >
                 <COPY_ICON className="text-black" />
-                <p className="text-[14px] font-medium">Copy Links</p>
+                <p className="text-[14px] font-medium">Copy Link</p>
               </div>
             </Menu.Item>
 
-            <Menu.Item>
+            {/* <Menu.Item>
               <CopyButton value={videoData?.shareableLink}>
                 {({ copy }) => (
                   <div onClick={copy} className="flex items-center gap-[8px]">
@@ -460,7 +460,7 @@ export const VideoTabItem = ({ videoData }) => {
                   </div>
                 )}
               </CopyButton>
-            </Menu.Item>
+            </Menu.Item> */}
             <Menu.Item
               leftSection={<SHARE_ICON className="text-black" />}
               onClick={() => {
