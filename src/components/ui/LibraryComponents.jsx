@@ -451,7 +451,7 @@ export const VideoTabItem = ({ videoData }) => {
               </div>
             </Menu.Item>
 
-            {/* <Menu.Item>
+            <Menu.Item>
               <CopyButton value={videoData?.shareableLink}>
                 {({ copy }) => (
                   <div onClick={copy} className="flex items-center gap-[8px]">
@@ -460,7 +460,7 @@ export const VideoTabItem = ({ videoData }) => {
                   </div>
                 )}
               </CopyButton>
-            </Menu.Item> */}
+            </Menu.Item>
             <Menu.Item
               leftSection={<SHARE_ICON className="text-black" />}
               onClick={() => {
