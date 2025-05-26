@@ -23,6 +23,7 @@
     "@tanstack/react-query": "^5.66.0",
     "axios": "^1.7.7",
     "client": "file:",
+    "copy-to-clipboard": "^3.3.3",
     "js-cookie": "^3.0.5",
     "lodash.debounce": "^4.0.8",
     "quill": "^2.0.2",

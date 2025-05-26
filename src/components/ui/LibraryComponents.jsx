@@ -24,6 +24,7 @@ import {
   VIDEO_OPTIONS_ICON,
 } from "../../assets/icons/DynamicIcons";
 import { useLoadingBackdrop } from "./../../store/loadingBackdrop";
+import copy from "copy-to-clipboard";
 
 // Customn Fonts - Quill Editor
 const FontAttributor = Quill.import("attributors/class/font");
@@ -435,6 +436,20 @@ export const VideoTabItem = ({ videoData }) => {
                 </CopyButton>
               </Menu.Item>
             )}
+
+            <Menu.Item>
+              <div
+                onClick={() => {
+                  copy(videoData?.shareableLink);
+                  // You might want to show some feedback that the copy succeeded
+                  console.log("Shareable link:", videoData?.shareableLink);
+                }}
+                className="flex items-center gap-[8px]"
+              >
+                <COPY_ICON className="text-black" />
+                <p className="text-[14px] font-medium">Copy Links</p>
+              </div>
+            </Menu.Item>
 
             {/* <Menu.Item>
               <CopyButton value={videoData?.shareableLink}>
