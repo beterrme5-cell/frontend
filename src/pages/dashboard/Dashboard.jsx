@@ -190,6 +190,8 @@ const Dashboard = () => {
 
       const key = await postKeyToAPIAndCheckUserId();
 
+      console.log("Key from GHL iFrame: ", key);
+
       // Send Data to the Backend API to Decrypt the code
       const response = await getDecryptedUserData({ tokenKey: key });
 
