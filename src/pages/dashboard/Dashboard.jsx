@@ -193,8 +193,6 @@ const Dashboard = () => {
           });
         });
 
-        console.log("Key from GHL iFrame: ", key);
-
         return key;
       } catch (error) {
         console.error("Error fetching key from GHL iFrame: ", error);
