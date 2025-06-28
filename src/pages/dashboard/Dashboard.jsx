@@ -167,37 +167,40 @@ const Dashboard = () => {
     }
   };
 
-  // Function to Get Key from GHL iFrame and Save it in Local Storage
-  const postKeyToAPIAndCheckUserId = async () => {
-    try {
-      const key = await new Promise((resolve) => {
-        window.parent.postMessage({ message: "REQUEST_USER_DATA" }, "*");
-        window.addEventListener("message", ({ data }) => {
-          if (data.message === "REQUEST_USER_DATA_RESPONSE") {
-            resolve(data.payload);
-          } else {
-            resolve(null);
-          }
+  const { data: userAccessKey } = useQuery({
+    queryKey: ["userKey"],
+    queryFn: async () => {
+      try {
+        const key = await new Promise((resolve) => {
+          window.parent.postMessage({ message: "REQUEST_USER_DATA" }, "*");
+          window.addEventListener("message", ({ data }) => {
+            if (data.message === "REQUEST_USER_DATA_RESPONSE") {
+              resolve(data.payload);
+            } else {
+              resolve(null);
+            }
+          });
         });
-      });
 
-      return key;
-    } catch (error) {
-      console.error("Error fetching key from GHL iFrame: ", error);
-      return null;
-    }
-  };
+        return key;
+      } catch (error) {
+        console.error("Error fetching key from GHL iFrame: ", error);
+        throw new Error("Failed to fetch key from GHL iFrame");
+      }
+    },
+    retry: 3,
+    retryDelay: 1000,
+  });
 
   const { isPending, isError, error } = useQuery({
-    queryKey: ["libraryData"],
+    queryKey: ["dashboardData"],
     queryFn: async () => {
-      const key = await postKeyToAPIAndCheckUserId();
       setLoading(false);
 
-      console.log("Key from GHL iFrame: ", key);
+      console.log("Key from GHL iFrame: ", userAccessKey);
 
       // Send Data to the Backend API to Decrypt the code
-      const response = await getDecryptedUserData({ tokenKey: key });
+      const response = await getDecryptedUserData({ tokenKey: userAccessKey });
 
       if (!response.success || response.data.accessToken === undefined) {
         throw new Error("Failed to fetch access token");
@@ -210,6 +213,7 @@ const Dashboard = () => {
       // Fetch all the Data
       return fetchData(response.data.accessToken);
     },
+    enabled: !!userAccessKey,
   });
 
   if (isError) {
