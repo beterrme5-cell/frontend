@@ -102,6 +102,17 @@ const Dashboard = () => {
           };
         });
         setContactTagsData(tagsData);
+
+        return {
+          videosData: {
+            recordedVideos: videosResponse.data.recordedVideos || [],
+            uploadedVideos: videosResponse.data.uploadedVideos || [],
+          },
+          historyData: historyResponse.data.histories || [],
+          customFieldsData: customFieldsResponse.data.customFields || [],
+          userDomain: userDomainResponse.data.userDomain || "",
+          contactTagsData: tagsData,
+        };
       } else {
         if (!videosResponse.success) {
           toast.error("Error Fetching Videos", {
