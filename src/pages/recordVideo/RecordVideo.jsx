@@ -1,4 +1,4 @@
-import { Tabs } from "@mantine/core";
+import { Skeleton, Tabs } from "@mantine/core";
 import {
   BodyTabsRoot,
   HistoryTableList,
@@ -12,7 +12,7 @@ import {
   VideoTabSection,
 } from "../../components/ui/LibraryComponents";
 import { useGlobalModals } from "../../store/globalModals";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLoadingBackdrop } from "../../store/loadingBackdrop";
 import { useUserStore } from "../../store/userStore";
 import { useParams } from "react-router-dom";
@@ -48,6 +48,9 @@ const RecordVideo = () => {
   const setLoading = useLoadingBackdrop((state) => state.setLoading);
   const setUserDomain = useUserStore((state) => state.setUserDomain);
 
+  // Local State
+  const [isLoading, setIsLoading] = useState(false);
+
   // Function to sort the videos
   const sortVideos = (videosData) => {
     const sortedArray = videosData.sort((a, b) => {
@@ -60,6 +63,7 @@ const RecordVideo = () => {
   // Function to Fetch all the Videos and History of the User
   const fetchData = async (token) => {
     try {
+      setIsLoading(true);
       // Fetch all data in parallel
       const [
         videosResponse,
@@ -155,6 +159,8 @@ const RecordVideo = () => {
         draggable: true,
         progress: undefined,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -171,7 +177,6 @@ const RecordVideo = () => {
     }
 
     const fetchLibraryData = async () => {
-      setLoading(true);
       await fetchData(accessToken);
       setLoading(false);
     };
@@ -213,7 +218,16 @@ const RecordVideo = () => {
 
           <Tabs.Panel value="videos">
             <VideoTabSection heading="Recorded Videos">
-              {videosData && videosData?.recordedVideos?.length > 0 ? (
+              {isLoading ? (
+                <VideoTabItemsList>
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <Skeleton
+                      key={index}
+                      className="!rounded-lg !min-w-[250px] !h-[210px]"
+                    />
+                  ))}
+                </VideoTabItemsList>
+              ) : videosData?.recordedVideos?.length > 0 ? (
                 <VideoTabItemsList>
                   {videosData?.recordedVideos?.map((video) => (
                     <VideoTabItem key={video._id} videoData={video} />
@@ -229,7 +243,16 @@ const RecordVideo = () => {
               )}
             </VideoTabSection>
             <VideoTabSection heading="Uploaded Videos">
-              {videosData && videosData?.uploadedVideos?.length > 0 ? (
+              {isLoading ? (
+                <VideoTabItemsList>
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <Skeleton
+                      key={index}
+                      className="!rounded-lg !min-w-[250px] !h-[210px]"
+                    />
+                  ))}
+                </VideoTabItemsList>
+              ) : videosData?.uploadedVideos?.length > 0 ? (
                 <VideoTabItemsList>
                   {videosData?.uploadedVideos?.map((video, index) => (
                     <UploadedVideoTabItem key={index} videoData={video} />
@@ -248,7 +271,16 @@ const RecordVideo = () => {
 
           <Tabs.Panel value="history">
             <HistoryTabSection>
-              {historyData && historyData.length > 0 ? (
+              {isLoading ? (
+                <div className="flex flex-col gap-2 w-full">
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <Skeleton
+                      key={index}
+                      className="!rounded-lg !w-full !h-[50px]"
+                    />
+                  ))}
+                </div>
+              ) : historyData.length > 0 ? (
                 <HistoryTableList historyData={historyData} />
               ) : (
                 <p className="text-center text-gray-500 text-[16px]">
