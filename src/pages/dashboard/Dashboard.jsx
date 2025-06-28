@@ -1,4 +1,4 @@
-import { Tabs } from "@mantine/core";
+import { Skeleton, Tabs } from "@mantine/core";
 import {
   BodyTabsRoot,
   HistoryTableList,
@@ -20,9 +20,9 @@ import {
   getHistoryOfMessages,
 } from "../../api/commsAPIs";
 import { useLoadingBackdrop } from "../../store/loadingBackdrop";
-import { useEffect, useState } from "react";
 import { getDecryptedUserData } from "../../api/auth";
 import { useGlobalModals } from "../../store/globalModals";
+import { useQuery } from "@tanstack/react-query";
 
 const Dashboard = () => {
   const videosData = useUserStore((state) => state.videosData);
@@ -41,7 +41,6 @@ const Dashboard = () => {
   );
 
   const setUserDomain = useUserStore((state) => state.setUserDomain);
-  const [error, setError] = useState(false);
 
   // Function to sort the videos
   const sortVideos = (videosData) => {
@@ -170,47 +169,60 @@ const Dashboard = () => {
 
   // Function to Get Key from GHL iFrame and Save it in Local Storage
   const postKeyToAPIAndCheckUserId = async () => {
-    const key = await new Promise((resolve) => {
-      window.parent.postMessage({ message: "REQUEST_USER_DATA" }, "*");
-      window.addEventListener("message", ({ data }) => {
-        if (data.message === "REQUEST_USER_DATA_RESPONSE") {
-          resolve(data.payload);
-        } else {
-          resolve(null);
-        }
+    try {
+      const key = await new Promise((resolve) => {
+        window.parent.postMessage({ message: "REQUEST_USER_DATA" }, "*");
+        window.addEventListener("message", ({ data }) => {
+          if (data.message === "REQUEST_USER_DATA_RESPONSE") {
+            resolve(data.payload);
+          } else {
+            resolve(null);
+          }
+        });
       });
-    });
 
-    return key;
+      return key;
+    } catch (error) {
+      console.error("Error fetching key from GHL iFrame: ", error);
+      return null;
+    }
   };
 
-  useEffect(() => {
-    const fetchLibraryData = async () => {
-      setLoading(true);
-
+  const { isPending, isError, error } = useQuery({
+    queryKey: ["libraryData"],
+    queryFn: async () => {
       const key = await postKeyToAPIAndCheckUserId();
+      setLoading(false);
+
+      console.log("Key from GHL iFrame: ", key);
 
       // Send Data to the Backend API to Decrypt the code
       const response = await getDecryptedUserData({ tokenKey: key });
 
       if (!response.success || response.data.accessToken === undefined) {
-        setError(true);
-        return setLoading(false);
+        throw new Error("Failed to fetch access token");
       }
-
-      // Fetch all the Data
-      await fetchData(response.data.accessToken);
 
       // Save the accountId and userLocationId in the Local Storage
       localStorage.setItem("accessToken", response.data.accessToken);
       localStorage.setItem("userLocationId", response.data.user.userLocationId);
 
-      setLoading(false);
-    };
+      // Fetch all the Data
+      return fetchData(response.data.accessToken);
+    },
+  });
 
-    fetchLibraryData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [error]);
+  if (isError) {
+    console.error("Error fetching library data: ", error);
+    toast.error("Error Fetching Library Data", {
+      position: "bottom-right",
+      autoClose: 5000,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+  }
 
   return (
     <LibraryRoot>
@@ -224,7 +236,16 @@ const Dashboard = () => {
 
           <Tabs.Panel value="videos">
             <VideoTabSection heading="Recorded Videos">
-              {videosData && videosData?.recordedVideos?.length > 0 ? (
+              {isPending ? (
+                <VideoTabItemsList>
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <Skeleton
+                      key={index}
+                      className="!rounded-lg !min-w-[250px] !h-[210px]"
+                    />
+                  ))}
+                </VideoTabItemsList>
+              ) : videosData?.recordedVideos?.length > 0 ? (
                 <VideoTabItemsList>
                   {videosData?.recordedVideos?.map((video) => (
                     <VideoTabItem key={video._id} videoData={video} />
@@ -240,7 +261,16 @@ const Dashboard = () => {
               )}
             </VideoTabSection>
             <VideoTabSection heading="Uploaded Videos">
-              {videosData && videosData?.uploadedVideos?.length > 0 ? (
+              {isPending ? (
+                <VideoTabItemsList>
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <Skeleton
+                      key={index}
+                      className="!rounded-lg !min-w-[250px] !h-[210px]"
+                    />
+                  ))}
+                </VideoTabItemsList>
+              ) : videosData?.uploadedVideos?.length > 0 ? (
                 <VideoTabItemsList>
                   {videosData?.uploadedVideos?.map((video) => (
                     <UploadedVideoTabItem key={video._id} videoData={video} />
@@ -259,7 +289,16 @@ const Dashboard = () => {
 
           <Tabs.Panel value="history">
             <HistoryTabSection>
-              {historyData && historyData.length > 0 ? (
+              {isPending ? (
+                <div className="flex flex-col gap-2 w-full">
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <Skeleton
+                      key={index}
+                      className="!rounded-lg !w-full !h-[50px]"
+                    />
+                  ))}
+                </div>
+              ) : historyData.length > 0 ? (
                 <HistoryTableList />
               ) : (
                 <p className="text-center text-gray-500 text-[16px]">
