@@ -193,22 +193,20 @@ const Dashboard = () => {
           });
         });
 
+        console.log("Key from GHL iFrame: ", key);
+
         return key;
       } catch (error) {
         console.error("Error fetching key from GHL iFrame: ", error);
         throw new Error("Failed to fetch key from GHL iFrame");
       }
     },
-    retry: 3,
-    retryDelay: 1000,
   });
 
   const { isPending, isError, error } = useQuery({
     queryKey: ["dashboardData"],
     queryFn: async () => {
       setLoading(false);
-
-      console.log("Key from GHL iFrame: ", userAccessKey);
 
       // Send Data to the Backend API to Decrypt the code
       const response = await getDecryptedUserData({ tokenKey: userAccessKey });
