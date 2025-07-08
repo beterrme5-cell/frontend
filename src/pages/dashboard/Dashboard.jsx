@@ -240,11 +240,13 @@ const Dashboard = () => {
     <LibraryRoot>
       {isPending ? (
         <VideoActionButtons>
-          <h1 className="text-[28px] font-bold ">My Library</h1>
-          <div className="flex items-center gap-[12px]">
-            <Skeleton className="!w-[120px] !h-[40px] !rounded-[6px]" />
-            <Skeleton className="!w-[120px] !h-[40px] !rounded-[6px]" />
-          </div>
+          <header className="flex items-center justify-between">
+            <h1 className="text-[28px] font-bold ">My Library</h1>
+            <div className="flex items-center gap-[12px]">
+              <Skeleton className="!w-[120px] !h-[40px] !rounded-[6px]" />
+              <Skeleton className="!w-[120px] !h-[40px] !rounded-[6px]" />
+            </div>
+          </header>
         </VideoActionButtons>
       ) : (
         <LibraryHeader title="My Library" />
