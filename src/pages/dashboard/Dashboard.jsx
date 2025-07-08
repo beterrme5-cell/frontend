@@ -7,6 +7,7 @@ import {
   LibraryHeader,
   LibraryRoot,
   UploadedVideoTabItem,
+  VideoActionButtons,
   VideoTabItem,
   VideoTabItemsList,
   VideoTabSection,
@@ -237,7 +238,14 @@ const Dashboard = () => {
 
   return (
     <LibraryRoot>
-      <LibraryHeader title="My Library" />
+      {isPending ? (
+        <VideoActionButtons>
+          <Skeleton className="!w-[120px] !h-[40px] !rounded-[6px]" />
+          <Skeleton className="!w-[120px] !h-[40px] !rounded-[6px]" />
+        </VideoActionButtons>
+      ) : (
+        <LibraryHeader title="My Library" />
+      )}
       <LibraryBody>
         <BodyTabsRoot>
           <Tabs.List>

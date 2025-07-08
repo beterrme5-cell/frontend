@@ -340,6 +340,10 @@ export const VideoTabItemsList = ({ children }) => {
   );
 };
 
+export const VideoActionButtons = ({ children }) => {
+  return <div className="flex gap-[12px] ml-auto">{children}</div>;
+};
+
 export const VideoTabItem = ({ videoData }) => {
   // const pagePath = window.location.pathname.split("/")[1];
   const pageLocation = useLocation();
