@@ -25,6 +25,7 @@ import {
 } from "../../assets/icons/DynamicIcons";
 import { useLoadingBackdrop } from "./../../store/loadingBackdrop";
 import copy from "copy-to-clipboard";
+import { useQuery } from "@tanstack/react-query";
 
 // Customn Fonts - Quill Editor
 const FontAttributor = Quill.import("attributors/class/font");
@@ -339,6 +340,7 @@ export const VideoTabItemsList = ({ children }) => {
     </div>
   );
 };
+
 
 export const VideoActionButtons = ({ children }) => {
   return <div className="flex gap-[12px] ml-auto">{children}</div>;
