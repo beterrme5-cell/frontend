@@ -3,25 +3,43 @@ import axios from "axios";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // API to get all videos from the database\
-export const getAllVideos = async (accessToken) => {
-  // Get the accountId and userLocationId from the Local Storage
-  // const accessToken = localStorage.getItem("accessToken");
+// export const getAllVideos = async (accessToken) => {
+//   // Get the accountId and userLocationId from the Local Storage
+//   // const accessToken = localStorage.getItem("accessToken");
+//   try {
+//     const response = await axios.get(`${BASE_URL}/video/getVideosByAccountId`, {
+//       headers: {
+//         Authorization: `Bearer ${accessToken}`,
+//       },
+//     });
+//     return {
+//       success: true,
+//       data: response.data,
+//     };
+//   } catch (error) {
+//     console.error("Error while fetching all videos: ", error);
+//     return {
+//       success: false,
+//       error: error.response?.data?.message || "Could not fetch videos!",
+//     };
+//   }
+// };
+
+export const getAllVideos = async (accessToken, page = 1, limit = 10) => {
   try {
     const response = await axios.get(`${BASE_URL}/video/getVideosByAccountId`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
+      params: {
+        page,
+        limit,
+      },
     });
-    return {
-      success: true,
-      data: response.data,
-    };
+    return response.data;
   } catch (error) {
     console.error("Error while fetching all videos: ", error);
-    return {
-      success: false,
-      error: error.response?.data?.message || "Could not fetch videos!",
-    };
+    throw new Error(error.response?.data?.message || "Could not fetch videos!");
   }
 };
 
@@ -165,16 +183,12 @@ export const getUserDomain = async (accessToken) => {
         Authorization: `Bearer ${accessToken}`,
       },
     });
-    return {
-      success: true,
-      data: response.data,
-    };
+    return response.data;
   } catch (error) {
     console.error("Error while fetching user domain: ", error);
-    return {
-      success: false,
-      error: error.response?.data?.message || "Could not fetch user domain!",
-    };
+    throw new Error(
+      error.response?.data?.message || "Could not fetch user domain!"
+    );
   }
 };
 

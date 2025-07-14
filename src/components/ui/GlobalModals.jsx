@@ -39,6 +39,7 @@ import {
 import { useUserStore } from "../../store/userStore";
 import {
   getContactsBasedOnTags,
+  getCustomFields,
   sendEmailToSelectedContacts,
   sendSMSToSelectedContacts,
 } from "../../api/commsAPIs";
@@ -52,6 +53,8 @@ import {
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
 } from "@heroicons/react/24/outline";
+
+import { getContactTags } from "../../api/commsAPIs";
 
 function quillGetHTML(inputDelta) {
   var tempCont = document.createElement("div");
@@ -86,6 +89,54 @@ const ModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
 const ShareModalRoot = ({ loadingOverlay, showModal, onClose, children }) => {
   const divRef = useRef(null); // Reference to the div
   const [isOverflowing, setIsOverflowing] = useState(false);
+  const accessToken = localStorage.getItem("accessToken");
+
+  const setContactTagsData = useGlobalModals(
+    (state) => state.setContactTagsData
+  );
+  const setCustomFieldsData = useGlobalModals(
+    (state) => state.setCustomFieldsData
+  );
+
+  // Fetch contact tags ===RRRRRRRRRRRRRRRRRRR=================================
+  useEffect(() => {
+    const fetchContactTags = async () => {
+      const response = await getContactTags(accessToken);
+      if (response.success) {
+        setContactTagsData(
+          response.data.userTags.map((tag) => ({
+            key: tag.id,
+            label: tag.name,
+            value: tag.id,
+          }))
+        );
+      }
+    };
+    fetchContactTags();
+  }, [accessToken, setContactTagsData]);
+  useEffect(() => {
+    const fetchCustomFields = async () => {
+      const customFieldsResponse = await getCustomFields(accessToken);
+      if (customFieldsResponse.success)
+        setCustomFieldsData(customFieldsResponse.data.customFields || []);
+      if (!customFieldsResponse.success) {
+        toast.error(
+          customFieldsResponse.error || "Error Fetching Custom Fields",
+          {
+            position: "bottom-right",
+            autoClose: 5000,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          }
+        );
+      }
+    };
+    fetchCustomFields();
+  }, [accessToken, setContactTagsData]);
+
+  // ============================================================================
 
   useEffect(() => {
     if (divRef.current) {

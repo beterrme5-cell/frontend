@@ -77,17 +77,12 @@ export const getHistoryOfMessages = async (accessToken) => {
         Authorization: `Bearer ${accessToken}`,
       },
     });
-    return {
-      success: true,
-      data: response.data,
-    };
+    return response.data.histories;
   } catch (error) {
     console.error("Error while getting History of Messages: ", error);
-    return {
-      success: false,
-      error:
-        error.response?.data?.message || "Could not get Messages' History!",
-    };
+    throw new Error(
+      error.response?.data?.message || "Could not fetch user domain!"
+    );
   }
 };
 
