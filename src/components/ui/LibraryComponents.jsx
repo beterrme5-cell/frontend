@@ -1,10 +1,11 @@
-import { Menu, Tabs, Table, CopyButton, Divider } from "@mantine/core";
+import { Menu, Tabs, Table, Divider } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
 import { Link, useLocation } from "react-router-dom";
 import {
   forwardRef,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -25,7 +26,6 @@ import {
 } from "../../assets/icons/DynamicIcons";
 import { useLoadingBackdrop } from "./../../store/loadingBackdrop";
 import copy from "copy-to-clipboard";
-import { useQuery } from "@tanstack/react-query";
 
 // Customn Fonts - Quill Editor
 const FontAttributor = Quill.import("attributors/class/font");
@@ -236,7 +236,7 @@ export const StartRecordingBtn = ({
           const response = await saveRecordedVideo(videoData);
 
           if (response.success) {
-            // Directly add the new video at the beginning of the array
+            // // Directly add the new video at the beginning of the array
             const updatedVideosData = [
               response.data.video,
               ...videosData.recordedVideos,
@@ -247,6 +247,7 @@ export const StartRecordingBtn = ({
               ...videosData,
               recordedVideos: updatedVideosData,
             });
+            console.log("Video saved successfully:", response);
           } else {
             console.error(
               "Error saving video to Database:",
@@ -316,9 +317,9 @@ export const LibraryBody = ({ children }) => {
   return <section className="mt-[24px]">{children}</section>;
 };
 
-export const BodyTabsRoot = ({ children }) => {
+export const BodyTabsRoot = ({ children, value, onChange }) => {
   return (
-    <Tabs color="#2A85FF" defaultValue="videos">
+    <Tabs color="#2A85FF" value={value} onChange={onChange}>
       {children}
     </Tabs>
   );
@@ -341,14 +342,13 @@ export const VideoTabItemsList = ({ children }) => {
   );
 };
 
-
 export const VideoActionButtons = ({ children }) => {
   return <div className="flex gap-[12px] ml-auto">{children}</div>;
 };
 
 export const VideoTabItem = ({ videoData }) => {
   // const pagePath = window.location.pathname.split("/")[1];
-  const pageLocation = useLocation();
+  // const pageLocation = useLocation();
 
   const setIsDeleteVideoModalOpen = useGlobalModals(
     (state) => state.setIsDeleteVideoModalOpen
@@ -577,68 +577,18 @@ export const HistoryTabSection = ({ children }) => {
   );
 };
 
-export const HistoryTableList = () => {
-  const historyData = useUserStore((state) => state.historyData);
-
-  // Sort the history data such that the most recent history is at the top
-  const sortedHistoryData = historyData.sort((a, b) => {
-    return new Date(b.createdAt) - new Date(a.createdAt);
-  });
-
-  const rows = sortedHistoryData.map((element) => {
-    const formattedDate = Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true,
-    }).format(new Date(element?.createdAt));
-
-    return (
-      <Table.Tr key={element._id}>
-        <Table.Td className=" text-[14px] font-medium">
-          {element?.uploadedVideoName}
-        </Table.Td>
-        <Table.Td className=" text-[14px] font-medium capitalize">
-          {(() => {
-            if (!element?.contactName) return "";
-
-            // Split the name into parts
-            const nameParts = element?.contactName
-              ?.split(" ")
-              ?.filter((part) => part?.toLowerCase() !== "null");
-
-            // Join the valid parts back or return an empty string if nothing is left
-            return nameParts.length > 0 ? nameParts?.join(" ") : "";
-          })()}
-        </Table.Td>
-        <Table.Td className=" text-[14px] font-medium">
-          {element?.contactAddress}
-        </Table.Td>
-        <Table.Td className=" text-[14px] font-medium">
-          {element?.sendType}
-        </Table.Td>
-        <Table.Td className=" text-[14px] font-medium">
-          {element?.subject}
-        </Table.Td>
-        <Table.Td className=" text-[14px] font-medium">
-          {formattedDate}
-        </Table.Td>
-        <Table.Td>
-          <div
-            className={`${
-              element?.status === "sent"
-                ? "text-[#5AA63F] bg-[rgba(90,166,63,0.14)]"
-                : "text-[#FF613E] bg-[rgba(255,97,62,0.14)]"
-            } uppercase text-center text-[12px] font-medium py-[4px] px-[8px] rounded-[2px] w-fit`}
-          >
-            {element?.status}
-          </div>
-        </Table.Td>
-      </Table.Tr>
+//===============================================================
+export const HistoryTableList = ({ historyData = [] }) => {
+  const sortedHistoryData = useMemo(() => {
+    return [...historyData].sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
     );
-  });
+  }, [historyData]);
+
+  // Then in HistoryTableList:
+  const rows = sortedHistoryData.map((element) => (
+    <HistoryRow key={element._id} element={element} />
+  ));
   return (
     <Table
       striped
@@ -663,6 +613,60 @@ export const HistoryTableList = () => {
     </Table>
   );
 };
+const HistoryRow = ({ element }) => {
+  const formattedDate = Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
+  }).format(new Date(element?.createdAt));
+
+  return (
+    <Table.Tr key={element._id}>
+      <Table.Td className=" text-[14px] font-medium">
+        {element?.uploadedVideoName}
+      </Table.Td>
+      <Table.Td className=" text-[14px] font-medium capitalize">
+        {(() => {
+          if (!element?.contactName) return "";
+
+          // Split the name into parts
+          const nameParts = element?.contactName
+            ?.split(" ")
+            ?.filter((part) => part?.toLowerCase() !== "null");
+
+          // Join the valid parts back or return an empty string if nothing is left
+          return nameParts.length > 0 ? nameParts?.join(" ") : "";
+        })()}
+      </Table.Td>
+      <Table.Td className=" text-[14px] font-medium">
+        {element?.contactAddress}
+      </Table.Td>
+      <Table.Td className=" text-[14px] font-medium">
+        {element?.sendType}
+      </Table.Td>
+      <Table.Td className=" text-[14px] font-medium">
+        {element?.subject}
+      </Table.Td>
+      <Table.Td className=" text-[14px] font-medium">{formattedDate}</Table.Td>
+      <Table.Td>
+        <div
+          className={`${
+            element?.status === "sent"
+              ? "text-[#5AA63F] bg-[rgba(90,166,63,0.14)]"
+              : "text-[#FF613E] bg-[rgba(255,97,62,0.14)]"
+          } uppercase text-center text-[12px] font-medium py-[4px] px-[8px] rounded-[2px] w-fit`}
+        >
+          {element?.status}
+        </div>
+      </Table.Td>
+    </Table.Tr>
+  );
+};
+
+//================================================================
 
 export const TextEditor = forwardRef(
   ({ onTextChange, editorContent, setEditorContent }, ref) => {
