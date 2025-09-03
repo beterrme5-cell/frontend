@@ -1,6 +1,6 @@
 import { Menu, Tabs, Table, Divider } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import {
   forwardRef,
   useEffect,
@@ -160,6 +160,7 @@ export const StartRecordingBtn = ({
   const LOOM_APP_ID = "a0b41709-338e-4393-8090-cb7ed475e127";
 
   const setLoading = useLoadingBackdrop((state) => state.setLoading);
+  const { accessToken } = useParams();
 
   const [loomJWS, setLoomJWS] = useState("");
 
@@ -233,7 +234,7 @@ export const StartRecordingBtn = ({
           shareableLink: LoomVideo.sharedUrl || "",
         };
         try {
-          const response = await saveRecordedVideo(videoData);
+          const response = await saveRecordedVideo({ videoData, accessToken });
 
           if (response.success) {
             // // Directly add the new video at the beginning of the array

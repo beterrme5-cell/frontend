@@ -139,7 +139,7 @@ const Dashboard = () => {
 
   // Main data query
   const { data, isPending, isError, error } = useQuery({
-    queryKey: ["dashboardData"],
+    queryKey: ["dashboardData", userAccessKey],
     queryFn: async () => {
       setLoading(false);
       const response = await getDecryptedUserData({ tokenKey: userAccessKey });
