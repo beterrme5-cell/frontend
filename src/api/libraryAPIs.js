@@ -220,3 +220,52 @@ export const updateUserDomain = async ({ domain, showPopupAgain }) => {
     };
   }
 };
+
+export const getSignedUrl = async (fileName, fileType) => {
+  console.log("Get Signed URL called", fileName, fileType);
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/video/getSignedUrl`,
+      {
+        fileName: fileName,
+        fileType: fileType,
+      },
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    console.log("Get Signed URL response", response);
+    return response;
+  } catch (error) {
+    console.error("Error while getting presigned url: ", error);
+    throw new Error(
+      error.response?.data?.message || "Could not get presigned URL!"
+    );
+  }
+};
+
+//API to save custome recorded Video
+export const saveCustomRecordedVideo = async ({ videoData, accessToken }) => {
+  // const accessToken = localStorage.getItem("accessToken");
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/video/saveCustomNewVideo`,
+      videoData,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    return {
+      success: true, // Corrected typo here
+      data: response.data,
+    };
+  } catch (error) {
+    console.error("Error while saving custome recorded video: ", error);
+    return {
+      success: false,
+      error: error.response?.data?.message || "Could not save custom video!",
+    };
+  }
+};

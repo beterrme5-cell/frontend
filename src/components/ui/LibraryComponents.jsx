@@ -26,6 +26,7 @@ import {
 } from "../../assets/icons/DynamicIcons";
 import { useLoadingBackdrop } from "./../../store/loadingBackdrop";
 import copy from "copy-to-clipboard";
+import VideoRecorder from "./VideoRecorder";
 
 // Customn Fonts - Quill Editor
 const FontAttributor = Quill.import("attributors/class/font");
@@ -76,11 +77,12 @@ export const LibraryHeader = ({ title }) => {
         >
           Upload Video
         </button>
-        {pageLocation.pathname.split("/")[1] === "recordings" ? (
+        {/* {pageLocation.pathname.split("/")[1] === "recordings" ? (
           <RecordLoomVideoBtn />
         ) : (
           <NewRecordingBtn />
-        )}
+        )} */}
+        <VideoRecorder />
       </div>
     </header>
   );
@@ -348,8 +350,9 @@ export const VideoActionButtons = ({ children }) => {
 };
 
 export const VideoTabItem = ({ videoData }) => {
-  // const pagePath = window.location.pathname.split("/")[1];
-  // const pageLocation = useLocation();
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const CLOUDFRONT_BASE = "https://d27zhkbo74exx9.cloudfront.net";
 
   const setIsDeleteVideoModalOpen = useGlobalModals(
     (state) => state.setIsDeleteVideoModalOpen
@@ -371,28 +374,80 @@ export const VideoTabItem = ({ videoData }) => {
   );
 
   return (
-    <div className="flex flex-col border border-[#CFCED4] rounded-[16px] relative min-w-[250px] h-[210px] overflow-hidden hover:cursor-pointer">
-      <div className={`h-[160px] relative`}>
-        {videoData?.embeddedLink && (
+    <div
+      className="flex flex-col border border-[#CFCED4] rounded-[16px] relative min-w-[250px] h-[210px] overflow-hidden hover:cursor-pointer group"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className="h-[160px] relative bg-black">
+        {/* Embedded video (Loom or YouTube, etc.) */}
+        {videoData?.embeddedLink ? (
           <iframe
             width="100%"
             height="100%"
-            src={videoData?.embeddedLink}
+            src={videoData.embeddedLink}
             allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
           ></iframe>
-        )}
-        {!videoData?.embeddedLink && (
-          <img
-            src="./imagePlaceholder.jpeg"
-            alt="Video Thumbnail"
-            className="w-full h-full object-cover"
-          />
+        ) : (
+          <>
+            {/* If not playing yet → show thumbnail with play overlay */}
+            {!isPlaying ? (
+              <div
+                className="relative w-full h-full"
+                onClick={() => setIsPlaying(true)}
+              >
+                {/* Show GIF on hover, thumbnail by default */}
+                <img
+                  src={
+                    videoData?.gifKey && isHovered
+                      ? `${CLOUDFRONT_BASE}/${videoData.gifKey}`
+                      : videoData?.thumbnailKey
+                      ? `${CLOUDFRONT_BASE}/${videoData.thumbnailKey}`
+                      : "./imagePlaceholder.jpeg"
+                  }
+                  alt="Video Thumbnail"
+                  className="w-full h-full object-cover"
+                />
+
+                {/* Show duration on top right when hovering */}
+                {isHovered && videoData?.duration && (
+                  <div className="absolute top-2 left-2 bg-black/90 text-white px-2 py-1 rounded-md text-xs font-medium">
+                    {videoData.duration}
+                  </div>
+                )}
+                {/* Play button overlay */}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-all duration-300 group-hover:bg-black/40">
+                  <div className="w-[48px] h-[48px] bg-white rounded-full flex items-center justify-center shadow-md">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="black"
+                      viewBox="0 0 24 24"
+                      width="28"
+                      height="28"
+                    >
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Actual video player */
+              <video
+                src={`${CLOUDFRONT_BASE}/${videoData.videoKey}`}
+                className="w-full h-full object-cover"
+                controls
+                autoPlay
+              />
+            )}
+          </>
         )}
 
+        {/* Share Button */}
         <button
-          className="absolute top-[8px] right-[8px] cursor-pointer bg-primary rounded-full p-[4px_8px] hover:cursor-pointer flex gap-[4px] items-center text-white"
-          onClick={() => {
+          className="absolute top-[8px] right-[8px] cursor-pointer bg-primary rounded-full p-[4px_8px] hover:cursor-pointer flex gap-[4px] items-center text-white z-10"
+          onClick={(e) => {
+            e.stopPropagation();
             setVideoToBeShared(videoData);
             setIsShareVideoModalOpen(true);
           }}
@@ -401,6 +456,8 @@ export const VideoTabItem = ({ videoData }) => {
           <SHAREVIDEO_ICON />
         </button>
       </div>
+
+      {/* Bottom Section */}
       <div className="flex-grow px-[16px] py-[12px] flex items-center justify-between gap-[10px] border-t border-t-[#CFCED4]">
         <Link
           to={`video-detail/${videoData._id}`}
@@ -408,6 +465,7 @@ export const VideoTabItem = ({ videoData }) => {
         >
           {videoData.title}
         </Link>
+
         <Menu
           shadow="md"
           width={150}
@@ -416,13 +474,8 @@ export const VideoTabItem = ({ videoData }) => {
           radius={12}
           offset={-5}
           styles={{
-            menu: {
-              padding: "8px 12px !important",
-            },
-            itemLabel: {
-              fontSize: "14px",
-              fontWeight: 500,
-            },
+            menu: { padding: "8px 12px !important" },
+            itemLabel: { fontSize: "14px", fontWeight: 500 },
           }}
         >
           <Menu.Target>
@@ -430,25 +483,12 @@ export const VideoTabItem = ({ videoData }) => {
               <VIDEO_OPTIONS_ICON />
             </div>
           </Menu.Target>
-          <Menu.Dropdown>
-            {/* {pageLocation.pathname.split("/")[1] === "recordings" && (
-              <Menu.Item>
-                <CopyButton value={videoData?.shareableLink}>
-                  {({ copy }) => (
-                    <div onClick={copy} className="flex items-center gap-[8px]">
-                      <COPY_ICON className="text-black" />
-                      <p className="text-[14px] font-medium">Copy Link</p>
-                    </div>
-                  )}
-                </CopyButton>
-              </Menu.Item>
-            )} */}
 
+          <Menu.Dropdown>
             <Menu.Item>
               <div
                 onClick={() => {
                   copy(videoData?.shareableLink);
-                  // You might want to show some feedback that the copy succeeded
                   console.log("Shareable link:", videoData?.shareableLink);
                 }}
                 className="flex items-center gap-[8px]"
@@ -458,16 +498,6 @@ export const VideoTabItem = ({ videoData }) => {
               </div>
             </Menu.Item>
 
-            {/* <Menu.Item>
-              <CopyButton value={videoData?.shareableLink}>
-                {({ copy }) => (
-                  <div onClick={copy} className="flex items-center gap-[8px]">
-                    <COPY_ICON className="text-black" />
-                    <p className="text-[14px] font-medium">Copy Link</p>
-                  </div>
-                )}
-              </CopyButton>
-            </Menu.Item> */}
             <Menu.Item
               leftSection={<SHARE_ICON className="text-black" />}
               onClick={() => {
@@ -477,6 +507,7 @@ export const VideoTabItem = ({ videoData }) => {
             >
               Share
             </Menu.Item>
+
             <Menu.Item
               leftSection={<EDIT_ICON className="text-black" />}
               onClick={() => {
@@ -486,6 +517,7 @@ export const VideoTabItem = ({ videoData }) => {
             >
               Edit
             </Menu.Item>
+
             <Menu.Item
               color="red"
               leftSection={<DELETE_ICON className="text-[#FF0000]" />}
