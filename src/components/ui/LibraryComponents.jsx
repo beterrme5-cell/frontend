@@ -411,7 +411,7 @@ export const VideoTabItem = ({ videoData }) => {
                 />
 
                 {/* Show duration on top right when hovering */}
-                {isHovered && videoData?.duration && (
+                {videoData?.duration && (
                   <div className="absolute top-2 left-2 bg-black/90 text-white px-2 py-1 rounded-md text-xs font-medium">
                     {videoData.duration}
                   </div>
