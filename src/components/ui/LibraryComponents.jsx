@@ -354,6 +354,10 @@ export const VideoTabItem = ({ videoData }) => {
   const [isHovered, setIsHovered] = useState(false);
   const CLOUDFRONT_BASE = "https://d27zhkbo74exx9.cloudfront.net";
 
+  if (videoData.captionKey) {
+    console.log(videoData.captionKey);
+  }
+
   const setIsDeleteVideoModalOpen = useGlobalModals(
     (state) => state.setIsDeleteVideoModalOpen
   );
@@ -438,7 +442,15 @@ export const VideoTabItem = ({ videoData }) => {
                 className="w-full h-full object-cover"
                 controls
                 autoPlay
-              />
+              >
+                <track
+                  kind="subtitles"
+                  src={`${CLOUDFRONT_BASE}/${videoData.captionKey}`}
+                  srcLang="en"
+                  label="English"
+                  default
+                />
+              </video>
             )}
           </>
         )}
