@@ -442,10 +442,12 @@ export const VideoTabItem = ({ videoData }) => {
                 className="w-full h-full object-cover"
                 controls
                 autoPlay
+                crossOrigin="anonymous"
               >
                 <track
                   kind="subtitles"
                   src={`${CLOUDFRONT_BASE}/${videoData.captionKey}`}
+                  // src="/test.vtt"
                   srcLang="en"
                   label="English"
                   default
