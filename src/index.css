@@ -325,6 +325,55 @@ span .em-lns-1do042d {
   background-color: transparent !important;
 }
 
+/* Custom Video Player Menu Scrollbar */
+.mantine-Menu-dropdown::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.mantine-Menu-dropdown::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 3px !important;
+}
+
+.mantine-Menu-dropdown::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3) !important;
+  border-radius: 3px !important;
+}
+
+.mantine-Menu-dropdown::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Custom Video Player Menu Item Hover - Ensure readability */
+.mantine-Menu-item[data-hovered],
+.mantine-Menu-item:hover {
+  background-color: #2a85ff !important;
+  color: white !important;
+}
+
+.mantine-Menu-item {
+  color: white !important;
+}
+
+/* Ensure menu portal renders correctly in fullscreen */
+.mantine-Menu-dropdown {
+  z-index: 99999 !important;
+}
+
+/* Ensure menu is not clipped by parent overflow */
+body > [data-portal] .mantine-Menu-dropdown {
+  z-index: 99999 !important;
+}
+
+/* Fullscreen menu positioning */
+:fullscreen .mantine-Menu-dropdown,
+:-webkit-full-screen .mantine-Menu-dropdown,
+:-moz-full-screen .mantine-Menu-dropdown,
+:-ms-fullscreen .mantine-Menu-dropdown {
+  z-index: 99999 !important;
+  position: fixed !important;
+}
+
 /* Customization of the MultiSelect */
 .css-13cymwt-control {
   min-height: 50px !important;
