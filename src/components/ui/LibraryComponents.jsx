@@ -836,6 +836,7 @@ export const VideoTabItem = ({ videoData }) => {
 
                       {/* Three Dot Menu - Captions & Playback Speed */}
                       <Menu
+                        className="video-menu"
                         shadow="md"
                         width={180}
                         position={isFullscreen ? "bottom-start" : "top-end"}
