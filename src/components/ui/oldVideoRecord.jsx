@@ -340,20 +340,7 @@ function VideoRecorder() {
     }
   };
 
-  const handleStartSetup = () => {
-    setStep("name-input"); // NEW: Show name input first
-  };
-
-  const handleContinueFromNameInput = async () => {
-    if (!videoTitle.trim()) {
-      setTitleError("Video title cannot be empty");
-      return;
-    }
-
-    // Clear error and proceed to setup
-    setTitleError("");
-
-    // Now check permissions and start setup
+  const handleStartSetup = async () => {
     const hasPermissions = await checkMediaPermissions();
     if (!hasPermissions) return;
 
@@ -386,40 +373,6 @@ function VideoRecorder() {
       );
     }
   };
-
-  // const handleStartSetup = async () => {
-  //   const hasPermissions = await checkMediaPermissions();
-  //   if (!hasPermissions) return;
-
-  //   try {
-  //     const camStream = await navigator.mediaDevices.getUserMedia({
-  //       video: true,
-  //       audio: true,
-  //     });
-  //     const hasVideo = camStream.getVideoTracks().length > 0;
-  //     const hasAudio = camStream.getAudioTracks().length > 0;
-  //     if (!hasVideo || !hasAudio) {
-  //       alert(
-  //         `Warning: ${!hasVideo ? "Camera" : ""}${
-  //           !hasVideo && !hasAudio ? " and " : ""
-  //         }${!hasAudio ? "Microphone" : ""} access was not granted.`
-  //       );
-  //     }
-  //     camStreamRef.current = camStream;
-  //     setStep("setup");
-  //     setTimeout(() => {
-  //       if (videoPreviewRef.current) {
-  //         videoPreviewRef.current.srcObject = camStream;
-  //         videoPreviewRef.current.play();
-  //       }
-  //     }, 100);
-  //   } catch (err) {
-  //     console.error("Media error:", err);
-  //     alert(
-  //       `Camera or mic permission denied: ${err.message}\n\nTo enable permissions:\n1. Go to browser settings.\n2. Find Privacy or Security.\n3. Allow camera and microphone access for this site.`
-  //     );
-  //   }
-  // };
 
   const startRecording = async () => {
     const hasPermissions = await checkMediaPermissions();
@@ -757,11 +710,22 @@ function VideoRecorder() {
     setUploadProgress(0);
   };
 
-  // const handleContinueReview = () => {
-  //   setStep("rename");
-  // };
-  const handleContinueReview = async () => {
-    // Go directly to uploading (skip rename step)
+  const handleContinueReview = () => {
+    setStep("rename");
+  };
+
+  const handleContinueRename = async () => {
+    if (!videoTitle.trim()) {
+      setTitleError("Video title cannot be empty");
+      return;
+    }
+
+    if (!recordedBlob) {
+      console.error("No recorded blob found!");
+      setTitleError("No video recorded. Please try again.");
+      return;
+    }
+
     setStep("uploading");
     setUploadProgress(0);
 
@@ -786,13 +750,17 @@ function VideoRecorder() {
         },
       });
 
-      // Step 3: Create metadata object
+      // Step 3: Create metadata object - Convert to human readable format
       const formattedDuration = formatDurationForDisplay(elapsedMs);
+      console.log("Duration:", elapsedMs + "ms -> " + formattedDuration);
+
+      // Step 3: Create metadata object
       const videoData = {
         title: videoTitle,
         key: key,
-        duration: formattedDuration,
+        duration: formattedDuration, // Now sending as string like "1m 34s"
       };
+      console.log("Video metadata to save:", videoData);
 
       const response2 = await saveCustomRecordedVideo({
         videoData,
@@ -803,85 +771,20 @@ function VideoRecorder() {
         setUploadProgress(100);
         setStep("upload-success");
       }
+
+      // Step 4: Send metadata to backend
+      // await axios.post(`${BASE_URL}/video/save-video`, videoData, {
+      //   headers: { "Content-Type": "application/json" },
+      // });
+
+      // Step 5: Show success and close
     } catch (error) {
       console.error("Upload failed:", error);
-      alert(error.response?.data?.message || "Upload failed!");
-      setStep("review"); // Go back to review on error
+      setTitleError(error.response?.data?.message || "Upload failed!");
+      setStep("rename");
       setUploadProgress(0);
     }
   };
-
-  // const handleContinueRename = async () => {
-  //   if (!videoTitle.trim()) {
-  //     setTitleError("Video title cannot be empty");
-  //     return;
-  //   }
-
-  //   if (!recordedBlob) {
-  //     console.error("No recorded blob found!");
-  //     setTitleError("No video recorded. Please try again.");
-  //     return;
-  //   }
-
-  //   setStep("uploading");
-  //   setUploadProgress(0);
-
-  //   try {
-  //     // Step 1: Get presigned URL from backend
-  //     const response = await getSignedUrl(`${videoTitle}.webm`, "video/webm");
-  //     const { url, key } = response.data;
-  //     setFreshVideoKey(key);
-
-  //     // Step 2: Upload video to S3
-  //     await axios.put(url, recordedBlob, {
-  //       headers: {
-  //         "Content-Type": "video/webm",
-  //       },
-  //       onUploadProgress: (progressEvent) => {
-  //         if (progressEvent.total) {
-  //           const percentCompleted = Math.round(
-  //             (progressEvent.loaded * 100) / progressEvent.total
-  //           );
-  //           setUploadProgress(percentCompleted);
-  //         }
-  //       },
-  //     });
-
-  //     // Step 3: Create metadata object - Convert to human readable format
-  //     const formattedDuration = formatDurationForDisplay(elapsedMs);
-  //     console.log("Duration:", elapsedMs + "ms -> " + formattedDuration);
-
-  //     // Step 3: Create metadata object
-  //     const videoData = {
-  //       title: videoTitle,
-  //       key: key,
-  //       duration: formattedDuration, // Now sending as string like "1m 34s"
-  //     };
-  //     console.log("Video metadata to save:", videoData);
-
-  //     const response2 = await saveCustomRecordedVideo({
-  //       videoData,
-  //       accessToken,
-  //     });
-
-  //     if (response2.success) {
-  //       setUploadProgress(100);
-  //       setStep("upload-success");
-  //     }
-
-  //     // Step 4: Send metadata to backend
-  //     // await axios.post(`${BASE_URL}/video/save-video`, videoData, {
-  //     //   headers: { "Content-Type": "application/json" },
-  //     // });
-
-  //     // Step 5: Show success and close
-  //   } catch (error) {
-  //     console.error("Upload failed:", error);
-  //     setTitleError(error.response?.data?.message || "Upload failed!");
-  //     setStep("rename");
-  //     setUploadProgress(0);
-  //   }
-  // };
 
   const handleUploadSuccessClose = () => {
     handleCancel();
@@ -968,62 +871,7 @@ function VideoRecorder() {
           Record Custom Video
         </button>
       )}
-
-      {step === "name-input" && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-8 w-[650px] max-w-[95vw] flex flex-col gap-6 shadow-2xl border border-gray-200">
-            <div className="text-left mb-2">
-              <h2 className="text-2xl font-bold text-gray-800">
-                New Video Record
-              </h2>
-            </div>
-
-            <label className="flex flex-col">
-              <span className=" font-semibold text-gray-700">
-                Recording Name
-              </span>
-              <p className="text-xs font-semibold text-gray-500 mb-2">
-                Name must be at least 3 characters long
-              </p>
-              <input
-                type="text"
-                value={videoTitle}
-                onChange={(e) => {
-                  setVideoTitle(e.target.value);
-                  setTitleError("");
-                }}
-                placeholder="Enter a title for your video..."
-                className={`p-3 w-full text-base rounded-lg border ${
-                  titleError ? "border-red-500" : "border-gray-300"
-                } bg-white shadow-sm focus:outline-none focus:ring-2 ${
-                  titleError ? "focus:ring-red-500" : "focus:ring-blue-500"
-                } transition-all`}
-              />
-              {titleError && (
-                <p className="text-red-500 text-sm mt-2 font-medium">
-                  {titleError}
-                </p>
-              )}
-            </label>
-
-            <div className="flex gap-3">
-              <button
-                onClick={handleContinueFromNameInput}
-                className="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-              >
-                Continue
-              </button>
-              <button
-                onClick={handleCancel}
-                className="flex-1 px-6 py-3 bg-white text-gray-700 font-semibold border-2 border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {(step === "setup" || step === "review") && (
+      {(step === "setup" || step === "review" || step === "rename") && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl p-8 w-[960px] max-w-[95vw] flex flex-col gap-6 shadow-2xl border border-gray-200">
             {step === "setup" && (
@@ -1137,6 +985,64 @@ function VideoRecorder() {
                 <div className="flex gap-3 mt-2">
                   <button
                     onClick={handleContinueReview}
+                    className="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                  >
+                    Continue
+                  </button>
+                  <button
+                    onClick={handleCancel}
+                    className="flex-1 px-6 py-3 bg-white text-gray-700 font-semibold border-2 border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </>
+            )}
+            {step === "rename" && (
+              <>
+                <div className="text-center mb-2">
+                  <h2 className="text-2xl font-bold text-gray-800">
+                    Name Your Video
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Give your video a descriptive title
+                  </p>
+                </div>
+                <div className="relative rounded-xl overflow-hidden shadow-lg border border-gray-300">
+                  {/* FINAL RECORDED VIDEO - NO CAMERA BUBBLE, NO CONTROLS */}
+                  <video
+                    src={recordedUrl}
+                    controls
+                    className="w-full h-[400px] bg-gray-900"
+                  />
+                </div>
+                <label className="flex flex-col mt-2">
+                  <span className="text-sm font-semibold text-gray-700 mb-2">
+                    Video Title
+                  </span>
+                  <input
+                    type="text"
+                    value={videoTitle}
+                    onChange={(e) => {
+                      setVideoTitle(e.target.value);
+                      setTitleError("");
+                    }}
+                    placeholder="Enter a title for your video..."
+                    className={`p-3 w-full text-base rounded-lg border ${
+                      titleError ? "border-red-500" : "border-gray-300"
+                    } bg-white shadow-sm focus:outline-none focus:ring-2 ${
+                      titleError ? "focus:ring-red-500" : "focus:ring-blue-500"
+                    } transition-all`}
+                  />
+                  {titleError && (
+                    <p className="text-red-500 text-sm mt-2 font-medium">
+                      {titleError}
+                    </p>
+                  )}
+                </label>
+                <div className="flex gap-3 mt-2">
+                  <button
+                    onClick={handleContinueRename}
                     className="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transform hover:scale-105 transition-all duration-200"
                   >
                     Continue

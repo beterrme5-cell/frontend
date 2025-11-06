@@ -2187,6 +2187,25 @@ export const SMSTextEditor = forwardRef(
     });
 
     // Helper function to get video content based on schema (same as TextEditor)
+    // const getVideoContent = () => {
+    //   const CLOUDFRONT_BASE = "https://d27zhkbo74exx9.cloudfront.net";
+    //   const isNewSchema = videoToBeShared?.videoKey;
+
+    //   let videoLink;
+
+    //   if (isNewSchema) {
+    //     // NEW SCHEMA: Use clickable link with title
+    //     const title = videoToBeShared?.title || "Watch Video";
+    //     videoLink = `${title}: ${CLOUDFRONT_BASE}/${videoToBeShared.videoKey}`;
+    //   } else {
+    //     // OLD SCHEMA: Use shareableLink
+    //     videoLink = videoToBeShared?.shareableLink || "";
+    //   }
+
+    //   return { videoLink, isNewSchema };
+    // };
+
+    // Helper function to get video content based on schema
     const getVideoContent = () => {
       const CLOUDFRONT_BASE = "https://d27zhkbo74exx9.cloudfront.net";
       const isNewSchema = videoToBeShared?.videoKey;
@@ -2194,9 +2213,11 @@ export const SMSTextEditor = forwardRef(
       let videoLink;
 
       if (isNewSchema) {
-        // NEW SCHEMA: Use clickable link with title
-        const title = videoToBeShared?.title || "Watch Video";
-        videoLink = `${title}: ${CLOUDFRONT_BASE}/${videoToBeShared.videoKey}`;
+        // For SMS: Use the GIF/teaser URL directly
+        // SMS carriers will automatically show thumbnail and make it clickable
+        videoLink = `${CLOUDFRONT_BASE}/${
+          videoToBeShared?.gifKey || videoToBeShared?.teaserKey
+        }`;
       } else {
         // OLD SCHEMA: Use shareableLink
         videoLink = videoToBeShared?.shareableLink || "";

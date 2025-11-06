@@ -676,14 +676,27 @@ export const ShareVideoModal = () => {
   //     selectedContactTags: [],
   //   },
 
+  // const smsForm = useForm({
+  //   initialValues: {
+  //     smsContent: isUsingNewSchema
+  //       ? `\n\n<a href="${CLOUDFRONT_BASE}/${
+  //           videoToBeShared?.videoKey
+  //         }"><img src="${CLOUDFRONT_BASE}/${
+  //           videoToBeShared?.gifKey || videoToBeShared?.teaserKey
+  //         }" alt="Video Preview" /></a>`
+  //       : videoToBeShared?.shareableLink
+  //       ? `\n\n${videoToBeShared.shareableLink}`
+  //       : "",
+  //     selectedSMSContacts: [],
+  //     selectedContactTags: [],
+  //   },
+
   const smsForm = useForm({
     initialValues: {
       smsContent: isUsingNewSchema
-        ? `\n\n<a href="${CLOUDFRONT_BASE}/${
-            videoToBeShared?.videoKey
-          }"><img src="${CLOUDFRONT_BASE}/${
-            videoToBeShared?.gifKey || videoToBeShared?.teaserKey
-          }" alt="Video Preview" /></a>`
+        ? `\n\n${CLOUDFRONT_BASE}/${
+            videoToBeShared?.videoKey || videoToBeShared?.teaserKey
+          }`
         : videoToBeShared?.shareableLink
         ? `\n\n${videoToBeShared.shareableLink}`
         : "",
