@@ -51,6 +51,11 @@ export const useGlobalModals = create((set) => ({
   setVideoToBeShared: (video) => set({ videoToBeShared: video }),
   isShareVideoModalOpen: false,
   setIsShareVideoModalOpen: (isOpen) => set({ isShareVideoModalOpen: isOpen }),
+
+  // ADD THESE TWO LINES FOR ACTIVE TAB CONTROL
+  activeTab: "email", // default tab
+  setActiveTab: (tab) => set({ activeTab: tab }),
+
   isContactsSelectionModalOpen: false,
   setIsContactsSelectionModalOpen: (isOpen) =>
     set({ isContactsSelectionModalOpen: isOpen }),

@@ -583,6 +583,8 @@ export const EditVideoModal = () => {
 
 // Modal to share the video
 export const ShareVideoModal = () => {
+  const CLOUDFRONT_BASE = "https://d27zhkbo74exx9.cloudfront.net";
+
   const pagePath = window.location.pathname.split("/")[1];
 
   const modalLoadingOverlay = useGlobalModals(
@@ -602,6 +604,21 @@ export const ShareVideoModal = () => {
   const setHistoryData = useUserStore((state) => state.setHistoryData);
 
   const videoToBeShared = useGlobalModals((state) => state.videoToBeShared);
+  console.log("Video to be shared: ", videoToBeShared);
+
+  // Check if video has videoKey (new schema) and store in variable
+  const isNewSchema = videoToBeShared?.videoKey ? true : false;
+
+  const [isUsingNewSchema, setIsUsingNewSchema] = useState(isNewSchema);
+
+  // Get activeTab from global state
+  const activeTab = useGlobalModals((state) => state.activeTab);
+  const setActiveTab = useGlobalModals((state) => state.setActiveTab);
+
+  // const setTabToOpen = useGlobalModals((state) => state.setActiveTab);
+
+  // Use the variable wherever needed
+  console.log("Is using new schema:", isNewSchema);
 
   const contactTagsData = useGlobalModals((state) => state.contactTagsData);
 
@@ -616,7 +633,6 @@ export const ShareVideoModal = () => {
     (state) => state.setOpenContactsLinkedWithTagsModal
   );
 
-  const [activeTab, setActiveTab] = useState("email");
   const [activeSubTab, setActiveSubTab] = useState("contacts");
 
   // State to store the content of Input Field of SMS
@@ -651,9 +667,24 @@ export const ShareVideoModal = () => {
     },
   });
 
+  // const smsForm = useForm({
+  //   initialValues: {
+  //     smsContent: videoToBeShared?.shareableLink
+  //       ? `\n\n${videoToBeShared.shareableLink}`
+  //       : "",
+  //     selectedSMSContacts: [],
+  //     selectedContactTags: [],
+  //   },
+
   const smsForm = useForm({
     initialValues: {
-      smsContent: videoToBeShared?.shareableLink
+      smsContent: isUsingNewSchema
+        ? `\n\n<a href="${CLOUDFRONT_BASE}/${
+            videoToBeShared?.videoKey
+          }"><img src="${CLOUDFRONT_BASE}/${
+            videoToBeShared?.gifKey || videoToBeShared?.teaserKey
+          }" alt="Video Preview" /></a>`
+        : videoToBeShared?.shareableLink
         ? `\n\n${videoToBeShared.shareableLink}`
         : "",
       selectedSMSContacts: [],
@@ -728,9 +759,17 @@ export const ShareVideoModal = () => {
       return console.log("Email Form Validation Failed!");
     }
 
-    if (quillHTML.includes(videoToBeShared?.shareableLink)) {
+    // Check for both old and new schema links
+    const oldLink = videoToBeShared?.shareableLink;
+    const newLink = `${CLOUDFRONT_BASE}/${videoToBeShared?.videoKey}`;
+
+    if (quillHTML.includes(oldLink) || quillHTML.includes(newLink)) {
       return handleSubmitEmail(quillHTML);
     }
+
+    // if (quillHTML.includes(videoToBeShared?.shareableLink)) {
+    //   return handleSubmitEmail(quillHTML);
+    // }
 
     setIsVideoLinkNotAttachedModalOpen(true);
     setIsShareVideoModalOpen(false);
@@ -752,7 +791,14 @@ export const ShareVideoModal = () => {
       return setNoContactSelectedError(true);
     }
 
-    if (smsForm.values.smsContent.includes(videoToBeShared?.shareableLink)) {
+    // Check for both old and new schema links
+    const oldLink = videoToBeShared?.shareableLink;
+    const newLink = `${CLOUDFRONT_BASE}/${videoToBeShared?.videoKey}`;
+
+    if (
+      smsForm.values.smsContent.includes(oldLink) ||
+      smsForm.values.smsContent.includes(newLink)
+    ) {
       return handleSubmitSMS();
     }
 
@@ -763,6 +809,17 @@ export const ShareVideoModal = () => {
   const handleSubmitEmail = async (htmlContent) => {
     setModalLoadingOverlay(true);
 
+    // const API_DATA = {
+    //   contactIds:
+    //     activeTab === "email" && activeSubTab === "tags"
+    //       ? contactsLinkedWithTags || []
+    //       : emailForm.values.selectedEmailContacts || [],
+    //   message: htmlContent,
+    //   subject: emailForm.values.emailSubject,
+    //   videoId: videoToBeShared._id || "",
+    //   uploadedVideoName: videoToBeShared?.title,
+    // };
+
     const API_DATA = {
       contactIds:
         activeTab === "email" && activeSubTab === "tags"
@@ -770,7 +827,16 @@ export const ShareVideoModal = () => {
           : emailForm.values.selectedEmailContacts || [],
       message: htmlContent,
       subject: emailForm.values.emailSubject,
-      videoId: videoToBeShared._id || "",
+      // Use new schema fields if available, fallback to old
+      ...(isUsingNewSchema
+        ? {
+            videoKey: videoToBeShared?.videoKey || "",
+            teaserKey: videoToBeShared?.teaserKey || "",
+            gifKey: videoToBeShared?.gifKey || "",
+          }
+        : {
+            videoId: videoToBeShared._id || "",
+          }),
       uploadedVideoName: videoToBeShared?.title,
     };
 
@@ -834,13 +900,33 @@ export const ShareVideoModal = () => {
   const handleSubmitSMS = async () => {
     setModalLoadingOverlay(true);
 
+    // const API_DATA = {
+    //   contactIds:
+    //     activeTab === "sms" && activeSubTab === "tags"
+    //       ? contactsLinkedWithTags || []
+    //       : smsForm.values.selectedSMSContacts || [],
+    //   message: smsForm.values.smsContent,
+    //   videoId: videoToBeShared._id || "",
+    //   sendAttachment: sendAttachmentWithSMS,
+    //   uploadedVideoName: videoToBeShared?.title,
+    // };
+
     const API_DATA = {
       contactIds:
         activeTab === "sms" && activeSubTab === "tags"
           ? contactsLinkedWithTags || []
           : smsForm.values.selectedSMSContacts || [],
       message: smsForm.values.smsContent,
-      videoId: videoToBeShared._id || "",
+      // Use new schema fields if available, fallback to old
+      ...(isUsingNewSchema
+        ? {
+            videoKey: videoToBeShared?.videoKey || "",
+            teaserKey: videoToBeShared?.teaserKey || "",
+            gifKey: videoToBeShared?.gifKey || "",
+          }
+        : {
+            videoId: videoToBeShared._id || "",
+          }),
       sendAttachment: sendAttachmentWithSMS,
       uploadedVideoName: videoToBeShared?.title,
     };
@@ -1279,6 +1365,17 @@ export const ShareVideoModal = () => {
   //====================================================================
 
   //=======================================================================
+  // ADD THIS HANDLECLOSE FUNCTION
+  const handleClose = () => {
+    // setIsShareVideoModalOpen(false);
+    setActiveTab("email"); // Reset to default email tab
+    // setActiveSubTab("contacts");
+    // setEmailContent("");
+    // emailForm.reset();
+    // smsForm.reset();
+    // setContactsLinkedWithTags([]);
+    // setEditorContent(null);
+  };
 
   return (
     <>

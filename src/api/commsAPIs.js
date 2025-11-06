@@ -2,20 +2,66 @@ import axios from "axios";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // API to send a SMS to the user
+// export const sendSMSToSelectedContacts = async (params) => {
+//   // Get the accountId and userLocationId from the Local Storage
+//   const accessToken = localStorage.getItem("accessToken");
+//   try {
+//     const response = await axios.post(
+//       `${BASE_URL}/comms/sendSMS`,
+//       {
+//         contactIds: params.contactIds,
+//         tags: params.tags,
+//         message: params.message,
+//         videoId: params.videoId,
+//         sendAttachment: params.sendAttachment,
+//         uploadedVideoName: params.uploadedVideoName,
+//       },
+//       {
+//         headers: {
+//           Authorization: `Bearer ${accessToken}`,
+//         },
+//       }
+//     );
+//     return {
+//       success: true,
+//       data: response.data,
+//     };
+//   } catch (error) {
+//     console.error("Error while sending SMS: ", error);
+//     return {
+//       success: false,
+//       error: error.response?.data?.message || "Could not send SMS!",
+//     };
+//   }
+// };
+
+// API to send a SMS to the user
 export const sendSMSToSelectedContacts = async (params) => {
   // Get the accountId and userLocationId from the Local Storage
   const accessToken = localStorage.getItem("accessToken");
   try {
+    const requestBody = {
+      contactIds: params.contactIds,
+      tags: params.tags,
+      message: params.message,
+      sendAttachment: params.sendAttachment,
+      uploadedVideoName: params.uploadedVideoName,
+    };
+
+    // Add video fields based on schema
+    if (params.videoKey) {
+      // New schema
+      requestBody.videoKey = params.videoKey;
+      requestBody.teaserKey = params.teaserKey;
+      requestBody.gifKey = params.gifKey;
+    } else {
+      // Old schema
+      requestBody.videoId = params.videoId;
+    }
+
     const response = await axios.post(
       `${BASE_URL}/comms/sendSMS`,
-      {
-        contactIds: params.contactIds,
-        tags: params.tags,
-        message: params.message,
-        videoId: params.videoId,
-        sendAttachment: params.sendAttachment,
-        uploadedVideoName: params.uploadedVideoName,
-      },
+      requestBody,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -40,16 +86,28 @@ export const sendEmailToSelectedContacts = async (params) => {
   // Get the accountId and userLocationId from the Local Storage
   const accessToken = localStorage.getItem("accessToken");
   try {
+    const requestBody = {
+      contactIds: params.contactIds,
+      tags: params.tags,
+      message: params.message,
+      subject: params.subject,
+      uploadedVideoName: params.uploadedVideoName,
+    };
+
+    // Add video fields based on schema
+    if (params.videoKey) {
+      // New schema
+      requestBody.videoKey = params.videoKey;
+      requestBody.teaserKey = params.teaserKey;
+      requestBody.gifKey = params.gifKey;
+    } else {
+      // Old schema
+      requestBody.videoId = params.videoId;
+    }
+
     const response = await axios.post(
       `${BASE_URL}/comms/sendEmail`,
-      {
-        contactIds: params.contactIds,
-        tags: params.tags,
-        message: params.message,
-        subject: params.subject,
-        videoId: params.videoId,
-        uploadedVideoName: params.uploadedVideoName,
-      },
+      requestBody,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,

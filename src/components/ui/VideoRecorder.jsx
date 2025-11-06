@@ -11,13 +11,36 @@ import { MdSms } from "react-icons/md"; // For SMS icon
 
 import { RiDragMove2Fill } from "react-icons/ri";
 import { useParams } from "react-router-dom";
-import { getSignedUrl, saveCustomRecordedVideo } from "../../api/libraryAPIs";
+import {
+  getFreshVideoData,
+  getSignedUrl,
+  saveCustomRecordedVideo,
+} from "../../api/libraryAPIs";
+import { useGlobalModals } from "../../store/globalModals";
 
 function VideoRecorder() {
   //get params acces token
 
   const { accessToken } = useParams();
   const [step, setStep] = useState("idle");
+
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const [freshVideoKey, setFreshVideoKey] = useState(null);
+
+  const setIsShareVideoModalOpen = useGlobalModals(
+    (state) => state.setIsShareVideoModalOpen
+  );
+
+  const setVideoToBeShared = useGlobalModals(
+    (state) => state.setVideoToBeShared
+  );
+
+  const activeTab = useGlobalModals((state) => state.activeTab);
+  const setActiveTab = useGlobalModals((state) => state.setActiveTab);
+
+  const [isPreparing, setIsPreparing] = useState(false);
+
   const [cameras, setCameras] = useState([]);
   const [mics, setMics] = useState([]);
   const [selectedCamera, setSelectedCamera] = useState("");
@@ -710,6 +733,7 @@ function VideoRecorder() {
       // Step 1: Get presigned URL from backend
       const response = await getSignedUrl(`${videoTitle}.webm`, "video/webm");
       const { url, key } = response.data;
+      setFreshVideoKey(key);
 
       // Step 2: Upload video to S3
       await axios.put(url, recordedBlob, {
@@ -744,6 +768,8 @@ function VideoRecorder() {
       });
 
       if (response2.success) {
+        setUploadProgress(100);
+        setStep("upload-success");
       }
 
       // Step 4: Send metadata to backend
@@ -752,8 +778,6 @@ function VideoRecorder() {
       // });
 
       // Step 5: Show success and close
-      setUploadProgress(100);
-      setStep("upload-success");
     } catch (error) {
       console.error("Upload failed:", error);
       setTitleError(error.response?.data?.message || "Upload failed!");
@@ -779,6 +803,61 @@ function VideoRecorder() {
       return seconds === 0 ? `${minutes}m` : `${minutes}m ${seconds}s`;
     } else {
       return `${seconds}s`;
+    }
+  };
+
+  //Helper function for pooling
+
+  const pollVideoStatus = async ({ freshVideoKey, accessToken }) => {
+    const maxAttempts = 10; // ~10 attempts
+    let attempts = 0;
+
+    while (attempts < maxAttempts) {
+      attempts++;
+
+      try {
+        const result = await getFreshVideoData({ freshVideoKey, accessToken });
+        const freshVideo = result.video;
+
+        if (freshVideo.eventProcessed) {
+          return freshVideo; // ✅ READY
+        }
+
+        await new Promise((res) => setTimeout(res, 2000)); // wait 2s
+      } catch (err) {
+        console.error("Polling error:", err);
+      }
+    }
+
+    return null; // ❌ timeout
+  };
+
+  // Function for handling copy Link
+
+  const handleCopyLink = async () => {
+    const CLOUDFRONT_BASE = "https://d27zhkbo74exx9.cloudfront.net";
+    const videoLink = `${CLOUDFRONT_BASE}/${freshVideoKey}`;
+
+    try {
+      await navigator.clipboard.writeText(videoLink);
+      setLinkCopied(true);
+
+      // Reset after 2 seconds
+      setTimeout(() => {
+        setLinkCopied(false);
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to copy link:", err);
+      // Fallback for older browsers
+      const textArea = document.createElement("textarea");
+      textArea.value = videoLink;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
     }
   };
 
@@ -1006,7 +1085,27 @@ function VideoRecorder() {
             )}
             {step === "upload-success" && (
               <>
-                <div className="text-center mb-4">
+                <div className="text-center mb-4 relative">
+                  {/* CLOSE BUTTON - ADD THIS */}
+                  <button
+                    onClick={handleUploadSuccessClose}
+                    className="absolute top-0 right-0 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-200"
+                    aria-label="Close"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg
                       className="w-8 h-8 text-green-600"
@@ -1030,18 +1129,179 @@ function VideoRecorder() {
                     successfully.
                   </p>
                 </div>
+
                 <div className="flex gap-3 w-full">
-                  <button className="flex-1 px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2">
+                  {/* put onclick so it will close and open share modal */}
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+
+                      // Start preparing
+                      setIsPreparing(true);
+
+                      try {
+                        let result = await getFreshVideoData({
+                          freshVideoKey,
+                          accessToken,
+                        });
+                        let freshVideo = result.video;
+
+                        if (!freshVideo.eventProcessed) {
+                          console.log("Preview not ready, polling...");
+
+                          const processedVideo = await pollVideoStatus({
+                            freshVideoKey,
+                            accessToken,
+                          });
+                          if (!processedVideo) {
+                            setIsPreparing(false);
+                            alert(
+                              "Still processing video preview, try again in a few seconds…"
+                            );
+                            return;
+                          }
+
+                          freshVideo = processedVideo;
+                        }
+
+                        setActiveTab("sms"); // Set tab first
+
+                        setVideoToBeShared(freshVideo);
+                        setIsShareVideoModalOpen(true);
+                        setStep("idle");
+                      } catch (error) {
+                        console.error("Failed to fetch video data", error);
+                        setStep("idle");
+                      }
+                    }}
+                    // Disable button when preparing
+                    disabled={isPreparing}
+                    className={`flex-1 px-4 py-3 text-white font-semibold rounded-lg shadow-md transform transition-all duration-200 flex items-center justify-center gap-2 ${
+                      isPreparing
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-blue-600 hover:bg-blue-700 hover:shadow-lg hover:scale-105"
+                    }`}
+                  >
                     <MdSms className="w-4 h-4" />
                     Send SMS
                   </button>
-                  <button className="flex-1 px-4 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2">
+
+                  {/* <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                          // Start preparing
+    setIsPreparing(true);
+
+                      try {
+                        let result = await getFreshVideoData({
+                          freshVideoKey,
+                          accessToken,
+                        });
+                        let freshVideo = result.video;
+
+                        if (!freshVideo.eventProcessed) {
+                          console.log("Preview not ready, polling...");
+
+                          const processedVideo = await pollVideoStatus({
+                            freshVideoKey,
+                            accessToken,
+                          });
+
+                          if (!processedVideo) {
+                            setStep("idle");
+                            alert(
+                              "Still processing video preview, try again in a few seconds…"
+                            );
+                            return;
+                          }
+
+                          freshVideo = processedVideo;
+                        }
+
+                        setTabToOpen("email");
+
+                        setVideoToBeShared(freshVideo);
+                        setIsShareVideoModalOpen(true);
+                        setStep("idle");
+                      } catch (error) {
+                        console.error("Failed to fetch video data", error);
+                        setStep("idle");
+                      }
+                    }}
+                    className="flex-1 px-4 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2"
+                  >
                     <MdEmail className="w-4 h-4" />
                     Send Email
+                  </button> */}
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+
+                      // Start preparing
+                      setIsPreparing(true);
+
+                      try {
+                        let result = await getFreshVideoData({
+                          freshVideoKey,
+                          accessToken,
+                        });
+                        let freshVideo = result.video;
+
+                        if (!freshVideo.eventProcessed) {
+                          console.log("Preview not ready, polling...");
+
+                          const processedVideo = await pollVideoStatus({
+                            freshVideoKey,
+                            accessToken,
+                          });
+
+                          if (!processedVideo) {
+                            setIsPreparing(false);
+                            alert(
+                              "Still processing video preview, try again in a few seconds…"
+                            );
+                            return;
+                          }
+
+                          freshVideo = processedVideo;
+                        }
+
+                        setActiveTab("email"); // Set tab first
+                        setVideoToBeShared(freshVideo);
+                        setIsShareVideoModalOpen(true);
+                        setIsPreparing(false);
+                      } catch (error) {
+                        console.error("Failed to fetch video data", error);
+                        setIsPreparing(false);
+                      }
+                    }}
+                    // Disable button when preparing
+                    disabled={isPreparing}
+                    className={`flex-1 px-4 py-3 text-white font-semibold rounded-lg shadow-md transform transition-all duration-200 flex items-center justify-center gap-2 ${
+                      isPreparing
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-green-600 hover:bg-green-700 hover:shadow-lg hover:scale-105"
+                    }`}
+                  >
+                    <MdEmail className="w-4 h-4" />
+                    {/* Show different text based on state */}
+                    {isPreparing ? "Preparing..." : "Send Email"}
                   </button>
-                  <button className="flex-1 px-4 py-3 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2">
+                  {/* <button className="flex-1 px-4 py-3 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2">
                     <FaLink className="w-4 h-4" />
-                    Share Video Link
+                    Share Link
+                  </button> */}
+                  <button
+                    onClick={handleCopyLink}
+                    className={`flex-1 px-4 py-3 ${
+                      linkCopied
+                        ? "bg-teal-600 hover:bg-teal-700"
+                        : "bg-purple-600 hover:bg-purple-700"
+                    } text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2`}
+                    disabled={isPreparing}
+                  >
+                    <FaLink className="w-4 h-4" />
+                    {linkCopied ? "Link Copied!" : "Share Link"}
                   </button>
                 </div>
               </>

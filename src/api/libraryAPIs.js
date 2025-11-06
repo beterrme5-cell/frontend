@@ -269,3 +269,26 @@ export const saveCustomRecordedVideo = async ({ videoData, accessToken }) => {
     };
   }
 };
+
+//API to save custome recorded Video
+
+export const getFreshVideoData = async ({ freshVideoKey, accessToken }) => {
+  console.log("Get Fresh Video Data called", freshVideoKey, accessToken);
+  try {
+    const response = await axios.get(`${BASE_URL}/video/getFreshVideoById`, {
+      params: {
+        videoKey: freshVideoKey,
+      },
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error while fetching Fresh Video: ", error);
+    throw new Error(
+      error.response?.data?.message || "Could not fetch Fresh Video!"
+    );
+  }
+};

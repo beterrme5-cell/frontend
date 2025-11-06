@@ -350,6 +350,7 @@ export const VideoActionButtons = ({ children }) => {
 };
 
 export const VideoTabItem = ({ videoData }) => {
+  const setTabToOpen = useGlobalModals((state) => state.setActiveTab);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [showControls, setShowControls] = useState(true);
@@ -364,6 +365,9 @@ export const VideoTabItem = ({ videoData }) => {
   const videoContainerRef = useRef(null);
   const controlsTimeoutRef = useRef(null);
   const CLOUDFRONT_BASE = "https://d27zhkbo74exx9.cloudfront.net";
+
+  const [volume, setVolume] = useState(1); // 0 - 1
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
   if (videoData.captionKey) {
     console.log(videoData.captionKey);
@@ -516,9 +520,16 @@ export const VideoTabItem = ({ videoData }) => {
 
   // Handle mute/unmute
   const handleMuteToggle = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !videoRef.current.muted;
-      setIsMuted(videoRef.current.muted);
+    if (!videoRef.current) return;
+
+    if (videoRef.current.muted || volume === 0) {
+      videoRef.current.muted = false;
+      setIsMuted(false);
+      videoRef.current.volume = volume || 0.5; // restore volume
+      setVolume(volume || 0.5);
+    } else {
+      videoRef.current.muted = true;
+      setIsMuted(true);
     }
   };
 
@@ -781,31 +792,147 @@ export const VideoTabItem = ({ videoData }) => {
 
                     <div className="flex items-center gap-2">
                       {/* Mute/Unmute Button */}
-                      <button
-                        onClick={handleMuteToggle}
-                        className="text-white hover:text-gray-300 transition-colors"
-                        aria-label={isMuted ? "Unmute" : "Mute"}
+
+                      {/* <div
+                        className="relative flex items-center"
+                        onMouseEnter={() => setShowVolumeSlider(true)}
+                        onMouseLeave={() =>
+                          setTimeout(() => setShowVolumeSlider(false), 350)
+                        }
+                        style={{ position: "relative", paddingRight: "6px" }} // small buffer
                       >
-                        {isMuted ? (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                            className="w-5 h-5"
+                        <button
+                          onClick={handleMuteToggle}
+                          className="text-white hover:text-gray-300 transition-colors"
+                          aria-label={isMuted ? "Unmute" : "Mute"}
+                        >
+                          {isMuted || volume === 0 ? (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                              className="w-5 h-5"
+                            >
+                              <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+                            </svg>
+                          ) : (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                              className="w-5 h-5"
+                            >
+                              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                            </svg>
+                          )}
+                        </button>
+                        {showVolumeSlider && (
+                          <div
+                            className="absolute bg-black/80 p-1 rounded-md flex items-center"
+                            style={{
+                              width: "70px",
+                              right: "100%", // closer to button
+                              marginRight: "4px", // reduce gap
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                              zIndex: 2000,
+                            }}
                           >
-                            <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
-                          </svg>
-                        ) : (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                            className="w-5 h-5"
-                          >
-                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
-                          </svg>
+                            <input
+                              type="range"
+                              min="0"
+                              max="1"
+                              step="0.01"
+                              value={volume}
+                              onChange={(e) => {
+                                const vol = parseFloat(e.target.value);
+                                setVolume(vol);
+                                if (videoRef.current) {
+                                  videoRef.current.volume = vol;
+                                  videoRef.current.muted = vol === 0;
+                                }
+                                setIsMuted(vol === 0);
+                              }}
+                              className="w-full cursor-pointer accent-white"
+                              style={{ height: "3px" }} // thinner slider line
+                            />
+                          </div>
                         )}
-                      </button>
+                      </div> */}
+
+                      {/* Volume Control - Button + Slider wrapped together */}
+                      {/* Volume Control - Button + Slider wrapped together */}
+                      <div
+                        className="relative flex items-center"
+                        onMouseEnter={() => setShowVolumeSlider(true)}
+                        onMouseLeave={() => setShowVolumeSlider(false)}
+                        style={{
+                          position: "relative",
+                          paddingLeft: showVolumeSlider ? "0px" : "0px",
+                          transition: "padding-left 0.2s ease",
+                        }}
+                      >
+                        {/* Volume Slider - appears to the left */}
+                        {showVolumeSlider && (
+                          <div
+                            className="absolute bg-black/90 p-1.5 rounded-md flex items-center"
+                            style={{
+                              width: "80px",
+                              right: "120%",
+                              marginRight: "-4px",
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                              zIndex: 2000,
+                            }}
+                          >
+                            <input
+                              type="range"
+                              min="0"
+                              max="1"
+                              step="0.01"
+                              value={volume}
+                              onChange={(e) => {
+                                const vol = parseFloat(e.target.value);
+                                setVolume(vol);
+                                if (videoRef.current) {
+                                  videoRef.current.volume = vol;
+                                  videoRef.current.muted = vol === 0;
+                                }
+                                setIsMuted(vol === 0);
+                              }}
+                              className="w-full cursor-pointer accent-white"
+                              style={{ height: "4px" }}
+                            />
+                          </div>
+                        )}
+
+                        {/* Mute/Unmute Button */}
+                        <button
+                          onClick={handleMuteToggle}
+                          className="text-white hover:text-gray-300 transition-colors"
+                          aria-label={isMuted ? "Unmute" : "Mute"}
+                        >
+                          {isMuted || volume === 0 ? (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                              className="w-5 h-5"
+                            >
+                              <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+                            </svg>
+                          ) : (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                              className="w-5 h-5"
+                            >
+                              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
 
                       {/* Fullscreen Button */}
                       <button
@@ -955,6 +1082,7 @@ export const VideoTabItem = ({ videoData }) => {
           className="absolute top-[8px] right-[8px] cursor-pointer bg-primary rounded-full p-[4px_8px] hover:cursor-pointer flex gap-[4px] items-center text-white z-10"
           onClick={(e) => {
             e.stopPropagation();
+            setTabToOpen("email");
             setVideoToBeShared(videoData);
             setIsShareVideoModalOpen(true);
           }}
@@ -1208,6 +1336,373 @@ const HistoryRow = ({ element }) => {
 
 //================================================================
 
+// export const TextEditor = forwardRef(
+//   ({ onTextChange, editorContent, setEditorContent }, ref) => {
+//     const videoToBeShared = useGlobalModals((state) => state.videoToBeShared);
+//     const tagsDropDownOpen = useGlobalModals((state) => state.tagsDropDownOpen);
+//     const customTagsDropDownOpen = useGlobalModals(
+//       (state) => state.customTagsDropDownOpen
+//     );
+//     const setTagsDropDownOpen = useGlobalModals(
+//       (state) => state.setTagsDropDownOpen
+//     );
+
+//     // const shortCodesSelected = useGlobalModals(
+//     //   (state) => state.shortCodesSelected
+//     // );
+
+//     // const setShortCodesSelected = useGlobalModals(
+//     //   (state) => state.setShortCodesSelected
+//     // );
+
+//     const containerRef = useRef(null);
+//     const onTextChangeRef = useRef(onTextChange);
+
+//     // const handleShortCodeGlobalState = (shortCode) => {
+//     //   const updatedShortCodes = [...shortCodesSelected, shortCode];
+//     //   // remove duplicates
+//     //   const uniqueShortCodes = [...new Set(updatedShortCodes)];
+
+//     //   setShortCodesSelected(uniqueShortCodes);
+//     // };
+
+//     useLayoutEffect(() => {
+//       onTextChangeRef.current = onTextChange;
+//     });
+
+//     useEffect(() => {
+//       const container = containerRef.current;
+//       const editorContainer = container.appendChild(
+//         container.ownerDocument.createElement("div")
+//       );
+
+//       // Set the ID of the editorContainer
+//       editorContainer.id = "text-editor-container";
+
+//       const toolbarOptions = [
+//         // [{ header: [1, 2, 3, 4, 5, 6, false] }],
+//         [
+//           {
+//             font: ["arial", "sansserif", "serif", "monospace"],
+//           },
+//         ],
+//         [{ align: [] }],
+//         ["bold", "italic", "underline", "strike"], // toggled buttons
+//         [{ list: "ordered" }, { list: "bullet" }, { list: "check" }],
+//         ["blockquote"],
+//       ];
+
+//       const quill = new Quill(editorContainer, {
+//         theme: "snow",
+//         placeholder: "Write something...",
+//         modules: {
+//           toolbar: toolbarOptions,
+//         },
+//       });
+
+//       if (!editorContent) {
+
+//           const CLOUDFRONT_BASE = "https://d27zhkbo74exx9.cloudfront.net";
+
+//             // Check if using new schema (has videoKey) or old schema
+//   const isNewSchema = videoToBeShared?.videoKey;
+
+//   let videoLink;
+//   let videoThumbnail = "";
+
+//   if (isNewSchema) {
+//     // NEW SCHEMA: Use clickable GIF preview
+//     videoLink = `<a href="${CLOUDFRONT_BASE}/${videoToBeShared.videoKey}" target="_blank" style="color: blue; text-decoration: underline; font-weight: bold">${videoToBeShared?.title || "Watch Video"}</a>`;
+
+//     // Use GIF/teaser as thumbnail for new schema
+//     if (videoToBeShared?.gifKey || videoToBeShared?.teaserKey) {
+//       videoThumbnail = `<a href="${CLOUDFRONT_BASE}/${videoToBeShared.videoKey}" target="_blank"><img src="${CLOUDFRONT_BASE}/${videoToBeShared.gifKey || videoToBeShared.teaserKey}" width="300px" height="200px" style="border-radius: 8px;"/></a>`;
+//     }
+//   } else {
+//     // OLD SCHEMA: Use existing logic
+//     videoLink = `<a href="${videoToBeShared?.shareableLink}" target="_blank" style="color: blue; text-decoration: underline; font-weight: bold">${videoToBeShared?.title || videoToBeShared?.shareableLink}</a>`;
+
+//     // Use old thumbnail URL if available
+//     if (videoToBeShared?.thumbnailURL && videoToBeShared?.thumbnailURL !== "") {
+//       videoThumbnail = `<a href="${videoToBeShared.shareableLink}" target="_blank"><img src="${videoToBeShared.thumbnailURL}" width="300px" height="200px"/></a>`;
+//     }
+//   }
+
+//         // Insert two line breaks at the beginning
+//         quill.insertText(0, "\n\n");
+
+//         // Insert the video link
+//         quill.clipboard.dangerouslyPasteHTML(2, videoLink);
+
+//         // Optionally, move the cursor to a new line after the video link
+//         quill.insertText(2 + videoToBeShared?.title?.length, "\n");
+
+//         // Insert the thumbnail if it exists, otherwise just insert the link
+//         if (videoThumbnail) {
+//           quill.clipboard.dangerouslyPasteHTML(
+//             2 + videoToBeShared?.title?.length + 1,
+//             videoThumbnail
+//           );
+//           // Optionally, move the cursor to a new line after the video link and thumbnail
+//           quill.insertText(
+//             3 + videoToBeShared?.title?.length + videoThumbnail.length,
+//             "\n\n"
+//           );
+//         }
+//       }
+
+//       // Toolbar Custom Options
+//       // Get the toolbar container
+//       const toolbar = quill.getModule("toolbar");
+
+//       // Create a wrapper for custom buttons
+//       const customButtonsWrapper = document.createElement("div");
+//       customButtonsWrapper.id = "custom-buttons-wrapper";
+
+//       const pasteLinkButton = document.createElement("button");
+//       pasteLinkButton.innerHTML = `<div style="display: flex; align-items: center; gap: 4px; white-space: nowrap;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" width="20" height="20"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M579.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L422.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C206.5 251.2 213 330 263 380c56.5 56.5 148 56.5 204.5 0L579.8 267.7zM60.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C74 372 74 321 105.5 289.5L217.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C433.5 260.8 427 182 377 132c-56.5-56.5-148-56.5-204.5 0L60.2 244.3z" fill="currentColor"/></svg><p style="margin: 0; line-height: normal;">Paste Video Link</p></div>`;
+//       pasteLinkButton.setAttribute("type", "button");
+
+//       pasteLinkButton.onclick = () => {
+//         // Set the width and height
+//         const width = "300px"; // You can modify this to any value or make it dynamic
+//         const height = "200px"; // Modify this as well
+
+//          const CLOUDFRONT_BASE = "https://d27zhkbo74exx9.cloudfront.net";
+//   const isNewSchema = videoToBeShared?.videoKey;
+
+//     let videoLink;
+//   let videoThumbnail = "";
+
+//         if (
+//           videoToBeShared?.thumbnailURL &&
+//           videoToBeShared?.thumbnailURL !== ""
+//         ) {
+//           // Create the image tag with width and height
+//           videoThumbnail = `<a href="${videoToBeShared.shareableLink}" target="_blank"> <img src="${videoToBeShared.thumbnailURL}" width="${width}" height="${height}" /></a>`;
+//         }
+
+//         // Paste the video link into the editor
+//         const range = quill.getSelection();
+
+//         if (range === null) {
+//           const videoLink = `<a href="${
+//             videoToBeShared.shareableLink
+//           }" target="_blank" style="color: blue; text-decoration: underline; font-weight: bold">${
+//             videoToBeShared?.title || videoToBeShared?.shareableLink
+//           }</a>`;
+
+//           if (!videoLink) {
+//             console.error("Video link is missing.");
+//             return;
+//           }
+
+//           // Insert the video link at the beginning with formatting
+//           quill.clipboard.dangerouslyPasteHTML(0, videoLink);
+
+//           if (videoThumbnail) {
+//             quill.clipboard.dangerouslyPasteHTML(
+//               videoToBeShared?.title?.length + 1,
+//               videoThumbnail
+//             );
+
+//             // Add a new line after the image for separation
+//             quill.insertText(
+//               videoToBeShared?.title?.length + 1 + videoThumbnail?.length,
+//               "\n\n"
+//             );
+//           }
+//         } else {
+//           // Adding a space before and after the link
+//           const updatedVideoLink = ` <a href="${
+//             videoToBeShared.shareableLink
+//           }" target="_blank" style="color: blue; text-decoration: underline; font-weight: bold">${
+//             videoToBeShared?.title || videoToBeShared?.shareableLink
+//           }</a>`;
+
+//           if (!updatedVideoLink.trim()) {
+//             console.error("Updated video link is missing.");
+//             return; // Exit early if the video link is not available
+//           }
+
+//           // Insert the link with formatting at the specified range
+//           quill.clipboard.dangerouslyPasteHTML(range.index, updatedVideoLink);
+//           quill.insertText(range.index + videoToBeShared?.title?.length, "\n");
+
+//           if (videoThumbnail) {
+//             // Insert the image after the video link
+//             quill.clipboard.dangerouslyPasteHTML(
+//               range.index + videoToBeShared?.title?.length + 1,
+//               videoThumbnail
+//             );
+
+//             // Add a new line after the image for separation
+//             quill.insertText(
+//               range.index +
+//                 videoToBeShared?.title?.length +
+//                 videoThumbnail?.length,
+//               "\n\n"
+//             );
+
+//             // Move the cursor to the end of the inserted link and image
+//             quill.setSelection(
+//               range.index +
+//                 videoToBeShared?.title?.length +
+//                 videoThumbnail?.length
+//             );
+//           }
+//         }
+//       };
+
+//       // const pasteThumbnailButton = document.createElement("button");
+//       // pasteThumbnailButton.innerHTML = `<div style="display: flex; align-items: center; gap: 4px; white-space: nowrap;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="18" height="18"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M448 80c8.8 0 16 7.2 16 16l0 319.8-5-6.5-136-176c-4.5-5.9-11.6-9.3-19-9.3s-14.4 3.4-19 9.3L202 340.7l-30.5-42.7C167 291.7 159.8 288 152 288s-15 3.7-19.5 10.1l-80 112L48 416.3l0-.3L48 96c0-8.8 7.2-16 16-16l384 0zM64 32C28.7 32 0 60.7 0 96L0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64L64 32zm80 192a48 48 0 1 0 0-96 48 48 0 1 0 0 96z" fill="currentColor"/></svg><p style="margin: 0; line-height: normal;">Paste Thumbnail</p></div>`;
+//       // pasteThumbnailButton.setAttribute("type", "button");
+
+//       // pasteThumbnailButton.onclick = () => {
+//       //   // Set the width and height
+//       //   const width = "300px"; // You can modify this to any value or make it dynamic
+//       //   const height = "200px"; // Modify this as well
+
+//       //   // Create the image tag with width and height
+//       //   const imageTag = `<img src="${videoToBeShared.thumbnailURL}" width="${width}" height="${height}" />`;
+
+//       //   const range = quill.getSelection();
+//       //   if (range === null) {
+//       //     // Insert the image at the current cursor position
+//       //     quill.clipboard.dangerouslyPasteHTML(0, imageTag);
+//       //     // Move the cursor to the end of the inserted image
+//       //     quill.setSelection(0 + imageTag.length);
+//       //   }
+
+//       //   // Insert the image at the current cursor position
+//       //   quill.clipboard.dangerouslyPasteHTML(range.index, imageTag);
+//       //   // Move the cursor to the end of the inserted image
+//       //   quill.setSelection(range.index + imageTag.length);
+//       // };
+
+//       const firstNameShortCodeBtn = document.createElement("button");
+//       firstNameShortCodeBtn.innerHTML = `<p style="margin: 0 5px; line-height: normal;">Add First Name</p>`;
+//       firstNameShortCodeBtn.setAttribute("type", "button");
+//       firstNameShortCodeBtn.onclick = () => {
+//         const firstNameShortCode = "{{contact.first_name}}";
+//         const range = quill.getSelection();
+//         if (range === null) {
+//           // Insert the image at the current cursor position
+//           quill.clipboard.dangerouslyPasteHTML(0, firstNameShortCode);
+//           // Move the cursor to the end of the inserted image
+//           quill.setSelection(0 + firstNameShortCode.length);
+//         } else {
+//           // Insert the image at the current cursor position
+//           quill.clipboard.dangerouslyPasteHTML(range.index, firstNameShortCode);
+//           // Move the cursor to the end of the inserted image
+//           quill.setSelection(range.index + firstNameShortCode.length);
+//         }
+
+//         // handle udpate the shortCodesSelected
+//         // handleShortCodeGlobalState(firstNameShortCode);
+//       };
+
+//       const userSignatureBtn = document.createElement("button");
+//       userSignatureBtn.innerHTML = `
+//       <div style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+//       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" width="18" height="18"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M192 128c0-17.7 14.3-32 32-32s32 14.3 32 32l0 7.8c0 27.7-2.4 55.3-7.1 82.5l-84.4 25.3c-40.6 12.2-68.4 49.6-68.4 92l0 71.9c0 40 32.5 72.5 72.5 72.5c26 0 50-13.9 62.9-36.5l13.9-24.3c26.8-47 46.5-97.7 58.4-150.5l94.4-28.3-12.5 37.5c-3.3 9.8-1.6 20.5 4.4 28.8s15.7 13.3 26 13.3l128 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-83.6 0 18-53.9c3.8-11.3 .9-23.8-7.4-32.4s-20.7-11.8-32.2-8.4L316.4 198.1c2.4-20.7 3.6-41.4 3.6-62.3l0-7.8c0-53-43-96-96-96s-96 43-96 96l0 32c0 17.7 14.3 32 32 32s32-14.3 32-32l0-32zm-9.2 177l49-14.7c-10.4 33.8-24.5 66.4-42.1 97.2l-13.9 24.3c-1.5 2.6-4.3 4.3-7.4 4.3c-4.7 0-8.5-3.8-8.5-8.5l0-71.9c0-14.1 9.3-26.6 22.8-30.7zM24 368c-13.3 0-24 10.7-24 24s10.7 24 24 24l40.3 0c-.2-2.8-.3-5.6-.3-8.5L64 368l-40 0zm592 48c13.3 0 24-10.7 24-24s-10.7-24-24-24l-310.1 0c-6.7 16.3-14.2 32.3-22.3 48L616 416z" fill="currentColor"/></svg><p style="margin: 0 5px; line-height: normal;">Add Signature</p></div>`;
+//       userSignatureBtn.setAttribute("type", "button");
+//       userSignatureBtn.onclick = () => {
+//         const userSignatureShortCode = "{{user.email_signature}}";
+//         const range = quill.getSelection();
+//         if (range === null) {
+//           // Insert the image at the current cursor position
+//           quill.clipboard.dangerouslyPasteHTML(0, userSignatureShortCode);
+//           // Move the cursor to the end of the inserted image
+//           quill.setSelection(0 + userSignatureShortCode.length);
+//         } else {
+//           // Insert the image at the current cursor position
+//           quill.clipboard.dangerouslyPasteHTML(
+//             range.index,
+//             userSignatureShortCode
+//           );
+//           // Move the cursor to the end of the inserted image
+//           quill.setSelection(range.index + userSignatureShortCode.length);
+//         }
+
+//         // handle udpate the shortCodesSelected
+//         // handleShortCodeGlobalState(firstNameShortCode);
+//       };
+
+//       // Style and append custom buttons to the wrapper
+//       [pasteLinkButton].forEach((btn) => {
+//         btn.classList.add("ql-formats");
+//         customButtonsWrapper.appendChild(btn);
+//       });
+
+//       const tagsButtonWrapper = document.createElement("div");
+//       tagsButtonWrapper.id = "tag-button-wrapper";
+
+//       const tagButton = document.createElement("button");
+//       tagButton.innerHTML = `
+//       <div style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+//           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="18" height="18" aria-hidden="true">
+//             <path d="M0 80L0 229.5c0 17 6.7 33.3 18.7 45.3l176 176c25 25 65.5 25 90.5 0L418.7 317.3c25-25 25-65.5 0-90.5l-176-176c-12-12-28.3-18.7-45.3-18.7L48 32C21.5 32 0 53.5 0 80zm112 32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z" fill="currentColor"/>
+//           </svg>
+//           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" width="10" height="10"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M137.4 374.6c12.5 12.5 32.8 12.5 45.3 0l128-128c9.2-9.2 11.9-22.9 6.9-34.9s-16.6-19.8-29.6-19.8L32 192c-12.9 0-24.6 7.8-29.6 19.8s-2.2 25.7 6.9 34.9l128 128z" fill="currentColor"/></svg>
+//           </div>
+//         `;
+//       tagButton.onclick = () => {
+//         setTagsDropDownOpen(!tagsDropDownOpen);
+//       };
+//       tagButton.setAttribute("type", "button");
+
+//       // Style and append custom buttons to the wrapper
+//       [tagButton, firstNameShortCodeBtn, userSignatureBtn].forEach((btn) => {
+//         btn.classList.add("ql-formats");
+//         tagsButtonWrapper.appendChild(btn);
+//       });
+
+//       // Add custom buttons wrapper to the toolbar
+//       toolbar.container.insertBefore(
+//         tagsButtonWrapper,
+//         toolbar.container.firstChild
+//       );
+
+//       // Append the wrapper to the toolbar
+//       toolbar.container.appendChild(customButtonsWrapper);
+
+//       // Restore editor content if available
+//       if (editorContent) {
+//         quill.setContents(editorContent);
+//       }
+
+//       ref.current = quill;
+
+//       quill.on(Quill.events.TEXT_CHANGE, (...args) => {
+//         setEditorContent(quill.getContents());
+//         onTextChangeRef.current?.(...args);
+//       });
+
+//       return () => {
+//         ref.current = null;
+//         container.innerHTML = "";
+//       };
+//       // eslint-disable-next-line react-hooks/exhaustive-deps
+//     }, [ref]);
+
+//     return (
+//       <div className="flex flex-col gap-[8px] relative">
+//         {tagsDropDownOpen && <SelectContactShortCodeDropDown quillRef={ref} />}
+//         {customTagsDropDownOpen && (
+//           <SelectCustomShortCodeDropDown quillRef={ref} />
+//         )}
+//         <p className="text-[14px] font-medium">Email Content</p>
+//         <div
+//           ref={containerRef}
+//           className="h-[246px] overflow-hidden flex flex-col"
+//           id="text-editor-mainContainer"
+//         ></div>
+//       </div>
+//     );
+//   }
+// );
+
 export const TextEditor = forwardRef(
   ({ onTextChange, editorContent, setEditorContent }, ref) => {
     const videoToBeShared = useGlobalModals((state) => state.videoToBeShared);
@@ -1219,28 +1714,56 @@ export const TextEditor = forwardRef(
       (state) => state.setTagsDropDownOpen
     );
 
-    // const shortCodesSelected = useGlobalModals(
-    //   (state) => state.shortCodesSelected
-    // );
-
-    // const setShortCodesSelected = useGlobalModals(
-    //   (state) => state.setShortCodesSelected
-    // );
-
     const containerRef = useRef(null);
     const onTextChangeRef = useRef(onTextChange);
-
-    // const handleShortCodeGlobalState = (shortCode) => {
-    //   const updatedShortCodes = [...shortCodesSelected, shortCode];
-    //   // remove duplicates
-    //   const uniqueShortCodes = [...new Set(updatedShortCodes)];
-
-    //   setShortCodesSelected(uniqueShortCodes);
-    // };
 
     useLayoutEffect(() => {
       onTextChangeRef.current = onTextChange;
     });
+
+    // Helper function to get video content based on schema
+    const getVideoContent = () => {
+      const CLOUDFRONT_BASE = "https://d27zhkbo74exx9.cloudfront.net";
+      const isNewSchema = videoToBeShared?.videoKey;
+
+      let videoLink;
+      let videoThumbnail = "";
+
+      if (isNewSchema) {
+        // NEW SCHEMA: Use clickable GIF preview
+        videoLink = `<a href="${CLOUDFRONT_BASE}/${
+          videoToBeShared.videoKey
+        }" target="_blank" style="color: blue; text-decoration: underline; font-weight: bold">${
+          videoToBeShared?.title || "Watch Video"
+        }</a>`;
+
+        // Use GIF/teaser as thumbnail for new schema
+        if (videoToBeShared?.gifKey || videoToBeShared?.teaserKey) {
+          videoThumbnail = `<a href="${CLOUDFRONT_BASE}/${
+            videoToBeShared.videoKey
+          }" target="_blank"><img src="${CLOUDFRONT_BASE}/${
+            videoToBeShared.gifKey || videoToBeShared.teaserKey
+          }" width="300px" height="200px" style="border-radius: 8px;"/></a>`;
+        }
+      } else {
+        // OLD SCHEMA: Use existing logic
+        videoLink = `<a href="${
+          videoToBeShared?.shareableLink
+        }" target="_blank" style="color: blue; text-decoration: underline; font-weight: bold">${
+          videoToBeShared?.title || videoToBeShared?.shareableLink
+        }</a>`;
+
+        // Use old thumbnail URL if available
+        if (
+          videoToBeShared?.thumbnailURL &&
+          videoToBeShared?.thumbnailURL !== ""
+        ) {
+          videoThumbnail = `<a href="${videoToBeShared.shareableLink}" target="_blank"><img src="${videoToBeShared.thumbnailURL}" width="300px" height="200px"/></a>`;
+        }
+      }
+
+      return { videoLink, videoThumbnail, isNewSchema };
+    };
 
     useEffect(() => {
       const container = containerRef.current;
@@ -1252,14 +1775,13 @@ export const TextEditor = forwardRef(
       editorContainer.id = "text-editor-container";
 
       const toolbarOptions = [
-        // [{ header: [1, 2, 3, 4, 5, 6, false] }],
         [
           {
             font: ["arial", "sansserif", "serif", "monospace"],
           },
         ],
         [{ align: [] }],
-        ["bold", "italic", "underline", "strike"], // toggled buttons
+        ["bold", "italic", "underline", "strike"],
         [{ list: "ordered" }, { list: "bullet" }, { list: "check" }],
         ["blockquote"],
       ];
@@ -1273,22 +1795,7 @@ export const TextEditor = forwardRef(
       });
 
       if (!editorContent) {
-        const videoLink = `<a href="${
-          videoToBeShared?.shareableLink
-        }" target="_blank" style="color: blue; text-decoration: underline; font-weight: bold">${
-          videoToBeShared?.title || videoToBeShared?.shareableLink
-        }</a>`;
-
-        // Create the image tag with width and height if thumbnailURL is not empty
-        let videoThumbnail = "";
-
-        // Check if thumbnailURL is not empty
-        if (
-          videoToBeShared?.thumbnailURL &&
-          videoToBeShared?.thumbnailURL !== ""
-        ) {
-          videoThumbnail = `<a href="${videoToBeShared.shareableLink}" target="_blank"><img src="${videoToBeShared.thumbnailURL}" width="300px" height="200px"/></a>`;
-        }
+        const { videoLink, videoThumbnail } = getVideoContent();
 
         // Insert two line breaks at the beginning
         quill.insertText(0, "\n\n");
@@ -1297,24 +1804,28 @@ export const TextEditor = forwardRef(
         quill.clipboard.dangerouslyPasteHTML(2, videoLink);
 
         // Optionally, move the cursor to a new line after the video link
-        quill.insertText(2 + videoToBeShared?.title?.length, "\n");
+        quill.insertText(
+          2 + (videoToBeShared?.title?.length || "Watch Video".length),
+          "\n"
+        );
 
         // Insert the thumbnail if it exists, otherwise just insert the link
         if (videoThumbnail) {
           quill.clipboard.dangerouslyPasteHTML(
-            2 + videoToBeShared?.title?.length + 1,
+            2 + (videoToBeShared?.title?.length || "Watch Video".length) + 1,
             videoThumbnail
           );
           // Optionally, move the cursor to a new line after the video link and thumbnail
           quill.insertText(
-            3 + videoToBeShared?.title?.length + videoThumbnail.length,
+            3 +
+              (videoToBeShared?.title?.length || "Watch Video".length) +
+              videoThumbnail.length,
             "\n\n"
           );
         }
       }
 
       // Toolbar Custom Options
-      // Get the toolbar container
       const toolbar = quill.getModule("toolbar");
 
       // Create a wrapper for custom buttons
@@ -1326,29 +1837,14 @@ export const TextEditor = forwardRef(
       pasteLinkButton.setAttribute("type", "button");
 
       pasteLinkButton.onclick = () => {
-        // Set the width and height
-        const width = "300px"; // You can modify this to any value or make it dynamic
-        const height = "200px"; // Modify this as well
-        let videoThumbnail = "";
+        const { videoLink, videoThumbnail } = getVideoContent();
+        const width = "300px";
+        const height = "200px";
 
-        if (
-          videoToBeShared?.thumbnailURL &&
-          videoToBeShared?.thumbnailURL !== ""
-        ) {
-          // Create the image tag with width and height
-          videoThumbnail = `<a href="${videoToBeShared.shareableLink}" target="_blank"> <img src="${videoToBeShared.thumbnailURL}" width="${width}" height="${height}" /></a>`;
-        }
-
-        // Paste the video link into the editor
+        // Paste the video content into the editor
         const range = quill.getSelection();
 
         if (range === null) {
-          const videoLink = `<a href="${
-            videoToBeShared.shareableLink
-          }" target="_blank" style="color: blue; text-decoration: underline; font-weight: bold">${
-            videoToBeShared?.title || videoToBeShared?.shareableLink
-          }</a>`;
-
           if (!videoLink) {
             console.error("Video link is missing.");
             return;
@@ -1359,83 +1855,66 @@ export const TextEditor = forwardRef(
 
           if (videoThumbnail) {
             quill.clipboard.dangerouslyPasteHTML(
-              videoToBeShared?.title?.length + 1,
+              (videoToBeShared?.title?.length || "Watch Video".length) + 1,
               videoThumbnail
             );
 
             // Add a new line after the image for separation
             quill.insertText(
-              videoToBeShared?.title?.length + 1 + videoThumbnail?.length,
+              (videoToBeShared?.title?.length || "Watch Video".length) +
+                1 +
+                videoThumbnail?.length,
               "\n\n"
             );
           }
         } else {
           // Adding a space before and after the link
-          const updatedVideoLink = ` <a href="${
-            videoToBeShared.shareableLink
-          }" target="_blank" style="color: blue; text-decoration: underline; font-weight: bold">${
-            videoToBeShared?.title || videoToBeShared?.shareableLink
-          }</a>`;
+          const updatedVideoLink = ` ${videoLink} `;
 
           if (!updatedVideoLink.trim()) {
             console.error("Updated video link is missing.");
-            return; // Exit early if the video link is not available
+            return;
           }
 
           // Insert the link with formatting at the specified range
           quill.clipboard.dangerouslyPasteHTML(range.index, updatedVideoLink);
-          quill.insertText(range.index + videoToBeShared?.title?.length, "\n");
+          quill.insertText(
+            range.index +
+              (videoToBeShared?.title?.length || "Watch Video".length) +
+              2,
+            "\n"
+          );
 
           if (videoThumbnail) {
             // Insert the image after the video link
             quill.clipboard.dangerouslyPasteHTML(
-              range.index + videoToBeShared?.title?.length + 1,
+              range.index +
+                (videoToBeShared?.title?.length || "Watch Video".length) +
+                3,
               videoThumbnail
             );
 
             // Add a new line after the image for separation
             quill.insertText(
               range.index +
-                videoToBeShared?.title?.length +
-                videoThumbnail?.length,
+                (videoToBeShared?.title?.length || "Watch Video".length) +
+                videoThumbnail?.length +
+                3,
               "\n\n"
             );
 
-            // Move the cursor to the end of the inserted link and image
+            // Move the cursor to the end of the inserted content
             quill.setSelection(
               range.index +
-                videoToBeShared?.title?.length +
-                videoThumbnail?.length
+                (videoToBeShared?.title?.length || "Watch Video".length) +
+                videoThumbnail?.length +
+                3
             );
           }
         }
       };
 
-      // const pasteThumbnailButton = document.createElement("button");
-      // pasteThumbnailButton.innerHTML = `<div style="display: flex; align-items: center; gap: 4px; white-space: nowrap;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="18" height="18"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M448 80c8.8 0 16 7.2 16 16l0 319.8-5-6.5-136-176c-4.5-5.9-11.6-9.3-19-9.3s-14.4 3.4-19 9.3L202 340.7l-30.5-42.7C167 291.7 159.8 288 152 288s-15 3.7-19.5 10.1l-80 112L48 416.3l0-.3L48 96c0-8.8 7.2-16 16-16l384 0zM64 32C28.7 32 0 60.7 0 96L0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64L64 32zm80 192a48 48 0 1 0 0-96 48 48 0 1 0 0 96z" fill="currentColor"/></svg><p style="margin: 0; line-height: normal;">Paste Thumbnail</p></div>`;
-      // pasteThumbnailButton.setAttribute("type", "button");
-
-      // pasteThumbnailButton.onclick = () => {
-      //   // Set the width and height
-      //   const width = "300px"; // You can modify this to any value or make it dynamic
-      //   const height = "200px"; // Modify this as well
-
-      //   // Create the image tag with width and height
-      //   const imageTag = `<img src="${videoToBeShared.thumbnailURL}" width="${width}" height="${height}" />`;
-
-      //   const range = quill.getSelection();
-      //   if (range === null) {
-      //     // Insert the image at the current cursor position
-      //     quill.clipboard.dangerouslyPasteHTML(0, imageTag);
-      //     // Move the cursor to the end of the inserted image
-      //     quill.setSelection(0 + imageTag.length);
-      //   }
-
-      //   // Insert the image at the current cursor position
-      //   quill.clipboard.dangerouslyPasteHTML(range.index, imageTag);
-      //   // Move the cursor to the end of the inserted image
-      //   quill.setSelection(range.index + imageTag.length);
-      // };
+      // ... rest of your button creation code (firstNameShortCodeBtn, userSignatureBtn, tagButton)
 
       const firstNameShortCodeBtn = document.createElement("button");
       firstNameShortCodeBtn.innerHTML = `<p style="margin: 0 5px; line-height: normal;">Add First Name</p>`;
@@ -1444,19 +1923,12 @@ export const TextEditor = forwardRef(
         const firstNameShortCode = "{{contact.first_name}}";
         const range = quill.getSelection();
         if (range === null) {
-          // Insert the image at the current cursor position
           quill.clipboard.dangerouslyPasteHTML(0, firstNameShortCode);
-          // Move the cursor to the end of the inserted image
           quill.setSelection(0 + firstNameShortCode.length);
         } else {
-          // Insert the image at the current cursor position
           quill.clipboard.dangerouslyPasteHTML(range.index, firstNameShortCode);
-          // Move the cursor to the end of the inserted image
           quill.setSelection(range.index + firstNameShortCode.length);
         }
-
-        // handle udpate the shortCodesSelected
-        // handleShortCodeGlobalState(firstNameShortCode);
       };
 
       const userSignatureBtn = document.createElement("button");
@@ -1468,22 +1940,15 @@ export const TextEditor = forwardRef(
         const userSignatureShortCode = "{{user.email_signature}}";
         const range = quill.getSelection();
         if (range === null) {
-          // Insert the image at the current cursor position
           quill.clipboard.dangerouslyPasteHTML(0, userSignatureShortCode);
-          // Move the cursor to the end of the inserted image
           quill.setSelection(0 + userSignatureShortCode.length);
         } else {
-          // Insert the image at the current cursor position
           quill.clipboard.dangerouslyPasteHTML(
             range.index,
             userSignatureShortCode
           );
-          // Move the cursor to the end of the inserted image
           quill.setSelection(range.index + userSignatureShortCode.length);
         }
-
-        // handle udpate the shortCodesSelected
-        // handleShortCodeGlobalState(firstNameShortCode);
       };
 
       // Style and append custom buttons to the wrapper
@@ -1540,8 +2005,7 @@ export const TextEditor = forwardRef(
         ref.current = null;
         container.innerHTML = "";
       };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [ref]);
+    }, [ref, videoToBeShared]);
 
     return (
       <div className="flex flex-col gap-[8px] relative">
@@ -1560,6 +2024,157 @@ export const TextEditor = forwardRef(
   }
 );
 
+// export const SMSTextEditor = forwardRef(
+//   ({ onTextChange, editorContent, setEditorContent }, ref) => {
+//     const videoToBeShared = useGlobalModals((state) => state.videoToBeShared);
+
+//     const containerRef = useRef(null);
+//     const onTextChangeRef = useRef(onTextChange);
+
+//     useLayoutEffect(() => {
+//       onTextChangeRef.current = onTextChange;
+//     });
+
+//     useEffect(() => {
+//       const container = containerRef.current;
+//       const editorContainer = container.appendChild(
+//         container.ownerDocument.createElement("div")
+//       );
+
+//       // Set the ID of the editorContainer
+//       editorContainer.id = "sms-text-editor-container";
+
+//       const quill = new Quill(editorContainer, {
+//         theme: "snow",
+//         placeholder: "Write something...",
+//         modules: {
+//           toolbar: [],
+//         },
+//       });
+
+//       if (!editorContent) {
+//         const videoLink = `${videoToBeShared?.shareableLink}`;
+
+//         // Insert two line breaks at the beginning
+//         quill.insertText(0, "\n\n");
+
+//         // Insert the video link (bold) after "Video Link:"
+//         quill.insertText(2, videoLink, { bold: true, color: "blue" });
+//         // Optionally, move the cursor to a new line after the video link
+//         quill.insertText(2 + videoLink.length, "\n");
+//       }
+
+//       // Toolbar Custom Options
+//       // Get the toolbar container
+//       const toolbar = quill.getModule("toolbar");
+
+//       // Create a wrapper for custom buttons
+//       const customButtonsWrapper = document.createElement("div");
+//       customButtonsWrapper.id = "custom-buttons-wrapper";
+
+//       const pasteLinkButton = document.createElement("button");
+//       pasteLinkButton.innerHTML = `<div style="display: flex; align-items: center; gap: 4px; white-space: nowrap; margin: 0 5px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" width="20" height="20"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M579.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L422.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C206.5 251.2 213 330 263 380c56.5 56.5 148 56.5 204.5 0L579.8 267.7zM60.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C74 372 74 321 105.5 289.5L217.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C433.5 260.8 427 182 377 132c-56.5-56.5-148-56.5-204.5 0L60.2 244.3z" fill="currentColor"/></svg><p style="margin: 0; line-height: normal;">Paste Video Link</p></div>`;
+//       pasteLinkButton.setAttribute("type", "button");
+
+//       pasteLinkButton.onclick = () => {
+//         // Paste the video link into the editor
+//         const range = quill.getSelection();
+
+//         if (range === null) {
+//           const videoLink = `${videoToBeShared?.shareableLink}`;
+
+//           if (!videoLink) {
+//             console.error("Video link is missing.");
+//             return; // Exit early if the video link is not available
+//           }
+
+//           // Insert the video link at the beginning with formatting
+//           quill.insertText(0, videoLink, {
+//             bold: true,
+//             color: "blue",
+//           });
+//         } else {
+//           // Adding a space before and after the link
+//           const updatedVideoLink = ` ${videoToBeShared?.shareableLink} `;
+
+//           if (!updatedVideoLink.trim()) {
+//             console.error("Updated video link is missing.");
+//             return; // Exit early if the video link is not available
+//           }
+
+//           // Insert the link with formatting at the specified range
+//           quill.insertText(range.index, updatedVideoLink, {
+//             bold: true,
+//             color: "blue",
+//           });
+
+//           quill.insertText(range.index + updatedVideoLink.length, "\n");
+//         }
+//       };
+
+//       const firstNameShortCodeBtn = document.createElement("button");
+//       firstNameShortCodeBtn.innerHTML = `<p style="margin: 0 5px; line-height: normal;">Add First Name</p>`;
+//       firstNameShortCodeBtn.setAttribute("type", "button");
+//       firstNameShortCodeBtn.onclick = () => {
+//         const firstNameShortCode = "{{contact.first_name}}";
+//         const range = quill.getSelection();
+//         if (range === null) {
+//           // Insert the image at the current cursor position
+//           quill.clipboard.dangerouslyPasteHTML(0, firstNameShortCode);
+//           // Move the cursor to the end of the inserted image
+//           quill.setSelection(0 + firstNameShortCode.length);
+//         } else {
+//           // Insert the image at the current cursor position
+//           quill.clipboard.dangerouslyPasteHTML(range.index, firstNameShortCode);
+//           // Move the cursor to the end of the inserted image
+//           quill.setSelection(range.index + firstNameShortCode.length);
+//         }
+
+//         // handle udpate the shortCodesSelected
+//         // handleShortCodeGlobalState(firstNameShortCode);
+//       };
+
+//       // Style and append custom buttons to the wrapper
+//       [firstNameShortCodeBtn, pasteLinkButton].forEach((btn) => {
+//         btn.classList.add("ql-formats");
+//         btn.classList.add("sms-editor");
+//         customButtonsWrapper.appendChild(btn);
+//       });
+
+//       // Append the wrapper to the toolbar
+//       toolbar.container.appendChild(customButtonsWrapper);
+
+//       // Restore editor content if available
+//       if (editorContent) {
+//         quill.setContents(editorContent);
+//       }
+
+//       ref.current = quill;
+
+//       quill.on(Quill.events.TEXT_CHANGE, (...args) => {
+//         setEditorContent(quill.getContents());
+//         onTextChangeRef.current?.(...args);
+//       });
+
+//       return () => {
+//         ref.current = null;
+//         container.innerHTML = "";
+//       };
+//       // eslint-disable-next-line react-hooks/exhaustive-deps
+//     }, [ref]);
+
+//     return (
+//       <div className="flex flex-col gap-[8px] relative">
+//         <p className="text-[14px] font-medium">SMS Content</p>
+//         <div
+//           ref={containerRef}
+//           className="h-[246px] overflow-hidden flex flex-col"
+//           id="sms-text-editor-mainContainer"
+//         ></div>
+//       </div>
+//     );
+//   }
+// );
 export const SMSTextEditor = forwardRef(
   ({ onTextChange, editorContent, setEditorContent }, ref) => {
     const videoToBeShared = useGlobalModals((state) => state.videoToBeShared);
@@ -1571,13 +2186,31 @@ export const SMSTextEditor = forwardRef(
       onTextChangeRef.current = onTextChange;
     });
 
+    // Helper function to get video content based on schema (same as TextEditor)
+    const getVideoContent = () => {
+      const CLOUDFRONT_BASE = "https://d27zhkbo74exx9.cloudfront.net";
+      const isNewSchema = videoToBeShared?.videoKey;
+
+      let videoLink;
+
+      if (isNewSchema) {
+        // NEW SCHEMA: Use clickable link with title
+        const title = videoToBeShared?.title || "Watch Video";
+        videoLink = `${title}: ${CLOUDFRONT_BASE}/${videoToBeShared.videoKey}`;
+      } else {
+        // OLD SCHEMA: Use shareableLink
+        videoLink = videoToBeShared?.shareableLink || "";
+      }
+
+      return { videoLink, isNewSchema };
+    };
+
     useEffect(() => {
       const container = containerRef.current;
       const editorContainer = container.appendChild(
         container.ownerDocument.createElement("div")
       );
 
-      // Set the ID of the editorContainer
       editorContainer.id = "sms-text-editor-container";
 
       const quill = new Quill(editorContainer, {
@@ -1588,105 +2221,92 @@ export const SMSTextEditor = forwardRef(
         },
       });
 
-      if (!editorContent) {
-        const videoLink = `${videoToBeShared?.shareableLink}`;
+      // Initial content insertion (only if editor is empty)
+      if (!editorContent && videoToBeShared) {
+        const { videoLink } = getVideoContent();
 
-        // Insert two line breaks at the beginning
-        quill.insertText(0, "\n\n");
-
-        // Insert the video link (bold) after "Video Link:"
-        quill.insertText(2, videoLink, { bold: true, color: "blue" });
-        // Optionally, move the cursor to a new line after the video link
-        quill.insertText(2 + videoLink.length, "\n");
+        if (videoLink) {
+          quill.insertText(0, "\n\n");
+          quill.insertText(2, videoLink, { bold: true, color: "blue" });
+          quill.insertText(2 + videoLink.length, "\n");
+        }
       }
 
-      // Toolbar Custom Options
-      // Get the toolbar container
-      const toolbar = quill.getModule("toolbar");
-
-      // Create a wrapper for custom buttons
+      // Custom Toolbar Buttons
       const customButtonsWrapper = document.createElement("div");
       customButtonsWrapper.id = "custom-buttons-wrapper";
 
+      // Paste Video Link Button
       const pasteLinkButton = document.createElement("button");
-      pasteLinkButton.innerHTML = `<div style="display: flex; align-items: center; gap: 4px; white-space: nowrap; margin: 0 5px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" width="20" height="20"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M579.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L422.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C206.5 251.2 213 330 263 380c56.5 56.5 148 56.5 204.5 0L579.8 267.7zM60.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C74 372 74 321 105.5 289.5L217.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C433.5 260.8 427 182 377 132c-56.5-56.5-148-56.5-204.5 0L60.2 244.3z" fill="currentColor"/></svg><p style="margin: 0; line-height: normal;">Paste Video Link</p></div>`;
+      pasteLinkButton.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 4px; white-space: nowrap; margin: 0 5px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" width="20" height="20">
+            <path d="M579.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L422.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C206.5 251.2 213 330 263 380c56.5 56.5 148 56.5 204.5 0L579.8 267.7zM60.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C74 372 74 321 105.5 289.5L217.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C433.5 260.8 427 182 377 132c-56.5-56.5-148-56.5-204.5 0L60.2 244.3z" fill="currentColor"/>
+          </svg>
+          <p style="margin: 0; line-height: normal;">Paste Video Link</p>
+        </div>`;
       pasteLinkButton.setAttribute("type", "button");
 
       pasteLinkButton.onclick = () => {
-        // Paste the video link into the editor
+        const { videoLink } = getVideoContent();
+        if (!videoLink) {
+          console.error("Video link is missing.");
+          return;
+        }
+
         const range = quill.getSelection();
+        const updatedVideoLink = ` ${videoLink} `;
 
         if (range === null) {
-          const videoLink = `${videoToBeShared?.shareableLink}`;
-
-          if (!videoLink) {
-            console.error("Video link is missing.");
-            return; // Exit early if the video link is not available
-          }
-
-          // Insert the video link at the beginning with formatting
-          quill.insertText(0, videoLink, {
-            bold: true,
-            color: "blue",
-          });
+          quill.insertText(0, updatedVideoLink, { bold: true, color: "blue" });
+          quill.insertText(updatedVideoLink.length, "\n");
+          quill.setSelection(updatedVideoLink.length + 1);
         } else {
-          // Adding a space before and after the link
-          const updatedVideoLink = ` ${videoToBeShared?.shareableLink} `;
-
-          if (!updatedVideoLink.trim()) {
-            console.error("Updated video link is missing.");
-            return; // Exit early if the video link is not available
-          }
-
-          // Insert the link with formatting at the specified range
           quill.insertText(range.index, updatedVideoLink, {
             bold: true,
             color: "blue",
           });
-
           quill.insertText(range.index + updatedVideoLink.length, "\n");
+          quill.setSelection(range.index + updatedVideoLink.length + 1);
         }
       };
 
+      // First Name Shortcode Button
       const firstNameShortCodeBtn = document.createElement("button");
       firstNameShortCodeBtn.innerHTML = `<p style="margin: 0 5px; line-height: normal;">Add First Name</p>`;
       firstNameShortCodeBtn.setAttribute("type", "button");
       firstNameShortCodeBtn.onclick = () => {
-        const firstNameShortCode = "{{contact.first_name}}";
+        const shortCode = "{{contact.first_name}}";
         const range = quill.getSelection();
-        if (range === null) {
-          // Insert the image at the current cursor position
-          quill.clipboard.dangerouslyPasteHTML(0, firstNameShortCode);
-          // Move the cursor to the end of the inserted image
-          quill.setSelection(0 + firstNameShortCode.length);
-        } else {
-          // Insert the image at the current cursor position
-          quill.clipboard.dangerouslyPasteHTML(range.index, firstNameShortCode);
-          // Move the cursor to the end of the inserted image
-          quill.setSelection(range.index + firstNameShortCode.length);
-        }
 
-        // handle udpate the shortCodesSelected
-        // handleShortCodeGlobalState(firstNameShortCode);
+        if (range === null) {
+          quill.insertText(0, shortCode);
+          quill.setSelection(shortCode.length);
+        } else {
+          quill.insertText(range.index, shortCode);
+          quill.setSelection(range.index + shortCode.length);
+        }
       };
 
-      // Style and append custom buttons to the wrapper
+      // Add buttons to wrapper
       [firstNameShortCodeBtn, pasteLinkButton].forEach((btn) => {
-        btn.classList.add("ql-formats");
-        btn.classList.add("sms-editor");
+        btn.classList.add("ql-formats", "sms-editor");
         customButtonsWrapper.appendChild(btn);
       });
 
-      // Append the wrapper to the toolbar
+      // Append wrapper to toolbar
+      const toolbar = quill.getModule("toolbar");
       toolbar.container.appendChild(customButtonsWrapper);
 
-      // Restore editor content if available
+      // Restore existing content
       if (editorContent) {
         quill.setContents(editorContent);
       }
 
+      // Expose Quill instance
       ref.current = quill;
 
+      // Listen to changes
       quill.on(Quill.events.TEXT_CHANGE, (...args) => {
         setEditorContent(quill.getContents());
         onTextChangeRef.current?.(...args);
@@ -1696,8 +2316,7 @@ export const SMSTextEditor = forwardRef(
         ref.current = null;
         container.innerHTML = "";
       };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [ref]);
+    }, [ref, videoToBeShared, editorContent, setEditorContent]);
 
     return (
       <div className="flex flex-col gap-[8px] relative">

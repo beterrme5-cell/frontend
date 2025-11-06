@@ -147,6 +147,7 @@ const RecordVideo = () => {
     setIsNewRecordingModalOpen(true);
 
     if (accessToken) {
+      localStorage.setItem("accessToken", accessToken);
       setLoading(false);
       setIsLoading(true);
       fetchData(accessToken);
