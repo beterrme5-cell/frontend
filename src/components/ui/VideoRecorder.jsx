@@ -786,12 +786,17 @@ function VideoRecorder() {
         },
       });
 
+      // Step 3: Calculate video size (ADD THIS PART)
+      const videoSizeMB = recordedBlob.size / (1024 * 1024); // Convert bytes to MB
+      const roundedVideoSize = Math.ceil(videoSizeMB); // Always round UP (4.1 → 5, 4.9 → 5)
+
       // Step 3: Create metadata object
       const formattedDuration = formatDurationForDisplay(elapsedMs);
       const videoData = {
         title: videoTitle,
         key: key,
         duration: formattedDuration,
+        size: roundedVideoSize,
       };
 
       const response2 = await saveCustomRecordedVideo({

@@ -691,12 +691,40 @@ export const ShareVideoModal = () => {
   //     selectedContactTags: [],
   //   },
 
+  // const smsForm = useForm({
+  //   initialValues: {
+  //     smsContent: isUsingNewSchema
+  //       ? `\n\n${CLOUDFRONT_BASE}/${
+  //           videoToBeShared?.videoKey || videoToBeShared?.teaserKey
+  //         }`
+  //       : videoToBeShared?.shareableLink
+  //       ? `\n\n${videoToBeShared.shareableLink}`
+  //       : "",
+  //     selectedSMSContacts: [],
+  //     selectedContactTags: [],
+  //   },
+
+  // const smsForm = useForm({
+  //   initialValues: {
+  //     smsContent: isUsingNewSchema
+  //       ? videoToBeShared?.size < 6
+  //         ? "" // Keep empty if size is less than 6
+  //         : `\n\n${CLOUDFRONT_BASE}/${
+  //             videoToBeShared?.videoKey || videoToBeShared?.teaserKey
+  //           }`
+  //       : videoToBeShared?.shareableLink && videoToBeShared?.size >= 6
+  //       ? `\n\n${videoToBeShared.shareableLink}`
+  //       : "",
+  //     selectedSMSContacts: [],
+  //     selectedContactTags: [],
+  //   },
+
   const smsForm = useForm({
     initialValues: {
       smsContent: isUsingNewSchema
-        ? `\n\n${CLOUDFRONT_BASE}/${
-            videoToBeShared?.videoKey || videoToBeShared?.teaserKey
-          }`
+        ? videoToBeShared?.size < 3
+          ? "" // Keep empty if size is less than 3
+          : `\n\n${CLOUDFRONT_BASE}/${videoToBeShared?.videoKey}`
         : videoToBeShared?.shareableLink
         ? `\n\n${videoToBeShared.shareableLink}`
         : "",
@@ -2072,11 +2100,39 @@ export const ShareVideoModal = () => {
                     />
                   </div>
 
-                  <Checkbox
+                  {/* <Checkbox
                     checked={sendAttachmentWithSMS}
                     value={sendAttachmentWithSMS}
                     onChange={(e) => setSendAttachmentWithSMS(e.target.checked)}
-                    label="Attach thumbnail to SMS"
+                    label={
+                      isUsingNewSchema && videoToBeShared?.size < 3
+                        ? "Video will be attached to SMS"
+                        : "Attach thumbnail to SMS"
+                    }
+                    className="mt-[8px]"
+                  /> */}
+                  <Checkbox
+                    checked={
+                      isUsingNewSchema && videoToBeShared?.size > 3
+                        ? false
+                        : sendAttachmentWithSMS
+                    }
+                    value={
+                      isUsingNewSchema && videoToBeShared?.size > 3
+                        ? false
+                        : sendAttachmentWithSMS
+                    }
+                    onChange={(e) => {
+                      if (!(isUsingNewSchema && videoToBeShared?.size > 3)) {
+                        setSendAttachmentWithSMS(e.target.checked);
+                      }
+                    }}
+                    disabled={isUsingNewSchema && videoToBeShared?.size > 3}
+                    label={
+                      isUsingNewSchema && videoToBeShared?.size < 3
+                        ? "Video will be attached to SMS"
+                        : "Attach thumbnail to SMS"
+                    }
                     className="mt-[8px]"
                   />
                 </div>
