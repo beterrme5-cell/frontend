@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+const BASE_URL = "http://localhost:9000/api";
 
 // API to get all videos from the database\
 // export const getAllVideos = async (accessToken) => {
@@ -289,6 +289,43 @@ export const getFreshVideoData = async ({ freshVideoKey, accessToken }) => {
     console.error("Error while fetching Fresh Video: ", error);
     throw new Error(
       error.response?.data?.message || "Could not fetch Fresh Video!"
+    );
+  }
+};
+
+// get video for video viewer
+
+export const getVideoViewerData = async ({ id }) => {
+  console.log("Get Fresh Video Data called", id);
+  console.log("BASE URL", BASE_URL);
+  try {
+    const response = await axios.get(`${BASE_URL}/video/getVideoViewerData`, {
+      params: {
+        id: id,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error while fetching Fresh Video: ", error);
+    throw new Error(
+      error.response?.data?.message || "Could not fetch Fresh Video!"
+    );
+  }
+};
+
+// ✅ ADD THIS NEW FUNCTION
+export const incrementVideoView = async ({ videoId }) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/video/incrementView`, {
+      videoId: videoId,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error incrementing view:", error);
+    throw new Error(
+      error.response?.data?.message || "Could not increment view!"
     );
   }
 };

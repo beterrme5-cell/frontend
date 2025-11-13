@@ -719,12 +719,27 @@ export const ShareVideoModal = () => {
   //     selectedContactTags: [],
   //   },
 
+  console.log("Video Size: -------------", videoToBeShared?.size);
+
+  // const smsForm = useForm({
+  //   initialValues: {
+  //     smsContent: isUsingNewSchema
+  //       ? videoToBeShared?.size < 3
+  //         ? "fffffff" // Keep empty if size is less than 3
+  //         : `\n\n${CLOUDFRONT_BASE}/${videoToBeShared?.videoKey}`
+  //       : videoToBeShared?.shareableLink
+  //       ? `\n\n${videoToBeShared.shareableLink}`
+  //       : "",
+  //     selectedSMSContacts: [],
+  //     selectedContactTags: [],
+  //   },
+
   const smsForm = useForm({
     initialValues: {
       smsContent: isUsingNewSchema
-        ? videoToBeShared?.size < 3
-          ? "" // Keep empty if size is less than 3
-          : `\n\n${CLOUDFRONT_BASE}/${videoToBeShared?.videoKey}`
+        ? videoToBeShared?.size > 3
+          ? `\n\n${CLOUDFRONT_BASE}/${videoToBeShared?.videoKey}` // size > 3 → include link
+          : "" // size < 3 → keep empty
         : videoToBeShared?.shareableLink
         ? `\n\n${videoToBeShared.shareableLink}`
         : "",
@@ -1898,7 +1913,6 @@ export const ShareVideoModal = () => {
                       }}
                     />
                   </div> */}
-
                   {/* This is the updated div element replaced */}
                   <p className="text-[14px] mb-[8px]">Content</p>
                   <div className="relative rounded-[12px] w-full h-[250px] !bg-[#F7F7F8] border border-[#D7D5DD] overflow-hidden">
@@ -2099,7 +2113,6 @@ export const ShareVideoModal = () => {
                       }}
                     />
                   </div>
-
                   {/* <Checkbox
                     checked={sendAttachmentWithSMS}
                     value={sendAttachmentWithSMS}
@@ -2111,23 +2124,24 @@ export const ShareVideoModal = () => {
                     }
                     className="mt-[8px]"
                   /> */}
+                  {/* ? videoToBeShared?.size > 3 */}
                   <Checkbox
                     checked={
-                      isUsingNewSchema && videoToBeShared?.size > 3
+                      isUsingNewSchema && videoToBeShared?.size < 3
                         ? false
                         : sendAttachmentWithSMS
                     }
                     value={
-                      isUsingNewSchema && videoToBeShared?.size > 3
+                      isUsingNewSchema && videoToBeShared?.size < 3
                         ? false
                         : sendAttachmentWithSMS
                     }
                     onChange={(e) => {
-                      if (!(isUsingNewSchema && videoToBeShared?.size > 3)) {
+                      if (!(isUsingNewSchema && videoToBeShared?.size < 3)) {
                         setSendAttachmentWithSMS(e.target.checked);
                       }
                     }}
-                    disabled={isUsingNewSchema && videoToBeShared?.size > 3}
+                    disabled={isUsingNewSchema && videoToBeShared?.size < 3}
                     label={
                       isUsingNewSchema && videoToBeShared?.size < 3
                         ? "Video will be attached to SMS"

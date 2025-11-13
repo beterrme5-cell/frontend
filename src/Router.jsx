@@ -5,6 +5,7 @@ import VideoDetail from "./pages/videoDetail/VideoDetail.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import RecordVideo from "./pages/recordVideo/RecordVideo";
 import UploadedVideoDetail from "./pages/uploadedVideoDetail/UploadedVideoDetail.jsx";
+import VideoViewer from "./components/ui/VideoViewer.jsx";
 
 export const router = createBrowserRouter([
   {
@@ -26,6 +27,11 @@ export const router = createBrowserRouter([
       {
         path: "video-detail/:videoId",
         element: <VideoDetail />,
+      },
+      //new route for page video viewer
+      {
+        path: "videoviewer/:id",
+        element: <VideoViewer />,
       },
       {
         path: "recordings/:accessToken/:userLocationId/video-detail/:videoId",
