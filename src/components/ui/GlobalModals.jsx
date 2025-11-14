@@ -2033,7 +2033,7 @@ export const ShareVideoModal = () => {
                         : sendAttachmentWithSMS
                     }
                     value={
-                      isUsingNewSchema && videoToBeShared?.size < 3
+                      isUsingNewSchema && videoToBeShared?.size <= 3
                         ? true
                         : sendAttachmentWithSMS
                     }

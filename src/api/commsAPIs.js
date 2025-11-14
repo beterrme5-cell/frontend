@@ -25,6 +25,8 @@ export const sendSMSToSelectedContacts = async (params) => {
       requestBody.videoId = params.videoId;
     }
 
+    console.log("Request Body for SMS:", requestBody);
+
     const response = await axios.post(
       `${BASE_URL}/comms/sendSMS`,
       requestBody,
