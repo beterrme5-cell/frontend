@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:9000/api";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // API to get all videos from the database\
 // export const getAllVideos = async (accessToken) => {

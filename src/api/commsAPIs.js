@@ -2,40 +2,6 @@ import axios from "axios";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // API to send a SMS to the user
-// export const sendSMSToSelectedContacts = async (params) => {
-//   // Get the accountId and userLocationId from the Local Storage
-//   const accessToken = localStorage.getItem("accessToken");
-//   try {
-//     const response = await axios.post(
-//       `${BASE_URL}/comms/sendSMS`,
-//       {
-//         contactIds: params.contactIds,
-//         tags: params.tags,
-//         message: params.message,
-//         videoId: params.videoId,
-//         sendAttachment: params.sendAttachment,
-//         uploadedVideoName: params.uploadedVideoName,
-//       },
-//       {
-//         headers: {
-//           Authorization: `Bearer ${accessToken}`,
-//         },
-//       }
-//     );
-//     return {
-//       success: true,
-//       data: response.data,
-//     };
-//   } catch (error) {
-//     console.error("Error while sending SMS: ", error);
-//     return {
-//       success: false,
-//       error: error.response?.data?.message || "Could not send SMS!",
-//     };
-//   }
-// };
-
-// API to send a SMS to the user
 export const sendSMSToSelectedContacts = async (params) => {
   // Get the accountId and userLocationId from the Local Storage
   const accessToken = localStorage.getItem("accessToken");

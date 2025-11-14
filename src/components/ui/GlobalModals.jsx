@@ -615,8 +615,6 @@ export const ShareVideoModal = () => {
   const activeTab = useGlobalModals((state) => state.activeTab);
   const setActiveTab = useGlobalModals((state) => state.setActiveTab);
 
-  // const setTabToOpen = useGlobalModals((state) => state.setActiveTab);
-
   // Use the variable wherever needed
   console.log("Is using new schema:", isNewSchema);
 
@@ -667,72 +665,7 @@ export const ShareVideoModal = () => {
     },
   });
 
-  // const smsForm = useForm({
-  //   initialValues: {
-  //     smsContent: videoToBeShared?.shareableLink
-  //       ? `\n\n${videoToBeShared.shareableLink}`
-  //       : "",
-  //     selectedSMSContacts: [],
-  //     selectedContactTags: [],
-  //   },
-
-  // const smsForm = useForm({
-  //   initialValues: {
-  //     smsContent: isUsingNewSchema
-  //       ? `\n\n<a href="${CLOUDFRONT_BASE}/${
-  //           videoToBeShared?.videoKey
-  //         }"><img src="${CLOUDFRONT_BASE}/${
-  //           videoToBeShared?.gifKey || videoToBeShared?.teaserKey
-  //         }" alt="Video Preview" /></a>`
-  //       : videoToBeShared?.shareableLink
-  //       ? `\n\n${videoToBeShared.shareableLink}`
-  //       : "",
-  //     selectedSMSContacts: [],
-  //     selectedContactTags: [],
-  //   },
-
-  // const smsForm = useForm({
-  //   initialValues: {
-  //     smsContent: isUsingNewSchema
-  //       ? `\n\n${CLOUDFRONT_BASE}/${
-  //           videoToBeShared?.videoKey || videoToBeShared?.teaserKey
-  //         }`
-  //       : videoToBeShared?.shareableLink
-  //       ? `\n\n${videoToBeShared.shareableLink}`
-  //       : "",
-  //     selectedSMSContacts: [],
-  //     selectedContactTags: [],
-  //   },
-
-  // const smsForm = useForm({
-  //   initialValues: {
-  //     smsContent: isUsingNewSchema
-  //       ? videoToBeShared?.size < 6
-  //         ? "" // Keep empty if size is less than 6
-  //         : `\n\n${CLOUDFRONT_BASE}/${
-  //             videoToBeShared?.videoKey || videoToBeShared?.teaserKey
-  //           }`
-  //       : videoToBeShared?.shareableLink && videoToBeShared?.size >= 6
-  //       ? `\n\n${videoToBeShared.shareableLink}`
-  //       : "",
-  //     selectedSMSContacts: [],
-  //     selectedContactTags: [],
-  //   },
-
   console.log("Video Size: -------------", videoToBeShared?.size);
-
-  // const smsForm = useForm({
-  //   initialValues: {
-  //     smsContent: isUsingNewSchema
-  //       ? videoToBeShared?.size < 3
-  //         ? "fffffff" // Keep empty if size is less than 3
-  //         : `\n\n${CLOUDFRONT_BASE}/${videoToBeShared?.videoKey}`
-  //       : videoToBeShared?.shareableLink
-  //       ? `\n\n${videoToBeShared.shareableLink}`
-  //       : "",
-  //     selectedSMSContacts: [],
-  //     selectedContactTags: [],
-  //   },
 
   const smsForm = useForm({
     initialValues: {
@@ -865,17 +798,6 @@ export const ShareVideoModal = () => {
   const handleSubmitEmail = async (htmlContent) => {
     setModalLoadingOverlay(true);
 
-    // const API_DATA = {
-    //   contactIds:
-    //     activeTab === "email" && activeSubTab === "tags"
-    //       ? contactsLinkedWithTags || []
-    //       : emailForm.values.selectedEmailContacts || [],
-    //   message: htmlContent,
-    //   subject: emailForm.values.emailSubject,
-    //   videoId: videoToBeShared._id || "",
-    //   uploadedVideoName: videoToBeShared?.title,
-    // };
-
     const API_DATA = {
       contactIds:
         activeTab === "email" && activeSubTab === "tags"
@@ -955,17 +877,6 @@ export const ShareVideoModal = () => {
 
   const handleSubmitSMS = async () => {
     setModalLoadingOverlay(true);
-
-    // const API_DATA = {
-    //   contactIds:
-    //     activeTab === "sms" && activeSubTab === "tags"
-    //       ? contactsLinkedWithTags || []
-    //       : smsForm.values.selectedSMSContacts || [],
-    //   message: smsForm.values.smsContent,
-    //   videoId: videoToBeShared._id || "",
-    //   sendAttachment: sendAttachmentWithSMS,
-    //   uploadedVideoName: videoToBeShared?.title,
-    // };
 
     const API_DATA = {
       contactIds:
@@ -2113,37 +2024,27 @@ export const ShareVideoModal = () => {
                       }}
                     />
                   </div>
-                  {/* <Checkbox
-                    checked={sendAttachmentWithSMS}
-                    value={sendAttachmentWithSMS}
-                    onChange={(e) => setSendAttachmentWithSMS(e.target.checked)}
-                    label={
-                      isUsingNewSchema && videoToBeShared?.size < 3
-                        ? "Video will be attached to SMS"
-                        : "Attach thumbnail to SMS"
-                    }
-                    className="mt-[8px]"
-                  /> */}
+
                   {/* ? videoToBeShared?.size > 3 */}
                   <Checkbox
                     checked={
-                      isUsingNewSchema && videoToBeShared?.size < 3
-                        ? false
+                      isUsingNewSchema && videoToBeShared?.size <= 3
+                        ? true
                         : sendAttachmentWithSMS
                     }
                     value={
                       isUsingNewSchema && videoToBeShared?.size < 3
-                        ? false
+                        ? true
                         : sendAttachmentWithSMS
                     }
                     onChange={(e) => {
-                      if (!(isUsingNewSchema && videoToBeShared?.size < 3)) {
+                      if (!(isUsingNewSchema && videoToBeShared?.size <= 3)) {
                         setSendAttachmentWithSMS(e.target.checked);
                       }
                     }}
-                    disabled={isUsingNewSchema && videoToBeShared?.size < 3}
+                    disabled={isUsingNewSchema && videoToBeShared?.size <= 3}
                     label={
-                      isUsingNewSchema && videoToBeShared?.size < 3
+                      isUsingNewSchema && videoToBeShared?.size <= 3
                         ? "Video will be attached to SMS"
                         : "Attach thumbnail to SMS"
                     }

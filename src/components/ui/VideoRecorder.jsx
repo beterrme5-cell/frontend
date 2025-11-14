@@ -387,40 +387,6 @@ function VideoRecorder() {
     }
   };
 
-  // const handleStartSetup = async () => {
-  //   const hasPermissions = await checkMediaPermissions();
-  //   if (!hasPermissions) return;
-
-  //   try {
-  //     const camStream = await navigator.mediaDevices.getUserMedia({
-  //       video: true,
-  //       audio: true,
-  //     });
-  //     const hasVideo = camStream.getVideoTracks().length > 0;
-  //     const hasAudio = camStream.getAudioTracks().length > 0;
-  //     if (!hasVideo || !hasAudio) {
-  //       alert(
-  //         `Warning: ${!hasVideo ? "Camera" : ""}${
-  //           !hasVideo && !hasAudio ? " and " : ""
-  //         }${!hasAudio ? "Microphone" : ""} access was not granted.`
-  //       );
-  //     }
-  //     camStreamRef.current = camStream;
-  //     setStep("setup");
-  //     setTimeout(() => {
-  //       if (videoPreviewRef.current) {
-  //         videoPreviewRef.current.srcObject = camStream;
-  //         videoPreviewRef.current.play();
-  //       }
-  //     }, 100);
-  //   } catch (err) {
-  //     console.error("Media error:", err);
-  //     alert(
-  //       `Camera or mic permission denied: ${err.message}\n\nTo enable permissions:\n1. Go to browser settings.\n2. Find Privacy or Security.\n3. Allow camera and microphone access for this site.`
-  //     );
-  //   }
-  // };
-
   const startRecording = async () => {
     const hasPermissions = await checkMediaPermissions();
     if (!hasPermissions) return;
@@ -806,7 +772,10 @@ function VideoRecorder() {
 
       if (response2.success) {
         setUploadProgress(100);
-        setStep("upload-success");
+        // Add 1.5 second delay before showing success popup
+        setTimeout(() => {
+          setStep("upload-success");
+        }, 2000);
       }
     } catch (error) {
       console.error("Upload failed:", error);
@@ -816,7 +785,6 @@ function VideoRecorder() {
     }
   };
 
-  // const handleContinueRename = async () => {
   //   if (!videoTitle.trim()) {
   //     setTitleError("Video title cannot be empty");
   //     return;
@@ -1285,53 +1253,6 @@ function VideoRecorder() {
                     Send SMS
                   </button>
 
-                  {/* <button
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                          // Start preparing
-    setIsPreparing(true);
-
-                      try {
-                        let result = await getFreshVideoData({
-                          freshVideoKey,
-                          accessToken,
-                        });
-                        let freshVideo = result.video;
-
-                        if (!freshVideo.eventProcessed) {
-                          console.log("Preview not ready, polling...");
-
-                          const processedVideo = await pollVideoStatus({
-                            freshVideoKey,
-                            accessToken,
-                          });
-
-                          if (!processedVideo) {
-                            setStep("idle");
-                            alert(
-                              "Still processing video preview, try again in a few seconds…"
-                            );
-                            return;
-                          }
-
-                          freshVideo = processedVideo;
-                        }
-
-                        setTabToOpen("email");
-
-                        setVideoToBeShared(freshVideo);
-                        setIsShareVideoModalOpen(true);
-                        setStep("idle");
-                      } catch (error) {
-                        console.error("Failed to fetch video data", error);
-                        setStep("idle");
-                      }
-                    }}
-                    className="flex-1 px-4 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2"
-                  >
-                    <MdEmail className="w-4 h-4" />
-                    Send Email
-                  </button> */}
                   <button
                     onClick={async (e) => {
                       e.stopPropagation();
@@ -1386,10 +1307,7 @@ function VideoRecorder() {
                     {/* Show different text based on state */}
                     {isPreparing ? "Preparing..." : "Send Email"}
                   </button>
-                  {/* <button className="flex-1 px-4 py-3 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2">
-                    <FaLink className="w-4 h-4" />
-                    Share Link
-                  </button> */}
+
                   <button
                     onClick={handleCopyLink}
                     className={`flex-1 px-4 py-3 ${
