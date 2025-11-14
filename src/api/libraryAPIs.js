@@ -26,6 +26,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 // };
 
 export const getAllVideos = async (accessToken, page = 1, limit = 10) => {
+  console.log("Base URL:", BASE_URL);
   try {
     const response = await axios.get(`${BASE_URL}/video/getVideosByAccountId`, {
       headers: {
