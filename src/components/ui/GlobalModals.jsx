@@ -2028,25 +2028,32 @@ export const ShareVideoModal = () => {
                   {/* ? videoToBeShared?.size > 3 */}
                   <Checkbox
                     checked={
-                      isUsingNewSchema && videoToBeShared?.size <= 3
-                        ? true
-                        : sendAttachmentWithSMS
+                      isUsingNewSchema && videoToBeShared?.size > 3
+                        ? true // Force true for new schema + size > 3MB (GIF attachment)
+                        : isUsingNewSchema && videoToBeShared?.size <= 3
+                        ? true // Force true for new schema + size <= 3MB (video attachment)
+                        : sendAttachmentWithSMS // Use state for old schema
                     }
                     value={
-                      isUsingNewSchema && videoToBeShared?.size <= 3
+                      isUsingNewSchema && videoToBeShared?.size > 3
+                        ? true
+                        : isUsingNewSchema && videoToBeShared?.size <= 3
                         ? true
                         : sendAttachmentWithSMS
                     }
                     onChange={(e) => {
-                      if (!(isUsingNewSchema && videoToBeShared?.size <= 3)) {
+                      // Only allow changes for old schema
+                      if (!isUsingNewSchema) {
                         setSendAttachmentWithSMS(e.target.checked);
                       }
                     }}
-                    disabled={isUsingNewSchema && videoToBeShared?.size <= 3}
+                    disabled={isUsingNewSchema} // Disable for new schema since behavior is automatic
                     label={
-                      isUsingNewSchema && videoToBeShared?.size <= 3
-                        ? "Video will be attached to SMS"
-                        : "Attach thumbnail to SMS"
+                      isUsingNewSchema
+                        ? videoToBeShared?.size > 3
+                          ? "GIF will be attached to SMS" // New schema + size > 3MB
+                          : "Video will be attached to SMS" // New schema + size <= 3MB
+                        : "Attach thumbnail to SMS" // Old schema
                     }
                     className="mt-[8px]"
                   />
