@@ -51,21 +51,13 @@ const getTimeAgo = (date) => {
   const now = new Date();
   const diffInMs = now - new Date(date);
   const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-
+  
   if (diffInDays === 0) return "Today";
   if (diffInDays === 1) return "1 day ago";
   if (diffInDays < 7) return `${diffInDays} days ago`;
-  if (diffInDays < 30)
-    return `${Math.floor(diffInDays / 7)} week${
-      Math.floor(diffInDays / 7) > 1 ? "s" : ""
-    } ago`;
-  if (diffInDays < 365)
-    return `${Math.floor(diffInDays / 30)} month${
-      Math.floor(diffInDays / 30) > 1 ? "s" : ""
-    } ago`;
-  return `${Math.floor(diffInDays / 365)} year${
-    Math.floor(diffInDays / 365) > 1 ? "s" : ""
-  } ago`;
+  if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} week${Math.floor(diffInDays / 7) > 1 ? 's' : ''} ago`;
+  if (diffInDays < 365) return `${Math.floor(diffInDays / 30)} month${Math.floor(diffInDays / 30) > 1 ? 's' : ''} ago`;
+  return `${Math.floor(diffInDays / 365)} year${Math.floor(diffInDays / 365) > 1 ? 's' : ''} ago`;
 };
 
 const RecordVideo = () => {
@@ -408,7 +400,9 @@ const RecordVideo = () => {
                                 {video.title || video.name}
                               </h4>
                               <div className="flex items-center gap-2 text-xs text-gray-500">
-                                <span>{getTimeAgo(video.createdAt)}</span>
+                                <span>
+                                  {getTimeAgo(video.createdAt)}
+                                </span>
                                 {isNewSchema(video) && (
                                   <div className="flex items-center gap-1">
                                     <HiEye size={12} />
@@ -610,7 +604,9 @@ const RecordVideo = () => {
                                 {video.title || video.name}
                               </h4>
                               <div className="flex items-center gap-2 text-xs text-gray-500">
-                                <span>{getTimeAgo(video.createdAt)}</span>
+                                <span>
+                                  {getTimeAgo(video.createdAt)}
+                                </span>
                                 {isNewSchema(video) && (
                                   <div className="flex items-center gap-1">
                                     <HiEye size={12} />

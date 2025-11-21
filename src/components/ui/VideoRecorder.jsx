@@ -936,9 +936,9 @@ function VideoRecorder() {
       {step === "idle" && (
         <button
           onClick={handleStartSetup}
-          className="px-4 py-2 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+          className="px-4 py-2 bg-primary text-white rounded-xl shadow-lg  hover:shadow-xl transform hover:scale-105 transition-all duration-300"
         >
-          Record Custom Video
+          Record Video
         </button>
       )}
 

@@ -1,4 +1,4 @@
-import { Menu, Tabs, Table, Divider } from "@mantine/core";
+import { Menu, Tabs, Table, Divider, Button } from "@mantine/core";
 import { useGlobalModals } from "../../store/globalModals";
 import { Link, useLocation, useParams } from "react-router-dom";
 import {
@@ -28,6 +28,11 @@ import { useLoadingBackdrop } from "./../../store/loadingBackdrop";
 import copy from "copy-to-clipboard";
 import VideoRecorder from "./VideoRecorder";
 import { VideoPlayer } from "./VideoPlayer";
+import { HiEye, HiChartBar } from "react-icons/hi2";
+import { useNavigate } from "react-router-dom";
+import { SiSimpleanalytics } from "react-icons/si";
+import { IoShareSocial } from "react-icons/io5";
+import { MdAnalytics } from "react-icons/md";
 
 // Customn Fonts - Quill Editor
 const FontAttributor = Quill.import("attributors/class/font");
@@ -332,7 +337,7 @@ export const BodyTabsRoot = ({ children, value, onChange }) => {
 export const VideoTabSection = ({ children, heading }) => {
   return (
     <div className="mt-[32px]">
-      <h2 className="text-[18px] font-medium">{heading}</h2>
+      <h2 className="text-[18px] font-medium mb-4">{heading}</h2>
       {children}
     </div>
   );
@@ -353,6 +358,32 @@ export const VideoActionButtons = ({ children }) => {
 export const VideoTabItem = ({ videoData }) => {
   const setTabToOpen = useGlobalModals((state) => state.setActiveTab);
   const [isHovered, setIsHovered] = useState(false);
+  const navigate = useNavigate();
+
+  // Helper function to check if video uses new schema
+  const isNewSchema = (video) => !!video?.videoKey;
+
+  // Helper function to get time ago
+  const getTimeAgo = (date) => {
+    const now = new Date();
+    const diffInMs = now - new Date(date);
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (diffInDays === 0) return "Today";
+    if (diffInDays === 1) return "1 day ago";
+    if (diffInDays < 7) return `${diffInDays} days ago`;
+    if (diffInDays < 30)
+      return `${Math.floor(diffInDays / 7)} week${
+        Math.floor(diffInDays / 7) > 1 ? "s" : ""
+      } ago`;
+    if (diffInDays < 365)
+      return `${Math.floor(diffInDays / 30)} month${
+        Math.floor(diffInDays / 30) > 1 ? "s" : ""
+      } ago`;
+    return `${Math.floor(diffInDays / 365)} year${
+      Math.floor(diffInDays / 365) > 1 ? "s" : ""
+    } ago`;
+  };
 
   const setIsDeleteVideoModalOpen = useGlobalModals(
     (state) => state.setIsDeleteVideoModalOpen
@@ -375,13 +406,15 @@ export const VideoTabItem = ({ videoData }) => {
 
   return (
     <div
-      className="flex flex-col border border-[#CFCED4] rounded-[16px] relative min-w-[250px] h-[210px] overflow-hidden hover:cursor-pointer group"
+      className="flex flex-col border border-[#CFCED4] rounded-[16px] relative min-w-[250px] h-[280px] overflow-hidden hover:cursor-pointer group"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="h-[160px] relative bg-black">
-        {/* Embedded video (Loom or YouTube, etc.) */}
-        {videoData?.embeddedLink ? (
+        {/* Show VideoPlayer for new schema videos, embedded video for old schema */}
+        {isNewSchema(videoData) ? (
+          <VideoPlayer videoData={videoData} />
+        ) : videoData?.embeddedLink ? (
           <iframe
             width="100%"
             height="100%"
@@ -390,97 +423,129 @@ export const VideoTabItem = ({ videoData }) => {
             allowFullScreen
           ></iframe>
         ) : (
-          <VideoPlayer videoData={videoData} />
+          <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+            <span className="text-white text-2xl">▶</span>
+          </div>
         )}
-
-        {/* Share Button */}
-        <button
-          className="absolute top-[8px] right-[8px] cursor-pointer bg-primary rounded-full p-[4px_8px] hover:cursor-pointer flex gap-[4px] items-center text-white z-10"
-          onClick={(e) => {
-            e.stopPropagation();
-            setTabToOpen("email");
-            setVideoToBeShared(videoData);
-            setIsShareVideoModalOpen(true);
-          }}
-        >
-          <p className="text-[14px] font-medium">Share</p>
-          <SHAREVIDEO_ICON />
-        </button>
       </div>
 
       {/* Bottom Section */}
-      <div className="flex-grow px-[16px] py-[12px] flex items-center justify-between gap-[10px] border-t border-t-[#CFCED4]">
-        <Link
-          to={`video-detail/${videoData._id}`}
-          className="text-[14px] font-medium line-clamp-1"
-        >
-          {videoData.title}
-        </Link>
-
-        <Menu
-          shadow="md"
-          width={150}
-          position="bottom-end"
-          arrowPosition="center"
-          radius={12}
-          offset={-5}
-          styles={{
-            menu: { padding: "8px 12px !important" },
-            itemLabel: { fontSize: "14px", fontWeight: 500 },
-          }}
-        >
-          <Menu.Target>
-            <div className="w-[24px] h-[24px] flex justify-center items-center">
-              <VIDEO_OPTIONS_ICON />
-            </div>
-          </Menu.Target>
-
-          <Menu.Dropdown>
-            <Menu.Item>
+      <div className="flex-grow px-[16px] py-[12px] flex flex-col gap-[6px] border-t border-t-[#CFCED4] min-h-[120px]">
+        {/* First Row: Title and Menu */}
+        <div className="flex items-center justify-between">
+          <h4 className="text-[14px] font-medium line-clamp-1 flex-1">
+            {videoData.title}
+          </h4>
+          <Menu
+            shadow="md"
+            width={150}
+            position="bottom-end"
+            arrowPosition="center"
+            radius={12}
+            offset={-5}
+            styles={{
+              menu: { padding: "8px 12px !important" },
+              itemLabel: { fontSize: "14px", fontWeight: 500 },
+            }}
+          >
+            <Menu.Target>
               <div
-                onClick={() => {
-                  copy(videoData?.shareableLink);
-                  console.log("Shareable link:", videoData?.shareableLink);
-                }}
-                className="flex items-center gap-[8px]"
+                className="w-[24px] h-[24px] flex justify-center items-center"
+                onClick={(e) => e.stopPropagation()}
               >
-                <COPY_ICON className="text-black" />
-                <p className="text-[14px] font-medium">Copy Link</p>
+                <VIDEO_OPTIONS_ICON />
               </div>
-            </Menu.Item>
+            </Menu.Target>
 
-            <Menu.Item
-              leftSection={<SHARE_ICON className="text-black" />}
-              onClick={() => {
-                setVideoToBeShared(videoData);
-                setIsShareVideoModalOpen(true);
-              }}
-            >
-              Share
-            </Menu.Item>
+            <Menu.Dropdown>
+              <Menu.Item>
+                <div
+                  onClick={() => {
+                    copy(videoData?.shareableLink);
+                    console.log("Shareable link:", videoData?.shareableLink);
+                  }}
+                  className="flex items-center gap-[8px]"
+                >
+                  <COPY_ICON className="text-black" />
+                  <p className="text-[14px] font-medium">Copy Link</p>
+                </div>
+              </Menu.Item>
 
-            <Menu.Item
-              leftSection={<EDIT_ICON className="text-black" />}
-              onClick={() => {
-                setVideoToBeEdited(videoData);
-                setIsEditVideoModalOpen(true);
-              }}
-            >
-              Edit
-            </Menu.Item>
+              <Menu.Item
+                leftSection={<SHARE_ICON className="text-black" />}
+                onClick={() => {
+                  setVideoToBeShared(videoData);
+                  setIsShareVideoModalOpen(true);
+                }}
+              >
+                Share
+              </Menu.Item>
 
-            <Menu.Item
-              color="red"
-              leftSection={<DELETE_ICON className="text-[#FF0000]" />}
-              onClick={() => {
-                setVideoToBeDeleted(videoData);
-                setIsDeleteVideoModalOpen(true);
-              }}
-            >
-              Delete
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
+              <Menu.Item
+                leftSection={<EDIT_ICON className="text-black" />}
+                onClick={() => {
+                  setVideoToBeEdited(videoData);
+                  setIsEditVideoModalOpen(true);
+                }}
+              >
+                Edit
+              </Menu.Item>
+
+              <Menu.Item
+                color="red"
+                leftSection={<DELETE_ICON className="text-[#FF0000]" />}
+                onClick={() => {
+                  setVideoToBeDeleted(videoData);
+                  setIsDeleteVideoModalOpen(true);
+                }}
+              >
+                Delete
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+        </div>
+
+        {/* Second Row: Views and Date (for all videos) */}
+        <div className="flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center gap-1">
+            <HiEye size={12} />
+            <span>{isNewSchema(videoData) ? `${videoData.viewCount || 0} views` : '- views'}</span>
+          </div>
+          <span>{getTimeAgo(videoData.createdAt)}</span>
+        </div>
+
+        {/* Third Row: Share and Analytics buttons (for all videos) */}
+        <div className="flex gap-2 mt-2">
+          <Button
+            size="xs"
+            variant="outline"
+            className="flex-1"
+            leftSection={<IoShareSocial size={12} />}
+            onClick={(e) => {
+              e.stopPropagation();
+              setTabToOpen("email");
+              setVideoToBeShared(videoData);
+              setIsShareVideoModalOpen(true);
+            }}
+          >
+            Share
+          </Button>
+          <Button
+            size="xs"
+            variant={isNewSchema(videoData) ? "filled" : "outline"}
+            className={`flex-1 ${isNewSchema(videoData) ? 'bg-primary' : 'opacity-50 cursor-not-allowed'}`}
+            leftSection={<MdAnalytics size={12} />}
+            disabled={!isNewSchema(videoData)}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isNewSchema(videoData)) {
+                navigate(`/videoviewer/${videoData._id}`);
+              }
+            }}
+          >
+            Analytics
+          </Button>
+        </div>
       </div>
     </div>
   );

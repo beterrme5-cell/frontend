@@ -4,6 +4,28 @@ import { getVideoViewerData, incrementVideoView } from "../../api/libraryAPIs";
 import { VideoPlayer } from "./VideoPlayer";
 import { HiClock, HiEye, HiCalendar } from "react-icons/hi2";
 
+// Helper function to get time ago
+const getTimeAgo = (date) => {
+  const now = new Date();
+  const diffInMs = now - new Date(date);
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  if (diffInDays === 0) return "Today";
+  if (diffInDays === 1) return "1 day ago";
+  if (diffInDays < 7) return `${diffInDays} days ago`;
+  if (diffInDays < 30)
+    return `${Math.floor(diffInDays / 7)} week${
+      Math.floor(diffInDays / 7) > 1 ? "s" : ""
+    } ago`;
+  if (diffInDays < 365)
+    return `${Math.floor(diffInDays / 30)} month${
+      Math.floor(diffInDays / 30) > 1 ? "s" : ""
+    } ago`;
+  return `${Math.floor(diffInDays / 365)} year${
+    Math.floor(diffInDays / 365) > 1 ? "s" : ""
+  } ago`;
+};
+
 function VideoViewer() {
   const { id } = useParams();
   const [video, setVideo] = useState(null);
@@ -170,11 +192,20 @@ function VideoViewer() {
             </div>
           )}
 
+          {video.lastViewedAt && (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-purple-500 to-purple-700 text-white">
+              <HiClock className="w-4 h-4" />
+              <span className="text-sm font-medium">
+                Last viewed: {getTimeAgo(video.lastViewedAt)}
+              </span>
+            </div>
+          )}
+
           {video.createdAt && (
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-green-500 to-green-700 text-white">
               <HiCalendar className="w-4 h-4" />
               <span className="text-sm font-medium">
-                {new Date(video.createdAt).toLocaleDateString()}
+                Created: {getTimeAgo(video.createdAt)}
               </span>
             </div>
           )}

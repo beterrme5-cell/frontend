@@ -40,4 +40,13 @@ export const useUserStore = create((set) => ({
 
   userDomain: "",
   setUserDomain: (userDomain) => set({ userDomain }),
+
+  // --------------------------------------------------
+  // Video View Mode (grid/list)
+  // --------------------------------------------------
+  videoViewMode: localStorage.getItem('videoViewMode') || 'grid',
+  setVideoViewMode: (mode) => {
+    localStorage.setItem('videoViewMode', mode);
+    set({ videoViewMode: mode });
+  },
 }));

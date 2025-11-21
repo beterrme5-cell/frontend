@@ -60,7 +60,7 @@ function App() {
       {isDeleteVideoModalOpen && <DeleteVideoConfirmationModal />}
       {updateDomainModalOpen && <UpdateUserDomainModal />}
       {isWarningModalOpen && <StartRecordingWarningModal />}
-      {isNewRecordingModalOpen && <PreRecordingDataInputModal />}
+      {/* {isNewRecordingModalOpen && <PreRecordingDataInputModal />} */}
       <Outlet />
     </main>
   );

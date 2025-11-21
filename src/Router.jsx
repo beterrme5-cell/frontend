@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage.jsx";
 import RecordVideo from "./pages/recordVideo/RecordVideo";
 import UploadedVideoDetail from "./pages/uploadedVideoDetail/UploadedVideoDetail.jsx";
 import VideoViewer from "./components/ui/VideoViewer.jsx";
+import Test from "./components/ui/Test.jsx";
 
 export const router = createBrowserRouter([
   {
@@ -40,6 +41,10 @@ export const router = createBrowserRouter([
       {
         path: "recordings/:accessToken/:userLocationId/uploaded-video-detail",
         element: <UploadedVideoDetail />,
+      },
+      {
+        path: "test",
+        element: <Test />,
       },
       {
         path: "*",
