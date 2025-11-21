@@ -469,3 +469,8 @@ span .em-lns-1do042d {
   height: auto !important;
   max-width: 300px !important;
 }
+
+/* Sapphire Blue glow button */
+.bg-gradient-blue {
+  background: linear-gradient(to bottom right, #0f5edd, #1c6ff9, #3a8bff);
+}

@@ -6,7 +6,7 @@ const CustomButton = ({ id, className, onClick, label, varient, type }) => {
         className ? className : ""
       } ${
         varient === "filled"
-          ? "bg-primary text-white border-none"
+          ? "bg-gradient-blue text-white border-none"
           : "bg-white border border-gray-dark text-darkBlue"
       }`}
       onClick={onClick}

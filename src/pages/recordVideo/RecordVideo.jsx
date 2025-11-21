@@ -9,6 +9,7 @@ import {
   Menu,
 } from "@mantine/core";
 import { HiEye, HiChartBar } from "react-icons/hi2";
+import { HiViewGrid, HiViewList } from "react-icons/hi";
 import { LuLayoutGrid } from "react-icons/lu";
 import { PiListBold } from "react-icons/pi";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -318,22 +319,26 @@ const RecordVideo = () => {
                   spacing="xs"
                   className="w-full sm:w-auto justify-center sm:justify-end"
                 >
-                  <Button
-                    variant={videoViewMode === "grid" ? "filled" : "outline"}
+                  <button
                     onClick={() => setVideoViewMode("grid")}
-                    leftSection={<LuLayoutGrid size={16} />}
-                    className={videoViewMode === "grid" ? "bg-primary" : ""}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-md border text-sm font-medium transition-colors ${
+                      videoViewMode === "grid"
+                        ? "bg-gradient-blue text-white border-transparent"
+                        : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                    }`}
                   >
-                    Grid
-                  </Button>
-                  <Button
-                    variant={videoViewMode === "list" ? "filled" : "outline"}
+                    <HiViewGrid size={16} /> Grid
+                  </button>
+                  <button
                     onClick={() => setVideoViewMode("list")}
-                    leftSection={<PiListBold size={16} />}
-                    className={videoViewMode === "list" ? "bg-primary" : ""}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-md border text-sm font-medium transition-colors ${
+                      videoViewMode === "list"
+                        ? "bg-gradient-blue text-white border-transparent"
+                        : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                    }`}
                   >
-                    List
-                  </Button>
+                    <HiViewList size={16} /> List
+                  </button>
                 </Group>
               </div>
             </div>
@@ -419,18 +424,16 @@ const RecordVideo = () => {
                             </div>
                             <div className="flex items-center gap-2 menu-container">
                               {isNewSchema(video) && (
-                                <Button
-                                  size="xs"
-                                  variant="filled"
-                                  leftSection={<MdAnalytics size={14} />}
-                                  className="bg-primary"
+                                <button
+                                  className="flex items-center gap-1 px-5 py-2 text-xs font-medium rounded bg-gradient-blue text-white border-transparent transition-colors"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     navigate(`/videoviewer/${video._id}`);
                                   }}
                                 >
+                                  <SiSimpleanalytics size={12} />
                                   Analytics
-                                </Button>
+                                </button>
                               )}
                               <Menu
                                 shadow="md"
@@ -621,18 +624,16 @@ const RecordVideo = () => {
                             </div>
                             <div className="flex items-center gap-2 menu-container">
                               {isNewSchema(video) && (
-                                <Button
-                                  size="xs"
-                                  variant="filled"
-                                  leftSection={<MdAnalytics size={14} />}
-                                  className="bg-primary"
+                                <button
+                                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded bg-gradient-blue text-white border-transparent transition-colors"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     navigate(`/videoviewer/${video._id}`);
                                   }}
                                 >
+                                  <MdAnalytics size={14} />
                                   Analytics
-                                </Button>
+                                </button>
                               )}
                               <Menu
                                 shadow="md"

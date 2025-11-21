@@ -936,7 +936,7 @@ function VideoRecorder() {
       {step === "idle" && (
         <button
           onClick={handleStartSetup}
-          className="px-4 py-2 bg-primary text-white rounded-xl shadow-lg  hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+          className="px-5 py-2 bg-gradient-blue text-white rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
         >
           Record Video
         </button>
@@ -982,7 +982,7 @@ function VideoRecorder() {
             <div className="flex gap-3">
               <button
                 onClick={handleContinueFromNameInput}
-                className="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                className="flex-1 px-6 py-3 bg-gradient-blue text-white font-semibold rounded-lg shadow-md  hover:shadow-lg transform hover:scale-105 transition-all duration-200"
               >
                 Continue
               </button>
@@ -1075,7 +1075,7 @@ function VideoRecorder() {
                   <div className="flex gap-3 mt-4">
                     <button
                       onClick={startRecording}
-                      className="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                      className="flex-1 px-6 py-3 bg-gradient-blue text-white font-semibold rounded-lg shadow-md  hover:shadow-lg transform hover:scale-105 transition-all duration-200"
                     >
                       Start Recording
                     </button>
@@ -1110,7 +1110,7 @@ function VideoRecorder() {
                 <div className="flex gap-3 mt-2">
                   <button
                     onClick={handleContinueReview}
-                    className="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                    className="flex-1 px-6 py-3 bg-gradient-blue text-white font-semibold rounded-lg shadow-md  hover:shadow-lg transform hover:scale-105 transition-all duration-200"
                   >
                     Continue
                   </button>
@@ -1246,7 +1246,7 @@ function VideoRecorder() {
                     className={`flex-1 px-4 py-3 text-white font-semibold rounded-lg shadow-md transform transition-all duration-200 flex items-center justify-center gap-2 ${
                       isPreparing
                         ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-blue-600 hover:bg-blue-700 hover:shadow-lg hover:scale-105"
+                        : "bg-gradient-blue hover:shadow-lg hover:scale-105"
                     }`}
                   >
                     <MdSms className="w-4 h-4" />
@@ -1300,7 +1300,7 @@ function VideoRecorder() {
                     className={`flex-1 px-4 py-3 text-white font-semibold rounded-lg shadow-md transform transition-all duration-200 flex items-center justify-center gap-2 ${
                       isPreparing
                         ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-700 hover:shadow-lg hover:scale-105"
+                        : "bg-gradient-blue hover:shadow-lg hover:scale-105"
                     }`}
                   >
                     <MdEmail className="w-4 h-4" />
@@ -1310,11 +1310,7 @@ function VideoRecorder() {
 
                   <button
                     onClick={handleCopyLink}
-                    className={`flex-1 px-4 py-3 ${
-                      linkCopied
-                        ? "bg-teal-600 hover:bg-teal-700"
-                        : "bg-purple-600 hover:bg-purple-700"
-                    } text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2`}
+                    className={`flex-1 px-4 py-3 bg-gradient-blue text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2`}
                     disabled={isPreparing}
                   >
                     <FaLink className="w-4 h-4" />

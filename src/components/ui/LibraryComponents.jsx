@@ -32,7 +32,6 @@ import { HiEye, HiChartBar } from "react-icons/hi2";
 import { useNavigate } from "react-router-dom";
 import { SiSimpleanalytics } from "react-icons/si";
 import { IoShareSocial } from "react-icons/io5";
-import { MdAnalytics } from "react-icons/md";
 
 // Customn Fonts - Quill Editor
 const FontAttributor = Quill.import("attributors/class/font");
@@ -509,7 +508,11 @@ export const VideoTabItem = ({ videoData }) => {
         <div className="flex items-center justify-between text-xs text-gray-500">
           <div className="flex items-center gap-1">
             <HiEye size={12} />
-            <span>{isNewSchema(videoData) ? `${videoData.viewCount || 0} views` : '- views'}</span>
+            <span>
+              {isNewSchema(videoData)
+                ? `${videoData.viewCount || 0} views`
+                : "- views"}
+            </span>
           </div>
           <span>{getTimeAgo(videoData.createdAt)}</span>
         </div>
@@ -530,11 +533,12 @@ export const VideoTabItem = ({ videoData }) => {
           >
             Share
           </Button>
-          <Button
-            size="xs"
-            variant={isNewSchema(videoData) ? "filled" : "outline"}
-            className={`flex-1 ${isNewSchema(videoData) ? 'bg-primary' : 'opacity-50 cursor-not-allowed'}`}
-            leftSection={<MdAnalytics size={12} />}
+          <button
+            className={`flex-1 flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-medium rounded border transition-colors ${
+              isNewSchema(videoData)
+                ? "bg-gradient-blue text-white border-transparent"
+                : "opacity-50 cursor-not-allowed border-gray-300 text-gray-500"
+            }`}
             disabled={!isNewSchema(videoData)}
             onClick={(e) => {
               e.stopPropagation();
@@ -543,8 +547,9 @@ export const VideoTabItem = ({ videoData }) => {
               }
             }}
           >
+            <SiSimpleanalytics size={12} />
             Analytics
-          </Button>
+          </button>
         </div>
       </div>
     </div>
