@@ -294,6 +294,11 @@ const RecordVideo = () => {
           </Tabs.List>
 
           <Tabs.Panel value="videos">
+            <div className="text-center mt-6 mb-6">
+              <h2 className="text-xl font-medium text-black">
+                Manage and share your recorded videos
+              </h2>
+            </div>
             <div className="mt-6 mb-6 p-3 border border-gray-200 rounded-lg shadow-md">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1 w-full">

@@ -1152,171 +1152,154 @@ function VideoRecorder() {
             )}
             {step === "upload-success" && (
               <>
-                <div className="text-center mb-4 relative">
-                  {/* CLOSE BUTTON - ADD THIS */}
-                  <button
-                    onClick={handleUploadSuccessClose}
-                    className="absolute top-0 right-0 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-200"
-                    aria-label="Close"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg
-                      className="w-8 h-8 text-green-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      ></path>
-                    </svg>
+                {isPreparing ? (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-lg font-semibold text-gray-700">
+                      Preparing your assets
+                    </p>
                   </div>
-                  <h2 className="text-2xl font-bold text-green-600 mb-2">
-                    Upload Successful!
-                  </h2>
-                  <p className="text-sm text-gray-500">
-                    Your video "{videoTitle}" has been uploaded and saved
-                    successfully.
-                  </p>
-                </div>
+                ) : (
+                  <>
+                    <div className="text-center mb-4 relative">
+                      <button
+                        onClick={handleUploadSuccessClose}
+                        className="absolute top-0 right-0 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-200"
+                        aria-label="Close"
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg
+                          className="w-8 h-8 text-green-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M5 13l4 4L19 7"
+                          ></path>
+                        </svg>
+                      </div>
+                      <h2 className="text-2xl font-bold text-green-600 mb-2">
+                        Upload Successful!
+                      </h2>
+                      <p className="text-sm text-gray-500">
+                        Your video "{videoTitle}" has been uploaded and saved
+                        successfully.
+                      </p>
+                    </div>
 
-                <div className="flex gap-3 w-full">
-                  {/* put onclick so it will close and open share modal */}
-                  <button
-                    onClick={async (e) => {
-                      e.stopPropagation();
+                    <div className="flex gap-3 w-full">
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          setIsPreparing(true);
 
-                      // Start preparing
-                      setIsPreparing(true);
+                          try {
+                            let result = await getFreshVideoData({
+                              freshVideoKey,
+                              accessToken,
+                            });
+                            let freshVideo = result.video;
 
-                      try {
-                        let result = await getFreshVideoData({
-                          freshVideoKey,
-                          accessToken,
-                        });
-                        let freshVideo = result.video;
+                            if (!freshVideo.eventProcessed) {
+                              const processedVideo = await pollVideoStatus({
+                                freshVideoKey,
+                                accessToken,
+                              });
+                              if (!processedVideo) {
+                                setIsPreparing(false);
+                                alert(
+                                  "Still processing video preview, try again in a few seconds…"
+                                );
+                                return;
+                              }
+                              freshVideo = processedVideo;
+                            }
 
-                        if (!freshVideo.eventProcessed) {
-                          console.log("Preview not ready, polling...");
-
-                          const processedVideo = await pollVideoStatus({
-                            freshVideoKey,
-                            accessToken,
-                          });
-                          if (!processedVideo) {
-                            setIsPreparing(false);
-                            alert(
-                              "Still processing video preview, try again in a few seconds…"
-                            );
-                            return;
+                            setActiveTab("sms");
+                            setVideoToBeShared(freshVideo);
+                            setIsShareVideoModalOpen(true);
+                            setStep("idle");
+                          } catch (error) {
+                            console.error("Failed to fetch video data", error);
+                            setStep("idle");
                           }
+                        }}
+                        className="flex-1 px-4 py-3 bg-gradient-blue text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2"
+                      >
+                        <MdSms className="w-4 h-4" />
+                        Send SMS
+                      </button>
 
-                          freshVideo = processedVideo;
-                        }
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          setIsPreparing(true);
 
-                        setActiveTab("sms"); // Set tab first
+                          try {
+                            let result = await getFreshVideoData({
+                              freshVideoKey,
+                              accessToken,
+                            });
+                            let freshVideo = result.video;
 
-                        setVideoToBeShared(freshVideo);
-                        setIsShareVideoModalOpen(true);
-                        setStep("idle");
-                      } catch (error) {
-                        console.error("Failed to fetch video data", error);
-                        setStep("idle");
-                      }
-                    }}
-                    // Disable button when preparing
-                    disabled={isPreparing}
-                    className={`flex-1 px-4 py-3 text-white font-semibold rounded-lg shadow-md transform transition-all duration-200 flex items-center justify-center gap-2 ${
-                      isPreparing
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-gradient-blue hover:shadow-lg hover:scale-105"
-                    }`}
-                  >
-                    <MdSms className="w-4 h-4" />
-                    Send SMS
-                  </button>
+                            if (!freshVideo.eventProcessed) {
+                              const processedVideo = await pollVideoStatus({
+                                freshVideoKey,
+                                accessToken,
+                              });
+                              if (!processedVideo) {
+                                setIsPreparing(false);
+                                alert(
+                                  "Still processing video preview, try again in a few seconds…"
+                                );
+                                return;
+                              }
+                              freshVideo = processedVideo;
+                            }
 
-                  <button
-                    onClick={async (e) => {
-                      e.stopPropagation();
-
-                      // Start preparing
-                      setIsPreparing(true);
-
-                      try {
-                        let result = await getFreshVideoData({
-                          freshVideoKey,
-                          accessToken,
-                        });
-                        let freshVideo = result.video;
-
-                        if (!freshVideo.eventProcessed) {
-                          console.log("Preview not ready, polling...");
-
-                          const processedVideo = await pollVideoStatus({
-                            freshVideoKey,
-                            accessToken,
-                          });
-
-                          if (!processedVideo) {
+                            setActiveTab("email");
+                            setVideoToBeShared(freshVideo);
+                            setIsShareVideoModalOpen(true);
                             setIsPreparing(false);
-                            alert(
-                              "Still processing video preview, try again in a few seconds…"
-                            );
-                            return;
+                          } catch (error) {
+                            console.error("Failed to fetch video data", error);
+                            setIsPreparing(false);
                           }
+                        }}
+                        className="flex-1 px-4 py-3 bg-gradient-blue text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2"
+                      >
+                        <MdEmail className="w-4 h-4" />
+                        Send Email
+                      </button>
 
-                          freshVideo = processedVideo;
-                        }
-
-                        setActiveTab("email"); // Set tab first
-                        setVideoToBeShared(freshVideo);
-                        setIsShareVideoModalOpen(true);
-                        setIsPreparing(false);
-                      } catch (error) {
-                        console.error("Failed to fetch video data", error);
-                        setIsPreparing(false);
-                      }
-                    }}
-                    // Disable button when preparing
-                    disabled={isPreparing}
-                    className={`flex-1 px-4 py-3 text-white font-semibold rounded-lg shadow-md transform transition-all duration-200 flex items-center justify-center gap-2 ${
-                      isPreparing
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-gradient-blue hover:shadow-lg hover:scale-105"
-                    }`}
-                  >
-                    <MdEmail className="w-4 h-4" />
-                    {/* Show different text based on state */}
-                    {isPreparing ? "Preparing..." : "Send Email"}
-                  </button>
-
-                  <button
-                    onClick={handleCopyLink}
-                    className={`flex-1 px-4 py-3 bg-gradient-blue text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2`}
-                    disabled={isPreparing}
-                  >
-                    <FaLink className="w-4 h-4" />
-                    {linkCopied ? "Link Copied!" : "Share Link"}
-                  </button>
-                </div>
+                      <button
+                        onClick={handleCopyLink}
+                        className="flex-1 px-4 py-3 bg-gradient-blue text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2"
+                      >
+                        <FaLink className="w-4 h-4" />
+                        {linkCopied ? "Link Copied!" : "Share Link"}
+                      </button>
+                    </div>
+                  </>
+                )}
               </>
             )}
           </div>
