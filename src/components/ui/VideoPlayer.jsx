@@ -5,6 +5,7 @@ import { FaPause, FaPlay } from "react-icons/fa6";
 export const VideoPlayer = ({ videoData, onPlay, onPause }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [shouldAutoPlayGif, setShouldAutoPlayGif] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -237,6 +238,12 @@ export const VideoPlayer = ({ videoData, onPlay, onPause }) => {
     };
   }, []);
 
+  // Check URL for videoviewer to determine GIF behavior
+  useEffect(() => {
+    const currentUrl = window.location.href;
+    setShouldAutoPlayGif(currentUrl.includes("videoviewer"));
+  }, []);
+
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
@@ -269,10 +276,10 @@ export const VideoPlayer = ({ videoData, onPlay, onPause }) => {
             }, 100);
           }}
         >
-          {/* Show GIF in loop, fallback to thumbnail */}
+          {/* Show GIF or thumbnail based on URL and hover state */}
           <img
             src={
-              videoData?.gifKey
+              videoData?.gifKey && (shouldAutoPlayGif || isHovered)
                 ? `${CLOUDFRONT_BASE}/${videoData.gifKey}`
                 : videoData?.thumbnailKey
                 ? `${CLOUDFRONT_BASE}/${videoData.thumbnailKey}`
