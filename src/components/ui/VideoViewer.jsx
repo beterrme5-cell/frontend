@@ -196,7 +196,7 @@ function VideoViewer() {
 
         {/* Video Player */}
         <div className="w-full bg-white rounded-xl shadow-2xl hover:shadow-3xl transition-shadow duration-300 overflow-hidden mb-8 ring-1 ring-gray-200">
-          <div className="aspect-video bg-black">
+          <div className="aspect-video bg-black ">
             <VideoPlayer
               videoData={video}
               onPlay={handleVideoPlay}
@@ -207,7 +207,7 @@ function VideoViewer() {
 
         {/* Video Details */}
         <div className="w-full bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6 text-center">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6 text-center tracking-wider">
             Video Details
           </h2>
 
@@ -215,7 +215,7 @@ function VideoViewer() {
             {video.viewCount !== undefined && (
               <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-blue text-white">
                 <HiEye className="w-4 h-4" />
-                <span className="text-sm font-medium tracking-wide">
+                <span className="text-sm font-medium tracking-wider">
                   {video.viewCount} {video.viewCount === 1 ? "view" : "views"}
                 </span>
               </div>
@@ -224,7 +224,7 @@ function VideoViewer() {
             {video.lastViewedAt && (
               <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-to-r from-purple-500 to-purple-700 text-white">
                 <HiClock className="w-4 h-4" />
-                <span className="text-sm font-medium tracking-wide">
+                <span className="text-sm font-medium tracking-wider">
                   Last viewed: {getTimeAgo(video.lastViewedAt)}
                 </span>
               </div>
@@ -233,7 +233,7 @@ function VideoViewer() {
             {video.createdAt && (
               <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-to-r from-green-500 to-green-700 text-white">
                 <HiCalendar className="w-4 h-4" />
-                <span className="text-sm font-medium tracking-wide">
+                <span className="text-sm font-medium tracking-wider">
                   Created: {getTimeAgo(video.createdAt)}
                 </span>
               </div>
