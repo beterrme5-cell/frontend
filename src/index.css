@@ -474,3 +474,18 @@ span .em-lns-1do042d {
 .bg-gradient-blue {
   background: linear-gradient(to bottom right, #0f5edd, #1c6ff9, #3a8bff);
 }
+
+.text-gradient-blue {
+  @apply bg-gradient-to-r from-[#0f5edd] via-[#1c6ff9] to-[#3a8bff] bg-clip-text text-transparent;
+}
+
+/* globals.css */
+
+.icon-container-glow {
+  box-shadow: 0 8px 20px rgba(15, 94, 221, 0.2); /* lighter blue glow */
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.icon-container-glow:hover {
+  box-shadow: 0 12px 30px rgba(15, 94, 221, 0.3); /* slightly stronger on hover */
+}

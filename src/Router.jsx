@@ -7,7 +7,9 @@ import RecordVideo from "./pages/recordVideo/RecordVideo";
 import UploadedVideoDetail from "./pages/uploadedVideoDetail/UploadedVideoDetail.jsx";
 import VideoViewer from "./components/ui/VideoViewer.jsx";
 import Test from "./components/ui/Test.jsx";
-import Loading from "./components/ui/Loading.jsx";
+
+import D from "./components/ui/D.jsx";
+import PublicVideoView from "./pages/publicvideoview/PublicVideoView.jsx";
 
 export const router = createBrowserRouter([
   {
@@ -49,9 +51,14 @@ export const router = createBrowserRouter([
         element: <Test />,
       },
       {
-        path: "loading",
-        element: <Loading />,
+        path: "/d",
+        element: <D />,
       },
+      {
+        path: "/v/:id",
+        element: <PublicVideoView />,
+      },
+
       {
         path: "*",
         element: (
