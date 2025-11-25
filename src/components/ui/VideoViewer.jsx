@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { getVideoViewerData, incrementVideoView } from "../../api/libraryAPIs";
 import { VideoPlayer } from "./VideoPlayer";
-import { HiClock, HiEye, HiCalendar } from "react-icons/hi2";
+import { HiClock, HiEye, HiCalendar, HiArrowLeft } from "react-icons/hi2";
 
 // Helper function to get time ago
 const getTimeAgo = (date) => {
@@ -28,6 +28,7 @@ const getTimeAgo = (date) => {
 
 function VideoViewer() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -150,67 +151,96 @@ function VideoViewer() {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 min-h-screen flex flex-col justify-center items-center">
-      {/* 🎬 Video Title */}
-      {video.title && (
-        <h1 className="text-center text-2xl font-bold text-gray-900 mb-4">
-          {video.title}
-        </h1>
-      )}
+    <div className="min-h-screen bg-gray-50">
+      {/* Page Header */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Back Button */}
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 bg-gradient-blue text-white p-2 rounded-full transition-colors duration-200"
+            >
+              <div className="p-1 rounded-full bg-white">
+                {" "}
+                <HiArrowLeft size={16} className="text-gray-500" />
+              </div>
 
-      {/* Video Player */}
-      <div className="w-full bg-white rounded-xl shadow-lg overflow-hidden mb-6">
-        <div className="aspect-video bg-black">
-          <VideoPlayer
-            videoData={video}
-            onPlay={handleVideoPlay}
-            onPause={handleVideoPause}
-          />
+              <span className="font-medium text-[14px]">Back to Library</span>
+            </button>
+
+            {/* Konnectd Logo - Centered */}
+            <div className="absolute left-1/2 transform -translate-x-1/2">
+              <img
+                src="https://res.cloudinary.com/dmdaa1heq/image/upload/v1748271556/Konnectd_Logo_Reversed_el4sw9.png"
+                alt="Konnectd Logo"
+                className="h-8 w-auto cursor-pointer"
+                onClick={() => navigate("/library")}
+              />
+            </div>
+
+            {/* Empty div for spacing */}
+            <div className="w-24"></div>
+          </div>
         </div>
-      </div>
+      </header>
 
-      {/* Details */}
-      <div className="w-full bg-white rounded-xl shadow-lg p-4 sm:p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4 text-center">
-          Video Details
-        </h2>
+      {/* Main Content */}
+      <main className="max-w-4xl mx-auto px-4 py-8">
+        {/* Video Title */}
+        {video.title && (
+          <h1 className="text-center text-2xl font-bold text-gray-900 mb-8">
+            {video.title}
+          </h1>
+        )}
 
-        <div className="flex flex-wrap gap-2 justify-center">
-          {video.duration && (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-slate-500 to-slate-700 text-white">
-              <HiClock className="w-4 h-4" />
-              <span className="text-sm font-medium">{video.duration}</span>
-            </div>
-          )}
-
-          {video.viewCount !== undefined && (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 text-white">
-              <HiEye className="w-4 h-4" />
-              <span className="text-sm font-medium">
-                {video.viewCount} Views
-              </span>
-            </div>
-          )}
-
-          {video.lastViewedAt && (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-purple-500 to-purple-700 text-white">
-              <HiClock className="w-4 h-4" />
-              <span className="text-sm font-medium">
-                Last viewed: {getTimeAgo(video.lastViewedAt)}
-              </span>
-            </div>
-          )}
-
-          {video.createdAt && (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-green-500 to-green-700 text-white">
-              <HiCalendar className="w-4 h-4" />
-              <span className="text-sm font-medium">
-                Created: {getTimeAgo(video.createdAt)}
-              </span>
-            </div>
-          )}
+        {/* Video Player */}
+        <div className="w-full bg-white rounded-xl shadow-2xl hover:shadow-3xl transition-shadow duration-300 overflow-hidden mb-8 ring-1 ring-gray-200">
+          <div className="aspect-video bg-black">
+            <VideoPlayer
+              videoData={video}
+              onPlay={handleVideoPlay}
+              onPause={handleVideoPause}
+            />
+          </div>
         </div>
-      </div>
+
+        {/* Video Details */}
+        <div className="w-full bg-white rounded-xl shadow-lg p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6 text-center">
+            Video Details
+          </h2>
+
+          <div className="flex flex-wrap gap-3 justify-center">
+            {video.viewCount !== undefined && (
+              <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-blue text-white">
+                <HiEye className="w-4 h-4" />
+                <span className="text-sm font-medium tracking-wide">
+                  {video.viewCount} {video.viewCount === 1 ? "view" : "views"}
+                </span>
+              </div>
+            )}
+
+            {video.lastViewedAt && (
+              <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-to-r from-purple-500 to-purple-700 text-white">
+                <HiClock className="w-4 h-4" />
+                <span className="text-sm font-medium tracking-wide">
+                  Last viewed: {getTimeAgo(video.lastViewedAt)}
+                </span>
+              </div>
+            )}
+
+            {video.createdAt && (
+              <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-to-r from-green-500 to-green-700 text-white">
+                <HiCalendar className="w-4 h-4" />
+                <span className="text-sm font-medium tracking-wide">
+                  Created: {getTimeAgo(video.createdAt)}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
