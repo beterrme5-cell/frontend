@@ -9,25 +9,23 @@ import { LuTrendingUp } from "react-icons/lu";
 function D() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header with border and shadow */}
-      <header className="bg-white border-b shadow-sm px-6 py-4">
-        <div className="flex justify-center">
-          <img
-            src="https://res.cloudinary.com/dmdaa1heq/image/upload/v1748271556/Konnectd_Logo_Reversed_el4sw9.png"
-            alt="Konnectd Logo"
-            className="h-8 w-auto"
-          />
-        </div>
-      </header>
-
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center ">
+      <main className="flex-1 flex items-center justify-center py-8">
         <div className="max-w-6xl w-full">
+          {/* Logo Section */}
+          <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200 text-center mb-16">
+            <img
+              src="https://res.cloudinary.com/dmdaa1heq/image/upload/v1748271556/Konnectd_Logo_Reversed_el4sw9.png"
+              alt="Konnectd Logo"
+              className="h-8 w-auto mx-auto"
+            />
+          </div>
+
           {/* Centered Title Section */}
           <div className="text-center mb-16">
-            <p className="text-lg text-center mx-auto text-gray-600 max-w-2xl tracking-wide leading-relaxed">
-              Create stunning property videos, manage your video library, and
-              track engagement - all in one powerful platform
+            <p className="text-xl text-center mx-auto text-gray-800 max-w-3xl tracking-wide leading-relaxed font-medium">
+              Record and send personalized videos, keep everything organized,
+              and track real-time engagement — all inside one powerful platform.
             </p>
           </div>
 
