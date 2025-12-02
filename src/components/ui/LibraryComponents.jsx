@@ -514,7 +514,9 @@ export const VideoTabItem = ({ videoData }) => {
             <HiEye size={12} />
             <span>
               {isNewSchema(videoData)
-                ? `${videoData.viewCount || 0} views`
+                ? `${videoData.viewCount || 0} ${
+                    videoData.viewCount > 1 ? "views" : "view"
+                  }`
                 : "- views"}
             </span>
           </div>
