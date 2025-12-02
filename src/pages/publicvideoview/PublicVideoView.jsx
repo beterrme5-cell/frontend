@@ -8,6 +8,7 @@ function PublicVideoView() {
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [captionsEnabled, setCaptionsEnabled] = useState(true);
 
   const viewTracked = useRef(false);
   const watchTimeRef = useRef(0);
@@ -20,6 +21,7 @@ function PublicVideoView() {
         setError(null);
         const data = await getVideoViewerData({ id });
         setVideo(data.video);
+        console.log(data.video);
       } catch (err) {
         setError("Failed to load video.");
       } finally {
@@ -90,34 +92,49 @@ function PublicVideoView() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
       <main className="w-full max-w-4xl flex flex-col items-center">
-        {/* Title (same as before) */}
-        {video.title && (
-          <h1 className="text-center text-2xl font-bold text-gray-900 mb-4">
-            {video.title}
-          </h1>
-        )}
+        {/* Header with title and caption toggle */}
+        <div className="w-full flex justify-between items-center mb-4">
+          {/* Title - Top Left */}
+          {video.title && (
+            <h1 className="text-2xl font-bold text-gray-900">{video.title}</h1>
+          )}
 
-        {/* Video container that fits screen height WITHOUT cutting */}
+          {/* Caption Toggle - Top Right */}
+          {video?.hasCaption && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">CC</span>
+              <button
+                onClick={() => setCaptionsEnabled(!captionsEnabled)}
+                className={`w-10 h-5 rounded-full transition-colors duration-200 relative ${
+                  captionsEnabled ? "bg-blue-500" : "bg-gray-400"
+                }`}
+              >
+                <div
+                  className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-transform duration-200 ${
+                    captionsEnabled ? "translate-x-5" : "translate-x-0.5"
+                  }`}
+                />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Video container */}
         <div
           className="w-full bg-black rounded-xl shadow-2xl overflow-hidden"
           style={{
-            maxHeight: "75vh", // makes video fit on screen
-            aspectRatio: "16/9", // keeps perfect video ratio
+            maxHeight: "75vh",
+            aspectRatio: "16/9",
           }}
         >
           <VideoPlayer
             videoData={video}
             onPlay={handleVideoPlay}
             onPause={handleVideoPause}
+            captionsEnabled={captionsEnabled}
+            onCaptionsToggle={setCaptionsEnabled}
           />
         </div>
-
-        {/* Captions */}
-        {video?.captionsKey && (
-          <div className="text-center mt-3 text-gray-600 text-sm">
-            Captions available
-          </div>
-        )}
       </main>
     </div>
   );

@@ -56,6 +56,8 @@ import {
 
 import { getContactTags } from "../../api/commsAPIs";
 
+const frontendBaseUrl = import.meta.env.FRONTEND_BASE_URL;
+
 function quillGetHTML(inputDelta) {
   var tempCont = document.createElement("div");
   new Quill(tempCont).setContents(inputDelta);
@@ -671,7 +673,8 @@ export const ShareVideoModal = () => {
     initialValues: {
       smsContent: isUsingNewSchema
         ? videoToBeShared?.size > 3
-          ? `\n\n${CLOUDFRONT_BASE}/${videoToBeShared?.videoKey}` // size > 3 → include link
+          ? // ? `\n\n${CLOUDFRONT_BASE}/${videoToBeShared?.videoKey}` // size > 3 → include link
+            `\n\n${frontendBaseUrl}/v/${videoToBeShared?.id}`
           : "" // size < 3 → keep empty
         : videoToBeShared?.shareableLink
         ? `\n\n${videoToBeShared.shareableLink}`

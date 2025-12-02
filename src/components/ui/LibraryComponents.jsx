@@ -32,6 +32,9 @@ import { HiEye, HiChartBar } from "react-icons/hi2";
 import { useNavigate } from "react-router-dom";
 import { SiSimpleanalytics } from "react-icons/si";
 import { IoShareSocial } from "react-icons/io5";
+import { MdAccessTime } from "react-icons/md";
+
+const frontendBaseUrl = import.meta.env.FRONTEND_BASE_URL;
 
 // Customn Fonts - Quill Editor
 const FontAttributor = Quill.import("attributors/class/font");
@@ -405,7 +408,7 @@ export const VideoTabItem = ({ videoData }) => {
 
   return (
     <div
-      className="flex flex-col border border-[#CFCED4] rounded-[16px] relative min-w-[250px] h-[280px] overflow-hidden hover:cursor-pointer group"
+      className="flex flex-col border border-[#CFCED4] rounded-[16px] relative min-w-[250px] h-[320px] overflow-hidden hover:cursor-pointer group"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -429,7 +432,7 @@ export const VideoTabItem = ({ videoData }) => {
       </div>
 
       {/* Bottom Section */}
-      <div className="flex-grow px-[16px] py-[12px] flex flex-col gap-[6px] border-t border-t-[#CFCED4] min-h-[120px]">
+      <div className="flex-grow px-[16px] py-[12px] flex flex-col gap-[6px] border-t border-t-[#CFCED4] min-h-[160px]">
         {/* First Row: Title and Menu */}
         <div className="flex items-center justify-between">
           <h4 className="text-[14px] font-medium line-clamp-1 flex-1">
@@ -517,7 +520,17 @@ export const VideoTabItem = ({ videoData }) => {
           <span>{getTimeAgo(videoData.createdAt)}</span>
         </div>
 
-        {/* Third Row: Share and Analytics buttons (for all videos) */}
+        {/* Third Row: Last Viewed Badge (only if lastViewedAt exists) */}
+        {videoData.lastViewedAt && (
+          <div className="flex justify-start mt-2">
+            <div className="bg-gradient-blue text-white px-2 py-1 rounded-md flex items-center gap-1 text-xs font-medium">
+              <MdAccessTime size={12} />
+              <span>Last viewed: {getTimeAgo(videoData.lastViewedAt)}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Fourth Row: Share and Analytics buttons (for all videos) */}
         <div className="flex gap-2 mt-2">
           <Button
             size="xs"
@@ -756,8 +769,8 @@ export const TextEditor = forwardRef(
 
         // Use GIF/teaser as thumbnail for new schema
         if (videoToBeShared?.gifKey || videoToBeShared?.teaserKey) {
-          videoThumbnail = `<a href="${CLOUDFRONT_BASE}/${
-            videoToBeShared.videoKey
+          videoThumbnail = `<a href="${frontendBaseUrl}/${
+            videoToBeShared.id
           }" target="_blank"><img src="${CLOUDFRONT_BASE}/${
             videoToBeShared.gifKey || videoToBeShared.teaserKey
           }" width="300px" height="200px" style="border-radius: 8px;"/></a>`;

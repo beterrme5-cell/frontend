@@ -45,7 +45,7 @@ import { useQuery } from "@tanstack/react-query";
 import { VideoPlayer } from "../../components/ui/VideoPlayer";
 import { SiSimpleanalytics } from "react-icons/si";
 import { IoShareSocial } from "react-icons/io5";
-import { MdAnalytics } from "react-icons/md";
+import { MdAnalytics, MdAccessTime } from "react-icons/md";
 
 // Helper function to get time ago
 const getTimeAgo = (date) => {
@@ -426,11 +426,39 @@ const RecordVideo = () => {
                                   </div>
                                 )}
                               </div>
+                              <div className="flex items-center gap-2 mt-1 sm:hidden">
+                                {video.lastViewedAt && (
+                                  <div className="bg-gradient-blue text-white px-2 py-1 rounded-md flex items-center gap-1 text-xs font-medium w-fit">
+                                    <MdAccessTime size={10} />
+                                    <span>Last viewed: {getTimeAgo(video.lastViewedAt)}</span>
+                                  </div>
+                                )}
+                                {isNewSchema(video) && (
+                                  <button
+                                    className="flex items-center gap-1 px-3 py-1 text-xs font-medium rounded bg-gradient-blue text-white border-transparent transition-colors"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigate(`/videoviewer/${video._id}`);
+                                    }}
+                                  >
+                                    <SiSimpleanalytics size={12} />
+                                    Analytics
+                                  </button>
+                                )}
+                              </div>
+                              {video.lastViewedAt && (
+                                <div className="mt-1 hidden sm:block">
+                                  <div className="bg-gradient-blue text-white px-2 py-1 rounded-md flex items-center gap-1 text-xs font-medium w-fit">
+                                    <MdAccessTime size={10} />
+                                    <span>Last viewed: {getTimeAgo(video.lastViewedAt)}</span>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                             <div className="flex items-center gap-2 menu-container">
                               {isNewSchema(video) && (
                                 <button
-                                  className="flex items-center gap-1 px-5 py-2 text-xs font-medium rounded bg-gradient-blue text-white border-transparent transition-colors"
+                                  className="hidden sm:flex items-center gap-1 px-5 py-2 text-xs font-medium rounded bg-gradient-blue text-white border-transparent transition-colors"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     navigate(`/videoviewer/${video._id}`);
@@ -626,11 +654,39 @@ const RecordVideo = () => {
                                   </div>
                                 )}
                               </div>
+                              <div className="flex items-center gap-2 mt-1 sm:hidden">
+                                {video.lastViewedAt && (
+                                  <div className="bg-gradient-blue text-white px-2 py-1 rounded-md flex items-center gap-1 text-xs font-medium w-fit">
+                                    <MdAccessTime size={10} />
+                                    <span>Last viewed: {getTimeAgo(video.lastViewedAt)}</span>
+                                  </div>
+                                )}
+                                {isNewSchema(video) && (
+                                  <button
+                                    className="flex items-center gap-1 px-3 py-1 text-xs font-medium rounded bg-gradient-blue text-white border-transparent transition-colors"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigate(`/videoviewer/${video._id}`);
+                                    }}
+                                  >
+                                    <MdAnalytics size={12} />
+                                    Analytics
+                                  </button>
+                                )}
+                              </div>
+                              {video.lastViewedAt && (
+                                <div className="mt-1 hidden sm:block">
+                                  <div className="bg-gradient-blue text-white px-2 py-1 rounded-md flex items-center gap-1 text-xs font-medium w-fit">
+                                    <MdAccessTime size={10} />
+                                    <span>Last viewed: {getTimeAgo(video.lastViewedAt)}</span>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                             <div className="flex items-center gap-2 menu-container">
                               {isNewSchema(video) && (
                                 <button
-                                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded bg-gradient-blue text-white border-transparent transition-colors"
+                                  className="hidden sm:flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded bg-gradient-blue text-white border-transparent transition-colors"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     navigate(`/videoviewer/${video._id}`);

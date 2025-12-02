@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Menu, Tabs, Table, Divider } from "@mantine/core";
 import { FaPause, FaPlay } from "react-icons/fa6";
 
-export const VideoPlayer = ({ videoData, onPlay, onPause }) => {
+export const VideoPlayer = ({ videoData, onPlay, onPause, captionsEnabled: externalCaptionsEnabled, onCaptionsToggle }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [shouldAutoPlayGif, setShouldAutoPlayGif] = useState(false);
@@ -11,7 +11,7 @@ export const VideoPlayer = ({ videoData, onPlay, onPause }) => {
   const [duration, setDuration] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
-  const [captionsEnabled, setCaptionsEnabled] = useState(true);
+  const [captionsEnabled, setCaptionsEnabled] = useState(externalCaptionsEnabled ?? true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   const videoRef = useRef(null);
@@ -210,6 +210,9 @@ export const VideoPlayer = ({ videoData, onPlay, onPause }) => {
         tracks[i].mode = newState ? "showing" : "hidden";
       }
       setCaptionsEnabled(newState);
+      if (onCaptionsToggle) {
+        onCaptionsToggle(newState);
+      }
     }
   };
 
@@ -243,6 +246,19 @@ export const VideoPlayer = ({ videoData, onPlay, onPause }) => {
     const currentUrl = window.location.href;
     setShouldAutoPlayGif(currentUrl.includes("videoviewer"));
   }, []);
+
+  // Sync external caption state with internal state
+  useEffect(() => {
+    if (externalCaptionsEnabled !== undefined && externalCaptionsEnabled !== captionsEnabled) {
+      setCaptionsEnabled(externalCaptionsEnabled);
+      if (videoRef.current && videoData.captionKey) {
+        const tracks = videoRef.current.textTracks;
+        for (let i = 0; i < tracks.length; i++) {
+          tracks[i].mode = externalCaptionsEnabled ? "showing" : "hidden";
+        }
+      }
+    }
+  }, [externalCaptionsEnabled, captionsEnabled, videoData.captionKey]);
 
   // Cleanup timeout on unmount
   useEffect(() => {

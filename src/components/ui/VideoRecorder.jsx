@@ -905,8 +905,18 @@ function VideoRecorder() {
   // Function for handling copy Link
 
   const handleCopyLink = async () => {
-    const CLOUDFRONT_BASE = "https://d27zhkbo74exx9.cloudfront.net";
-    const videoLink = `${CLOUDFRONT_BASE}/${freshVideoKey}`;
+    const frontendBaseUrl = import.meta.env.VITE_FRONTEND_BASE_URL;
+
+    // Get the video ID from the fresh video data
+    let videoId = null;
+    try {
+      const result = await getFreshVideoData({ freshVideoKey, accessToken });
+      videoId = result.video?.id;
+    } catch (err) {
+      console.error("Failed to get video ID:", err);
+    }
+
+    const videoLink = `${frontendBaseUrl}/v/${videoId || freshVideoKey}`;
 
     try {
       await navigator.clipboard.writeText(videoLink);
