@@ -674,7 +674,7 @@ export const ShareVideoModal = () => {
       smsContent: isUsingNewSchema
         ? videoToBeShared?.size > 3
           ? // ? `\n\n${CLOUDFRONT_BASE}/${videoToBeShared?.videoKey}` // size > 3 → include link
-            `\n\n${frontendBaseUrl}/v/${videoToBeShared?.id}`
+            `\n\n${frontendBaseUrl}/v/${videoToBeShared?._id}`
           : "" // size < 3 → keep empty
         : videoToBeShared?.shareableLink
         ? `\n\n${videoToBeShared.shareableLink}`
