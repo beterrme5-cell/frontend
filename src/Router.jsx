@@ -10,6 +10,7 @@ import Test from "./components/ui/Test.jsx";
 
 import D from "./components/ui/D.jsx";
 import PublicVideoView from "./pages/publicvideoview/PublicVideoView.jsx";
+import Analytics from "./pages/analytics/Analytics.jsx";
 
 export const router = createBrowserRouter([
   {
@@ -57,6 +58,10 @@ export const router = createBrowserRouter([
       {
         path: "/v/:id",
         element: <PublicVideoView />,
+      },
+      {
+        path: "/analytics/:id",
+        element: <Analytics />,
       },
 
       {
