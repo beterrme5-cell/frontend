@@ -422,7 +422,10 @@ const RecordVideo = () => {
                                 {isNewSchema(video) && (
                                   <div className="flex items-center gap-1">
                                     <HiEye size={12} />
-                                    <span>{video.viewCount || 0} views</span>
+                                    <span>
+                                      {video.viewCount || 0}{" "}
+                                      {video.viewCount > 1 ? "views" : "view"}
+                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -430,7 +433,10 @@ const RecordVideo = () => {
                                 {video.lastViewedAt && (
                                   <div className="bg-gradient-blue text-white px-2 py-1 rounded-md flex items-center gap-1 text-xs font-medium w-fit">
                                     <MdAccessTime size={10} />
-                                    <span>Last viewed: {getTimeAgo(video.lastViewedAt)}</span>
+                                    <span>
+                                      Last viewed:{" "}
+                                      {getTimeAgo(video.lastViewedAt)}
+                                    </span>
                                   </div>
                                 )}
                                 {isNewSchema(video) && (
@@ -450,7 +456,10 @@ const RecordVideo = () => {
                                 <div className="mt-1 hidden sm:block">
                                   <div className="bg-gradient-blue text-white px-2 py-1 rounded-md flex items-center gap-1 text-xs font-medium w-fit">
                                     <MdAccessTime size={10} />
-                                    <span>Last viewed: {getTimeAgo(video.lastViewedAt)}</span>
+                                    <span>
+                                      Last viewed:{" "}
+                                      {getTimeAgo(video.lastViewedAt)}
+                                    </span>
                                   </div>
                                 </div>
                               )}
@@ -658,7 +667,10 @@ const RecordVideo = () => {
                                 {video.lastViewedAt && (
                                   <div className="bg-gradient-blue text-white px-2 py-1 rounded-md flex items-center gap-1 text-xs font-medium w-fit">
                                     <MdAccessTime size={10} />
-                                    <span>Last viewed: {getTimeAgo(video.lastViewedAt)}</span>
+                                    <span>
+                                      Last viewed:{" "}
+                                      {getTimeAgo(video.lastViewedAt)}
+                                    </span>
                                   </div>
                                 )}
                                 {isNewSchema(video) && (
@@ -678,7 +690,10 @@ const RecordVideo = () => {
                                 <div className="mt-1 hidden sm:block">
                                   <div className="bg-gradient-blue text-white px-2 py-1 rounded-md flex items-center gap-1 text-xs font-medium w-fit">
                                     <MdAccessTime size={10} />
-                                    <span>Last viewed: {getTimeAgo(video.lastViewedAt)}</span>
+                                    <span>
+                                      Last viewed:{" "}
+                                      {getTimeAgo(video.lastViewedAt)}
+                                    </span>
                                   </div>
                                 </div>
                               )}
