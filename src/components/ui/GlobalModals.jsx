@@ -56,7 +56,7 @@ import {
 
 import { getContactTags } from "../../api/commsAPIs";
 
-const frontendBaseUrl = import.meta.env.FRONTEND_BASE_URL;
+const frontendBaseUrl = import.meta.env.VITE_FRONTEND_BASE_URL;
 
 function quillGetHTML(inputDelta) {
   var tempCont = document.createElement("div");

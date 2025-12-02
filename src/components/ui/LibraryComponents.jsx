@@ -34,7 +34,7 @@ import { SiSimpleanalytics } from "react-icons/si";
 import { IoShareSocial } from "react-icons/io5";
 import { MdAccessTime } from "react-icons/md";
 
-const frontendBaseUrl = import.meta.env.FRONTEND_BASE_URL;
+const frontendBaseUrl = import.meta.env.VITE_FRONTEND_BASE_URL;
 
 // Customn Fonts - Quill Editor
 const FontAttributor = Quill.import("attributors/class/font");
@@ -48,6 +48,7 @@ export const LibraryRoot = ({ children }) => {
 };
 
 export const LibraryHeader = ({ title }) => {
+  console.log("front end base : ", frontendBaseUrl);
   const pageLocation = useLocation();
   const userLocationId = localStorage.getItem("userLocationId");
   const userDomain = useUserStore((state) => state.userDomain);
@@ -767,10 +768,12 @@ export const TextEditor = forwardRef(
           videoToBeShared?.title || "Watch Video"
         }</a>`;
 
+        console.log("Script hello ---->", frontendBaseUrl, videoToBeShared.id);
+
         // Use GIF/teaser as thumbnail for new schema
         if (videoToBeShared?.gifKey || videoToBeShared?.teaserKey) {
-          videoThumbnail = `<a href="${frontendBaseUrl}/${
-            videoToBeShared.id
+          videoThumbnail = `<a href="${frontendBaseUrl}/v/${
+            videoToBeShared._id
           }" target="_blank"><img src="${CLOUDFRONT_BASE}/${
             videoToBeShared.gifKey || videoToBeShared.teaserKey
           }" width="300px" height="200px" style="border-radius: 8px;"/></a>`;
