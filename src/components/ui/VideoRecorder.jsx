@@ -10,20 +10,28 @@ import { FaLink } from "react-icons/fa";
 import { MdSms } from "react-icons/md"; // For SMS icon
 
 import { RiDragMove2Fill } from "react-icons/ri";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import {
   getFreshVideoData,
   getSignedUrl,
   saveCustomRecordedVideo,
 } from "../../api/libraryAPIs";
 import { useGlobalModals } from "../../store/globalModals";
+import { FiVideo } from "react-icons/fi";
 
 function VideoRecorder() {
   //get params acces token
 
   const { accessToken } = useParams();
   const [step, setStep] = useState("idle");
+  //path check
 
+  const location = useLocation();
+  const currentPath = location.pathname;
+  const find = currentPath.includes("/recordings");
+  useEffect(() => {
+    console.log("Current Path:", currentPath, find);
+  }, [currentPath]);
   const [linkCopied, setLinkCopied] = useState(false);
 
   const [freshVideoKey, setFreshVideoKey] = useState(null);
@@ -905,18 +913,8 @@ function VideoRecorder() {
   // Function for handling copy Link
 
   const handleCopyLink = async () => {
-    const frontendBaseUrl = import.meta.env.VITE_FRONTEND_BASE_URL;
-
-    // Get the video ID from the fresh video data
-    let videoId = null;
-    try {
-      const result = await getFreshVideoData({ freshVideoKey, accessToken });
-      videoId = result.video?.id;
-    } catch (err) {
-      console.error("Failed to get video ID:", err);
-    }
-
-    const videoLink = `${frontendBaseUrl}/v/${videoId || freshVideoKey}`;
+    const CLOUDFRONT_BASE = "https://d27zhkbo74exx9.cloudfront.net";
+    const videoLink = `${CLOUDFRONT_BASE}/${freshVideoKey}`;
 
     try {
       await navigator.clipboard.writeText(videoLink);
@@ -943,13 +941,36 @@ function VideoRecorder() {
 
   return (
     <div className="flex flex-col items-center justify-center bg-gray-50">
-      {step === "idle" && (
+      {find ? (
         <button
           onClick={handleStartSetup}
           className="px-5 py-2 bg-gradient-blue text-white rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
         >
           Record Video
         </button>
+      ) : (
+        <div
+          onClick={handleStartSetup}
+          className="bg-white rounded-xl cursor-pointer flex flex-col items-center p-8 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow"
+        >
+          <div className="border rounded-lg p-4 w-16 h-16 flex items-center justify-center mb-6 icon-container-glow">
+            <FiVideo className="text-primary" size={28} />
+          </div>
+          <div className="flex items-center gap-2 mb-4">
+            <h3 className="text-lg font-semibold text-gradient-blue">
+              Create New Video
+            </h3>
+            <span className="bg-gradient-blue text-white text-xs px-2 py-1 rounded-full">
+              HD Recording
+            </span>
+          </div>
+          <div className="text-center">
+            <p className="text-sm text-gray-600 tracking-wide">
+              Record a professional video using your webcam with built-in
+              editing tools
+            </p>
+          </div>
+        </div>
       )}
 
       {step === "name-input" && (
