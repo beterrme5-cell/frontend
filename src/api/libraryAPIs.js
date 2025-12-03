@@ -316,10 +316,11 @@ export const getVideoViewerData = async ({ id }) => {
 };
 
 // ✅ ADD THIS NEW FUNCTION
-export const incrementVideoView = async ({ videoId }) => {
+export const incrementVideoView = async ({ videoId, watchTime }) => {
   try {
     const response = await axios.post(`${BASE_URL}/video/incrementView`, {
       videoId: videoId,
+      watchTime: watchTime,
     });
 
     return response.data;
@@ -327,6 +328,23 @@ export const incrementVideoView = async ({ videoId }) => {
     console.error("Error incrementing view:", error);
     throw new Error(
       error.response?.data?.message || "Could not increment view!"
+    );
+  }
+};
+
+export const incrementVideoShare = async ({ videoId, shareCount, shareType }) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/video/incrementShare`, {
+      videoId: videoId,
+      shareCount: shareCount,
+      shareType: shareType,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error incrementing share:", error);
+    throw new Error(
+      error.response?.data?.message || "Could not increment share!"
     );
   }
 };

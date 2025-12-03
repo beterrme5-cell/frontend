@@ -35,6 +35,7 @@ import {
   getContacts,
   updateUserDomain,
   updateVideo,
+  incrementVideoShare,
 } from "../../api/libraryAPIs";
 import { useUserStore } from "../../store/userStore";
 import {
@@ -825,6 +826,17 @@ export const ShareVideoModal = () => {
     const response = await sendEmailToSelectedContacts(API_DATA);
 
     if (response.success) {
+      // Track email shares
+      const emailRecipients =
+        activeTab === "email" && activeSubTab === "tags"
+          ? contactsLinkedWithTags.length
+          : emailForm.values.selectedEmailContacts.length;
+
+      incrementVideoShare({
+        videoId: videoToBeShared._id,
+        shareCount: emailRecipients,
+        shareType: "email",
+      }).catch(() => {}); // Silent fail
       setEditorContent(null);
 
       toast.success(response.data.message, {
@@ -904,6 +916,17 @@ export const ShareVideoModal = () => {
     // Send SMS API
     const response = await sendSMSToSelectedContacts(API_DATA);
     if (response.success) {
+      // Track SMS shares
+      const smsRecipients =
+        activeTab === "sms" && activeSubTab === "tags"
+          ? contactsLinkedWithTags.length
+          : smsForm.values.selectedSMSContacts.length;
+
+      incrementVideoShare({
+        videoId: videoToBeShared._id,
+        shareCount: smsRecipients,
+        shareType: "sms",
+      }).catch(() => {}); // Silent fail
       toast.success(response.data.message, {
         position: "bottom-right",
         autoClose: 5000,
@@ -2086,7 +2109,15 @@ export const ShareVideoModal = () => {
                       >
                         {({ copied, copy }) => (
                           <ActionIcon
-                            onClick={copy}
+                            onClick={() => {
+                              copy();
+                              // Track copy share
+                              incrementVideoShare({
+                                videoId: videoToBeShared._id,
+                                shareCount: 1,
+                                shareType: "copy",
+                              }).catch(() => {}); // Silent fail
+                            }}
                             className="!w-fit !bg-gray-200 !p-[4px]"
                           >
                             {!copied ? (
@@ -2117,7 +2148,15 @@ export const ShareVideoModal = () => {
                       >
                         {({ copied, copy }) => (
                           <ActionIcon
-                            onClick={copy}
+                            onClick={() => {
+                              copy();
+                              // Track copy share
+                              incrementVideoShare({
+                                videoId: videoToBeShared._id,
+                                shareCount: 1,
+                                shareType: "copy",
+                              }).catch(() => {}); // Silent fail
+                            }}
                             className="!w-fit !bg-white rounded-tl-[12px] !p-[8px] !h-[35px]"
                             timeout={3000}
                           >

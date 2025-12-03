@@ -12,6 +12,7 @@ function PublicVideoView() {
 
   const viewTracked = useRef(false);
   const watchTimeRef = useRef(0);
+  const lastSentWatchTime = useRef(0);
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -40,38 +41,71 @@ function PublicVideoView() {
     localStorage.setItem(`video_viewed_${id}`, "true");
   };
 
+  const sendWatchTimeUpdate = (watchTime) => {
+    incrementVideoView({ videoId: id, watchTime })
+      .then(() => {
+        lastSentWatchTime.current = watchTimeRef.current;
+      })
+      .catch(() => {});
+  };
+
   const handleVideoPlay = () => {
-    if (!viewTracked.current && !hasViewedBefore()) {
-      timerRef.current = setInterval(() => {
-        watchTimeRef.current += 1;
+    timerRef.current = setInterval(() => {
+      watchTimeRef.current += 1;
 
-        if (watchTimeRef.current >= 3 && !viewTracked.current) {
-          viewTracked.current = true;
-
-          incrementVideoView({ videoId: id })
-            .then(() => {
-              markAsViewed();
-              setVideo((prev) => ({
-                ...prev,
-                viewCount: (prev?.viewCount || 0) + 1,
-              }));
-            })
-            .catch(() => {});
-
-          clearInterval(timerRef.current);
-        }
-      }, 1000);
-    }
+      // First update after 3 seconds (view count + initial watch time)
+      if (watchTimeRef.current === 3 && !viewTracked.current && !hasViewedBefore()) {
+        viewTracked.current = true;
+        incrementVideoView({ videoId: id })
+          .then(() => {
+            markAsViewed();
+            setVideo((prev) => ({
+              ...prev,
+              viewCount: (prev?.viewCount || 0) + 1,
+            }));
+            lastSentWatchTime.current = 3;
+          })
+          .catch(() => {});
+      }
+      // Send watch time updates every 10 seconds after first update
+      else if (watchTimeRef.current > 3 && (watchTimeRef.current - lastSentWatchTime.current) >= 10) {
+        const newWatchTime = watchTimeRef.current - lastSentWatchTime.current;
+        sendWatchTimeUpdate(newWatchTime);
+      }
+    }, 1000);
   };
 
   const handleVideoPause = () => {
-    if (timerRef.current) clearInterval(timerRef.current);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      
+      // Send final watch time update on pause if there's unsent time
+      if (watchTimeRef.current > lastSentWatchTime.current) {
+        const remainingWatchTime = watchTimeRef.current - lastSentWatchTime.current;
+        sendWatchTimeUpdate(remainingWatchTime);
+      }
+    }
   };
 
-  useEffect(
-    () => () => timerRef.current && clearInterval(timerRef.current),
-    []
-  );
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (watchTimeRef.current > lastSentWatchTime.current) {
+        const remainingWatchTime = watchTimeRef.current - lastSentWatchTime.current;
+        // Use sendBeacon for reliable delivery on page unload
+        navigator.sendBeacon(
+          `${import.meta.env.VITE_BASE_URL}/video/incrementView`,
+          JSON.stringify({ videoId: id, watchTime: remainingWatchTime })
+        );
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [id]);
 
   if (loading) {
     return (

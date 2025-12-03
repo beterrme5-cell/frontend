@@ -913,10 +913,18 @@ function VideoRecorder() {
   // Function for handling copy Link
 
   const handleCopyLink = async () => {
-    const CLOUDFRONT_BASE = "https://d27zhkbo74exx9.cloudfront.net";
-    const videoLink = `${CLOUDFRONT_BASE}/${freshVideoKey}`;
-
     try {
+      // Get fresh video data to get the video ID
+      const result = await getFreshVideoData({
+        freshVideoKey,
+        accessToken,
+      });
+      const freshVideo = result.video;
+
+      // Use frontend base URL with video ID
+      const frontendBaseUrl = import.meta.env.VITE_FRONTEND_BASE_URL;
+      const videoLink = `${frontendBaseUrl}/v/${freshVideo._id}`;
+
       await navigator.clipboard.writeText(videoLink);
       setLinkCopied(true);
 
@@ -926,7 +934,10 @@ function VideoRecorder() {
       }, 2000);
     } catch (err) {
       console.error("Failed to copy link:", err);
-      // Fallback for older browsers
+      // Fallback for older browsers - use CloudFront as backup
+      const CLOUDFRONT_BASE = "https://d27zhkbo74exx9.cloudfront.net";
+      const videoLink = `${CLOUDFRONT_BASE}/${freshVideoKey}`;
+
       const textArea = document.createElement("textarea");
       textArea.value = videoLink;
       document.body.appendChild(textArea);
