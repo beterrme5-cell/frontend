@@ -22,7 +22,9 @@ export const VideoPlayer = ({
   );
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
-  const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
+  const [isPortrait, setIsPortrait] = useState(
+    window.innerHeight > window.innerWidth
+  );
   const videoRef = useRef(null);
   const videoContainerRef = useRef(null);
   const controlsTimeoutRef = useRef(null);
@@ -266,7 +268,7 @@ export const VideoPlayer = ({
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     window.addEventListener("resize", handleOrientationChange);
     window.addEventListener("orientationchange", handleOrientationChange);
-    
+
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
       window.removeEventListener("resize", handleOrientationChange);
@@ -360,19 +362,23 @@ export const VideoPlayer = ({
           ref={videoContainerRef}
           className="relative w-full h-full bg-black group flex items-center justify-center"
           style={{
-            ...(isFullscreen ? {
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              zIndex: 9999,
-              ...(window.innerWidth < 768 && isPortrait ? {
-                transform: 'rotate(90deg)',
-                transformOrigin: 'center center',
-                border: '5px solid red'
-              } : {})
-            } : {})
+            ...(isFullscreen
+              ? {
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  width: "100vw",
+                  height: "100vh",
+                  zIndex: 9999,
+                  ...(window.innerWidth < 768 && isPortrait
+                    ? {
+                        transform: "rotate(90deg)",
+                        transformOrigin: "center center",
+                        border: "5px solid red",
+                      }
+                    : {}),
+                }
+              : {}),
           }}
           onMouseMove={handleMouseMove}
           onMouseLeave={() => {
@@ -382,14 +388,6 @@ export const VideoPlayer = ({
           }}
           onClick={handleVideoClick}
         >
-          {/* Debug Info - Remove after testing */}
-          {isFullscreen && (
-            <div className="absolute top-2 right-2 bg-red-500 text-white text-xs p-2 rounded z-50">
-              W: {window.innerWidth} H: {window.innerHeight}<br/>
-              Portrait: {isPortrait ? 'Yes' : 'No'}<br/>
-              Rotate: {window.innerWidth < 768 && isPortrait ? 'Yes' : 'No'}
-            </div>
-          )}
           <video
             ref={videoRef}
             src={`${CLOUDFRONT_BASE}/${videoData.videoKey}`}
