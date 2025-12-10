@@ -189,28 +189,18 @@ export const VideoPlayer = ({
     }
   };
 
-  // Handle fullscreen
-  const handleFullscreen = async () => {
-    if (!videoContainerRef.current) return;
+  // Handle fullscreen - Custom fullscreen for iOS compatibility
+  const handleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
 
-    if (!document.fullscreenElement) {
-      try {
-        await videoContainerRef.current.requestFullscreen();
-        setIsFullscreen(true);
-        // Lock to landscape on mobile
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock("landscape").catch(() => {});
-        }
-      } catch (err) {}
-    } else {
-      try {
-        await document.exitFullscreen();
-        setIsFullscreen(false);
-        // Unlock orientation
-        if (screen.orientation && screen.orientation.unlock) {
-          screen.orientation.unlock();
-        }
-      } catch (err) {}
+    if (!isFullscreen && screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock("landscape").catch(() => {});
+    } else if (
+      isFullscreen &&
+      screen.orientation &&
+      screen.orientation.unlock
+    ) {
+      screen.orientation.unlock();
     }
   };
 
