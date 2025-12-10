@@ -54,7 +54,11 @@ function PublicVideoView() {
       watchTimeRef.current += 1;
 
       // First update after 3 seconds (view count + initial watch time)
-      if (watchTimeRef.current === 3 && !viewTracked.current && !hasViewedBefore()) {
+      if (
+        watchTimeRef.current === 3 &&
+        !viewTracked.current &&
+        !hasViewedBefore()
+      ) {
         viewTracked.current = true;
         incrementVideoView({ videoId: id })
           .then(() => {
@@ -68,7 +72,10 @@ function PublicVideoView() {
           .catch(() => {});
       }
       // Send watch time updates every 10 seconds after first update
-      else if (watchTimeRef.current > 3 && (watchTimeRef.current - lastSentWatchTime.current) >= 10) {
+      else if (
+        watchTimeRef.current > 3 &&
+        watchTimeRef.current - lastSentWatchTime.current >= 10
+      ) {
         const newWatchTime = watchTimeRef.current - lastSentWatchTime.current;
         sendWatchTimeUpdate(newWatchTime);
       }
@@ -78,10 +85,11 @@ function PublicVideoView() {
   const handleVideoPause = () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
-      
+
       // Send final watch time update on pause if there's unsent time
       if (watchTimeRef.current > lastSentWatchTime.current) {
-        const remainingWatchTime = watchTimeRef.current - lastSentWatchTime.current;
+        const remainingWatchTime =
+          watchTimeRef.current - lastSentWatchTime.current;
         sendWatchTimeUpdate(remainingWatchTime);
       }
     }
@@ -90,7 +98,8 @@ function PublicVideoView() {
   useEffect(() => {
     const handleBeforeUnload = () => {
       if (watchTimeRef.current > lastSentWatchTime.current) {
-        const remainingWatchTime = watchTimeRef.current - lastSentWatchTime.current;
+        const remainingWatchTime =
+          watchTimeRef.current - lastSentWatchTime.current;
         // Use sendBeacon for reliable delivery on page unload
         navigator.sendBeacon(
           `${import.meta.env.VITE_BASE_URL}/video/incrementView`,
@@ -99,10 +108,10 @@ function PublicVideoView() {
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [id]);
@@ -124,7 +133,7 @@ function PublicVideoView() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-start md:justify-center px-4 pt-4 md:pt-0">
       <main className="w-full max-w-4xl flex flex-col items-center">
         {/* Header with title and caption toggle */}
         <div className="w-full flex justify-between items-center mb-4">

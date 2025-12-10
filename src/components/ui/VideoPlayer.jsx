@@ -2,7 +2,13 @@ import { useState, useRef, useEffect } from "react";
 import { Menu, Tabs, Table, Divider } from "@mantine/core";
 import { FaPause, FaPlay } from "react-icons/fa6";
 
-export const VideoPlayer = ({ videoData, onPlay, onPause, captionsEnabled: externalCaptionsEnabled, onCaptionsToggle }) => {
+export const VideoPlayer = ({
+  videoData,
+  onPlay,
+  onPause,
+  captionsEnabled: externalCaptionsEnabled,
+  onCaptionsToggle,
+}) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [shouldAutoPlayGif, setShouldAutoPlayGif] = useState(false);
@@ -11,9 +17,12 @@ export const VideoPlayer = ({ videoData, onPlay, onPause, captionsEnabled: exter
   const [duration, setDuration] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
-  const [captionsEnabled, setCaptionsEnabled] = useState(externalCaptionsEnabled ?? true);
+  const [captionsEnabled, setCaptionsEnabled] = useState(
+    externalCaptionsEnabled ?? true
+  );
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
   const videoRef = useRef(null);
   const videoContainerRef = useRef(null);
   const controlsTimeoutRef = useRef(null);
@@ -179,17 +188,27 @@ export const VideoPlayer = ({ videoData, onPlay, onPause, captionsEnabled: exter
   };
 
   // Handle fullscreen
-  const handleFullscreen = () => {
+  const handleFullscreen = async () => {
     if (!videoContainerRef.current) return;
 
     if (!document.fullscreenElement) {
-      videoContainerRef.current.requestFullscreen().then(() => {
+      try {
+        await videoContainerRef.current.requestFullscreen();
         setIsFullscreen(true);
-      });
+        // Lock to landscape on mobile
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock("landscape").catch(() => {});
+        }
+      } catch (err) {}
     } else {
-      document.exitFullscreen().then(() => {
+      try {
+        await document.exitFullscreen();
         setIsFullscreen(false);
-      });
+        // Unlock orientation
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        }
+      } catch (err) {}
     }
   };
 
@@ -229,15 +248,29 @@ export const VideoPlayer = ({ videoData, onPlay, onPause, captionsEnabled: exter
     }, 3000);
   };
 
-  // Handle fullscreen change
+  // Handle fullscreen change and orientation
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      const isNowFullscreen = !!document.fullscreenElement;
+      setIsFullscreen(isNowFullscreen);
+
+      if (!isNowFullscreen) {
+        screen.orientation?.unlock();
+      }
+    };
+
+    const handleOrientationChange = () => {
+      setIsPortrait(window.innerHeight > window.innerWidth);
     };
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
+    window.addEventListener("resize", handleOrientationChange);
+    window.addEventListener("orientationchange", handleOrientationChange);
+    
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      window.removeEventListener("resize", handleOrientationChange);
+      window.removeEventListener("orientationchange", handleOrientationChange);
     };
   }, []);
 
@@ -249,7 +282,10 @@ export const VideoPlayer = ({ videoData, onPlay, onPause, captionsEnabled: exter
 
   // Sync external caption state with internal state
   useEffect(() => {
-    if (externalCaptionsEnabled !== undefined && externalCaptionsEnabled !== captionsEnabled) {
+    if (
+      externalCaptionsEnabled !== undefined &&
+      externalCaptionsEnabled !== captionsEnabled
+    ) {
       setCaptionsEnabled(externalCaptionsEnabled);
       if (videoRef.current && videoData.captionKey) {
         const tracks = videoRef.current.textTracks;
@@ -322,12 +358,22 @@ export const VideoPlayer = ({ videoData, onPlay, onPause, captionsEnabled: exter
         /* Custom video player with custom controls */
         <div
           ref={videoContainerRef}
-          className={`relative w-full h-full bg-black group ${
-            isFullscreen ? "overflow-visible" : ""
-          }`}
-          style={
-            isFullscreen ? { overflow: "visible", position: "relative" } : {}
-          }
+          className="relative w-full h-full bg-black group flex items-center justify-center"
+          style={{
+            ...(isFullscreen ? {
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              zIndex: 9999,
+              ...(window.innerWidth < 768 && isPortrait ? {
+                transform: 'rotate(90deg)',
+                transformOrigin: 'center center',
+                border: '5px solid red'
+              } : {})
+            } : {})
+          }}
           onMouseMove={handleMouseMove}
           onMouseLeave={() => {
             if (isPlaying) {
@@ -336,10 +382,18 @@ export const VideoPlayer = ({ videoData, onPlay, onPause, captionsEnabled: exter
           }}
           onClick={handleVideoClick}
         >
+          {/* Debug Info - Remove after testing */}
+          {isFullscreen && (
+            <div className="absolute top-2 right-2 bg-red-500 text-white text-xs p-2 rounded z-50">
+              W: {window.innerWidth} H: {window.innerHeight}<br/>
+              Portrait: {isPortrait ? 'Yes' : 'No'}<br/>
+              Rotate: {window.innerWidth < 768 && isPortrait ? 'Yes' : 'No'}
+            </div>
+          )}
           <video
             ref={videoRef}
             src={`${CLOUDFRONT_BASE}/${videoData.videoKey}`}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
             autoPlay={isFirstLoad}
             crossOrigin="anonymous"
             onLoadedMetadata={handleLoadedMetadata}
