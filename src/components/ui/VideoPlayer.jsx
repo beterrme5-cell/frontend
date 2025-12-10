@@ -364,6 +364,8 @@ export const VideoPlayer = ({
                     ? {
                         transform: "rotate(90deg)",
                         transformOrigin: "center center",
+                        width: "100vh",
+                        height: "100vw",
                       }
                     : {}),
                 }
