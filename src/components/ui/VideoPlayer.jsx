@@ -189,10 +189,35 @@ export const VideoPlayer = ({
     }
   };
 
+  // Detect iOS devices
+  const isIOS = () => {
+    return (
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+    );
+  };
+
   // Handle fullscreen
   const handleFullscreen = async () => {
     if (!videoContainerRef.current) return;
 
+    // For iOS devices, use CSS-based fullscreen
+    if (isIOS()) {
+      setIsFullscreen(!isFullscreen);
+      // Lock to landscape on mobile
+      if (!isFullscreen && screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock("landscape").catch(() => {});
+      } else if (
+        isFullscreen &&
+        screen.orientation &&
+        screen.orientation.unlock
+      ) {
+        screen.orientation.unlock();
+      }
+      return;
+    }
+
+    // For other devices, try native fullscreen API first
     if (!document.fullscreenElement) {
       try {
         await videoContainerRef.current.requestFullscreen();
@@ -201,7 +226,10 @@ export const VideoPlayer = ({
         if (screen.orientation && screen.orientation.lock) {
           screen.orientation.lock("landscape").catch(() => {});
         }
-      } catch (err) {}
+      } catch (err) {
+        // Fallback to CSS-based fullscreen if native API fails
+        setIsFullscreen(true);
+      }
     } else {
       try {
         await document.exitFullscreen();
@@ -210,7 +238,9 @@ export const VideoPlayer = ({
         if (screen.orientation && screen.orientation.unlock) {
           screen.orientation.unlock();
         }
-      } catch (err) {}
+      } catch (err) {
+        setIsFullscreen(false);
+      }
     }
   };
 
@@ -253,11 +283,14 @@ export const VideoPlayer = ({
   // Handle fullscreen change and orientation
   useEffect(() => {
     const handleFullscreenChange = () => {
-      const isNowFullscreen = !!document.fullscreenElement;
-      setIsFullscreen(isNowFullscreen);
+      // Only update state for non-iOS devices using native fullscreen
+      if (!isIOS()) {
+        const isNowFullscreen = !!document.fullscreenElement;
+        setIsFullscreen(isNowFullscreen);
 
-      if (!isNowFullscreen) {
-        screen.orientation?.unlock();
+        if (!isNowFullscreen) {
+          screen.orientation?.unlock();
+        }
       }
     };
 
@@ -374,7 +407,6 @@ export const VideoPlayer = ({
                     ? {
                         transform: "rotate(90deg)",
                         transformOrigin: "center center",
-                        border: "5px solid red",
                       }
                     : {}),
                 }
