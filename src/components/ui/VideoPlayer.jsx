@@ -156,24 +156,22 @@ export const VideoPlayer = ({
     }
   };
 
-  // Handle progress bar click/touch
+  // Handle progress bar click
   const handleProgressClick = (e) => {
     if (videoRef.current) {
       const rect = e.currentTarget.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const pos = (clientX - rect.left) / rect.width;
+      const pos = (e.clientX - rect.left) / rect.width;
       videoRef.current.currentTime = pos * duration;
     }
   };
 
-  // Handle progress bar hover/touch
+  // Handle progress bar hover
   const handleProgressHover = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const pos = (clientX - rect.left) / rect.width;
+    const pos = (e.clientX - rect.left) / rect.width;
     const time = pos * duration;
     setHoverTime(time);
-    setHoverPosition(clientX - rect.left);
+    setHoverPosition(e.clientX - rect.left);
   };
 
   // Handle mute/unmute
@@ -478,21 +476,11 @@ export const VideoPlayer = ({
           >
             {/* Progress Bar */}
             <div
-              className="relative bg-white/20 cursor-pointer transition-all duration-200 group/progress"
-              style={{
-                height: window.innerWidth < 768 ? "12px" : "4px", // Thicker on mobile
-                padding: window.innerWidth < 768 ? "4px 0" : "2px 0", // More touch area
-              }}
+              className="relative h-1 bg-white/20 cursor-pointer hover:h-1.5 transition-all duration-200 group/progress"
               onClick={handleProgressClick}
               onMouseMove={handleProgressHover}
-              onTouchStart={handleProgressHover}
-              onTouchMove={handleProgressHover}
               onMouseEnter={() => setIsProgressHovered(true)}
               onMouseLeave={() => {
-                setIsProgressHovered(false);
-                setHoverTime(null);
-              }}
-              onTouchEnd={() => {
                 setIsProgressHovered(false);
                 setHoverTime(null);
               }}
@@ -515,17 +503,15 @@ export const VideoPlayer = ({
               )}
 
               <div
-                className="bg-gradient-to-r from-blue-500 to-blue-400 transition-all duration-100 ease-out relative overflow-hidden"
+                className="h-full bg-gradient-to-r from-blue-500 to-blue-400 transition-all duration-100 ease-out relative overflow-hidden"
                 style={{
                   width: `${
                     duration > 0
                       ? Math.min((currentTime / duration) * 100, 100)
                       : 0
                   }%`,
-                  height: window.innerWidth < 768 ? "4px" : "100%",
-                  borderRadius: window.innerWidth < 768 ? "2px" : "2px",
+                  borderRadius: "2px",
                   boxShadow: "0 0 8px rgba(59, 130, 246, 0.4)",
-                  marginTop: window.innerWidth < 768 ? "4px" : "0",
                 }}
               >
                 {/* Progress bar glow effect */}
@@ -534,14 +520,12 @@ export const VideoPlayer = ({
 
               {/* Progress handle */}
               <div
-                className={`absolute top-1/2 bg-white rounded-full shadow-lg transform -translate-y-1/2 transition-all duration-200 ${
-                  isProgressHovered || window.innerWidth < 768
+                className={`absolute top-1/2 w-3 h-3 bg-white rounded-full shadow-lg transform -translate-y-1/2 transition-all duration-200 ${
+                  isProgressHovered
                     ? "opacity-100 scale-110"
                     : "opacity-0 scale-75"
                 }`}
                 style={{
-                  width: window.innerWidth < 768 ? "16px" : "12px", // Larger handle on mobile
-                  height: window.innerWidth < 768 ? "16px" : "12px",
                   left: `${
                     duration > 0
                       ? Math.min((currentTime / duration) * 100, 100)
