@@ -197,49 +197,52 @@ export const VideoPlayer = ({
     );
   };
 
+  // Detect mobile devices
+  const isMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+  };
+
   // Handle fullscreen
   const handleFullscreen = async () => {
     if (!videoContainerRef.current) return;
 
-    // For iOS devices, use CSS-based fullscreen
-    if (isIOS()) {
-      setIsFullscreen(!isFullscreen);
-      // Lock to landscape on mobile
-      if (!isFullscreen && screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock("landscape").catch(() => {});
-      } else if (
-        isFullscreen &&
-        screen.orientation &&
-        screen.orientation.unlock
-      ) {
-        screen.orientation.unlock();
-      }
-      return;
-    }
-
-    // For other devices, try native fullscreen API first
-    if (!document.fullscreenElement) {
-      try {
-        await videoContainerRef.current.requestFullscreen();
-        setIsFullscreen(true);
-        // Lock to landscape on mobile
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock("landscape").catch(() => {});
+    if (!isFullscreen) {
+      // Entering fullscreen
+      setIsFullscreen(true);
+      
+      // For mobile devices, force landscape orientation
+      if (isMobile() && screen.orientation && screen.orientation.lock) {
+        try {
+          await screen.orientation.lock("landscape");
+        } catch (err) {
+          console.log("Orientation lock failed:", err);
         }
-      } catch (err) {
-        // Fallback to CSS-based fullscreen if native API fails
-        setIsFullscreen(true);
+      }
+      
+      // Try native fullscreen for non-iOS
+      if (!isIOS()) {
+        try {
+          await videoContainerRef.current.requestFullscreen();
+        } catch (err) {
+          console.log("Fullscreen failed:", err);
+        }
       }
     } else {
-      try {
-        await document.exitFullscreen();
-        setIsFullscreen(false);
-        // Unlock orientation
-        if (screen.orientation && screen.orientation.unlock) {
-          screen.orientation.unlock();
+      // Exiting fullscreen
+      setIsFullscreen(false);
+      
+      // Unlock orientation
+      if (screen.orientation && screen.orientation.unlock) {
+        screen.orientation.unlock();
+      }
+      
+      // Exit native fullscreen
+      if (document.fullscreenElement) {
+        try {
+          await document.exitFullscreen();
+        } catch (err) {
+          console.log("Exit fullscreen failed:", err);
         }
-      } catch (err) {
-        setIsFullscreen(false);
       }
     }
   };
@@ -403,7 +406,7 @@ export const VideoPlayer = ({
                   width: "100vw",
                   height: "100vh",
                   zIndex: 9999,
-                  ...(window.innerWidth < 768 && isPortrait && isIOS()
+                  ...(isMobile() && isPortrait
                     ? {
                         transform: "rotate(90deg)",
                         transformOrigin: "center center",
@@ -427,7 +430,7 @@ export const VideoPlayer = ({
             src={`${CLOUDFRONT_BASE}/${videoData.videoKey}`}
             className="w-full h-full"
             style={{
-              objectFit: isFullscreen && isIOS() ? "cover" : "contain"
+              objectFit: isFullscreen ? "cover" : "contain"
             }}
             autoPlay={isFirstLoad}
             crossOrigin="anonymous"
