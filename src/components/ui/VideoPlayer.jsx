@@ -198,43 +198,81 @@ export const VideoPlayer = ({
   };
 
   // Handle fullscreen
-  const handleFullscreen = async () => {
-    if (!videoContainerRef.current) return;
+  // const handleFullscreen = async () => {
+  //   if (!videoContainerRef.current) return;
 
-    // For iOS devices, use CSS-based fullscreen
+  //   // For iOS devices, use CSS-based fullscreen
+  //   if (isIOS()) {
+  //     setIsFullscreen(!isFullscreen);
+  //     // Lock to landscape on mobile
+  //     if (!isFullscreen && screen.orientation && screen.orientation.lock) {
+  //       screen.orientation.lock("landscape").catch(() => {});
+  //     } else if (
+  //       isFullscreen &&
+  //       screen.orientation &&
+  //       screen.orientation.unlock
+  //     ) {
+  //       screen.orientation.unlock();
+  //     }
+  //     return;
+  //   }
+
+  //   // For other devices, try native fullscreen API first
+  //   if (!document.fullscreenElement) {
+  //     try {
+  //       await videoContainerRef.current.requestFullscreen();
+  //       setIsFullscreen(true);
+  //       // Lock to landscape on mobile
+  //       if (screen.orientation && screen.orientation.lock) {
+  //         screen.orientation.lock("landscape").catch(() => {});
+  //       }
+  //     } catch (err) {
+  //       // Fallback to CSS-based fullscreen if native API fails
+  //       setIsFullscreen(true);
+  //     }
+  //   } else {
+  //     try {
+  //       await document.exitFullscreen();
+  //       setIsFullscreen(false);
+  //       // Unlock orientation
+  //       if (screen.orientation && screen.orientation.unlock) {
+  //         screen.orientation.unlock();
+  //       }
+  //     } catch (err) {
+  //       setIsFullscreen(false);
+  //     }
+  //   }
+  // };
+
+  // Handle fullscreen
+  const handleFullscreen = async () => {
+    if (!videoContainerRef.current || !videoRef.current) return;
+
+    // iOS: use native fullscreen
     if (isIOS()) {
-      setIsFullscreen(!isFullscreen);
-      // Lock to landscape on mobile
-      if (!isFullscreen && screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock("landscape").catch(() => {});
-      } else if (
-        isFullscreen &&
-        screen.orientation &&
-        screen.orientation.unlock
-      ) {
-        screen.orientation.unlock();
+      if (!isFullscreen) {
+        videoRef.current.webkitEnterFullscreen?.(); // enter native fullscreen
+      } else {
+        videoRef.current.webkitExitFullscreen?.(); // exit native fullscreen
       }
       return;
     }
 
-    // For other devices, try native fullscreen API first
+    // Android / Desktop: existing native fullscreen
     if (!document.fullscreenElement) {
       try {
         await videoContainerRef.current.requestFullscreen();
         setIsFullscreen(true);
-        // Lock to landscape on mobile
         if (screen.orientation && screen.orientation.lock) {
           screen.orientation.lock("landscape").catch(() => {});
         }
       } catch (err) {
-        // Fallback to CSS-based fullscreen if native API fails
         setIsFullscreen(true);
       }
     } else {
       try {
         await document.exitFullscreen();
         setIsFullscreen(false);
-        // Unlock orientation
         if (screen.orientation && screen.orientation.unlock) {
           screen.orientation.unlock();
         }
@@ -243,6 +281,23 @@ export const VideoPlayer = ({
       }
     }
   };
+  useEffect(() => {
+    if (!videoRef.current) return;
+
+    const handleEnter = () => setIsFullscreen(true);
+    const handleExit = () => setIsFullscreen(false);
+
+    videoRef.current.addEventListener("webkitbeginfullscreen", handleEnter);
+    videoRef.current.addEventListener("webkitendfullscreen", handleExit);
+
+    return () => {
+      videoRef.current.removeEventListener(
+        "webkitbeginfullscreen",
+        handleEnter
+      );
+      videoRef.current.removeEventListener("webkitendfullscreen", handleExit);
+    };
+  }, []);
 
   // Handle playback rate change
   const handlePlaybackRateChange = (rate) => {
@@ -394,6 +449,25 @@ export const VideoPlayer = ({
         <div
           ref={videoContainerRef}
           className="relative w-full h-full bg-black group flex items-center justify-center"
+          // style={{
+          //   ...(isFullscreen
+          //     ? {
+          //         position: "fixed",
+          //         top: 0,
+          //         left: 0,
+          //         width: "100vw",
+          //         height: "100vh",
+          //         zIndex: 9999,
+          //         ...(window.innerWidth < 768 && isPortrait
+          //           ? {
+          //               transform: "rotate(90deg)",
+          //               transformOrigin: "center center",
+          //             }
+          //           : {}),
+          //       }
+          //     : {}),
+          // }}
+
           style={{
             ...(isFullscreen
               ? {
@@ -403,7 +477,9 @@ export const VideoPlayer = ({
                   width: "100vw",
                   height: "100vh",
                   zIndex: 9999,
-                  ...(window.innerWidth < 768 && isPortrait
+                  ...(isIOS()
+                    ? {} // NO rotation for iOS
+                    : window.innerWidth < 768 && isPortrait
                     ? {
                         transform: "rotate(90deg)",
                         transformOrigin: "center center",
