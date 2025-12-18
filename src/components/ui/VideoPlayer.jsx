@@ -403,10 +403,12 @@ export const VideoPlayer = ({
                   width: "100vw",
                   height: "100vh",
                   zIndex: 9999,
-                  ...(window.innerWidth < 768 && isPortrait
+                  ...(window.innerWidth < 768 && isPortrait && isIOS()
                     ? {
                         transform: "rotate(90deg)",
                         transformOrigin: "center center",
+                        width: "100vh",
+                        height: "100vw",
                       }
                     : {}),
                 }
@@ -423,7 +425,10 @@ export const VideoPlayer = ({
           <video
             ref={videoRef}
             src={`${CLOUDFRONT_BASE}/${videoData.videoKey}`}
-            className="w-full h-full object-contain"
+            className="w-full h-full"
+            style={{
+              objectFit: isFullscreen && isIOS() ? "cover" : "contain"
+            }}
             autoPlay={isFirstLoad}
             crossOrigin="anonymous"
             onLoadedMetadata={handleLoadedMetadata}
