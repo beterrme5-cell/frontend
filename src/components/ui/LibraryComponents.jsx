@@ -764,8 +764,8 @@ export const TextEditor = forwardRef(
 
       if (isNewSchema) {
         // NEW SCHEMA: Use clickable GIF preview
-        videoLink = `<a href="${CLOUDFRONT_BASE}/${
-          videoToBeShared.videoKey
+        videoLink = `<a href="${frontendBaseUrl}/v/${
+          videoToBeShared._id
         }" target="_blank" style="color: blue; text-decoration: underline; font-weight: bold">${
           videoToBeShared?.title || "Watch Video"
         }</a>`;
