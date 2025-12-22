@@ -772,13 +772,19 @@ export const TextEditor = forwardRef(
 
         console.log("Script hello ---->", frontendBaseUrl, videoToBeShared.id);
 
-        // Use GIF/teaser as thumbnail for new schema
-        if (videoToBeShared?.gifKey || videoToBeShared?.teaserKey) {
+        // Use playButtonGifKey for emails, fallback to regular GIF/teaser
+        if (
+          videoToBeShared?.playButtonGifKey ||
+          videoToBeShared?.gifKey ||
+          videoToBeShared?.teaserKey
+        ) {
           videoThumbnail = `<a href="${frontendBaseUrl}/v/${
             videoToBeShared._id
           }" target="_blank"><img src="${CLOUDFRONT_BASE}/${
-            videoToBeShared.gifKey || videoToBeShared.teaserKey
-          }" width="300px" height="200px" style="border-radius: 8px;"/></a>`;
+            videoToBeShared.playButtonGifKey ||
+            videoToBeShared.gifKey ||
+            videoToBeShared.teaserKey
+          }" width="500px" height="auto" style="border-radius: 8px; max-width: 100%;"/></a>`;
         }
       } else {
         // OLD SCHEMA: Use existing logic
